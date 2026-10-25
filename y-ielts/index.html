@@ -304,6 +304,10 @@
         </div>
         <button class="lc-arrow lc-next" type="button" aria-label="下一个模块">›</button>
       </div>
+      <div class="learn-strip" id="learnStrip">
+        <span class="learn-strip-next" id="learnStripNext">下一步：做 Test 1，限时 60 分钟</span>
+        <span class="learn-strip-hint">点封面进入 · 左右滑或点箭头切换</span>
+      </div>
     </nav>
   </section>
 
@@ -1147,6 +1151,7 @@
 <!-- ============ 底部 Tabbar（iPhone 习惯，移动端显示） ============ -->
 <nav class="tabbar" id="tabbar" aria-label="主导航">
   <div class="tabbar-inner">
+    <span class="tabbar-ind" id="tabbarInd" aria-hidden="true"></span>
     <button class="tabbar-btn is-active" data-view="home" data-icon="home"><span>首页</span></button>
     <button class="tabbar-btn" data-view="learn" data-icon="cards"><span>学习</span></button>
     <button class="tabbar-btn" data-view="comments" data-icon="edit"><span>留言</span></button>
@@ -1223,5 +1228,6 @@
 <!-- v16：「我的」抽屉（依赖 App/Vocab/Reading 导出面，必须放在 app.js 之后） -->
 <script src="assets/js/comments.js?v=51"></script>
 <script src="assets/js/me.js"></script>
+<script src="assets/js/tabbar-indicator.js"></script>
 </body>
 </html>

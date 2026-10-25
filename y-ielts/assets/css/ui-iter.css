@@ -568,8 +568,8 @@ html[data-theme="dark"] .me-font-btns button.is-active {
   .cf-box,
   .dp-box {
     background: var(--lg-panel, var(--lg-glass)) !important;
-    -webkit-backdrop-filter: blur(6px) saturate(180%) !important;
-    backdrop-filter: blur(6px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(180%) !important;
+    backdrop-filter: blur(14px) saturate(180%) !important;
   }
   .drawer-panel {
     background: var(--lg-panel, var(--lg-glass)) !important;
@@ -1022,4 +1022,172 @@ html[data-theme="dark"] .me-theme-seg button.is-active { background: var(--lg-ac
   border-color: var(--lg-accent);
   color: var(--ink);
   box-shadow: 0 0 0 2px var(--lg-accent);
+}
+
+/* ============================================================
+ *  ui-iter v15：底栏玻璃滑块 + 封面银行卡质感 + 其余部位玻璃加强
+ *  + 首页再加强 + 学习区下方小条（范围与证据见 VERSIONS.md v15 节）
+ *  ---------------------------------------------------------------
+ *  底线：只动壳层视觉——内容区（阅读正文/写作编辑器/听力句子/
+ *  范文正文）全实心不动；文字全实心；最多 2 层透光；不改路由/
+ *  计分/词库/计时/提交逻辑；不新增色值（只复用已有 rgba 与 token）。
+ * ============================================================ */
+
+/* ---------- v15-A 底栏玻璃滑块 ---------- */
+/* inner 设 relative 才能做 pill 的定位基准（不带偏移，布局不动）；
+   按钮设 relative + z-index:1，盖在 pill 之上，文字保持实心可读；
+   pill 本身 pointer-events:none，点按直达按钮。 */
+.tabbar-inner { position: relative; }
+.tabbar-btn { position: relative; z-index: 1; }
+.tabbar-ind {
+  position: absolute; top: 0; left: 0; z-index: 0;
+  pointer-events: none;
+  border-radius: 999px;
+  background: var(--lg-chrome);
+  -webkit-backdrop-filter: var(--lg-blur-soft);
+  backdrop-filter: var(--lg-blur-soft);
+  border: 1px solid var(--lg-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .60), 0 6px 16px -8px rgba(6, 10, 22, .40);
+  opacity: 0;
+  transition: transform 280ms ease, width 280ms ease, opacity 200ms ease;
+}
+.tabbar-ind.on { opacity: 1; }
+html[data-theme="dark"] .tabbar-ind {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 6px 16px -8px rgba(0, 0, 0, .65);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabbar-ind { transition: none; }
+}
+
+/* ---------- v15-B 封面银行卡质感（只做材质，不动信息/尺寸/旋转） ---------- */
+/* 斜向细腻高光带（银行卡式反光）：旧 .home-tile::before 是左侧 3px
+   色条（v50:3228）后被 display:none（v50:3538）——本规则后来居上
+   把它点亮为反光层；必须显式写 display:block + width:auto +
+   opacity:1，否则旧规则的 display/width/opacity 仍按属性合并留下来，
+   反光会被压成一条 3px 竖线或直接不显示。内容一律 relative +
+   z-index:1，盖在反光层之上，文字不受影响。 */
+.lc-slide::before {
+  content: ''; display: block; position: absolute; inset: 0; z-index: 0;
+  width: auto; opacity: 1;
+  border-radius: inherit; pointer-events: none;
+  background: linear-gradient(115deg, rgba(255, 255, 255, .22) 0%, rgba(255, 255, 255, .08) 24%, rgba(255, 255, 255, 0) 48%);
+}
+html[data-theme="dark"] .lc-slide::before {
+  background: linear-gradient(115deg, rgba(255, 255, 255, .08) 0%, rgba(255, 255, 255, 0) 42%);
+}
+.lc-slide > * { position: relative; z-index: 1; }
+/* 居中封面压花式深度：顶缘亮线 + 外层深影（只加在 is-active 封面，
+   其余封面仍走 v14 的卡片阴影；v14 尺寸/透明度/缩放一字不动）。 */
+.lc-slide.is-active {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .75), 0 24px 48px -16px rgba(6, 10, 22, .45);
+}
+html[data-theme="dark"] .lc-slide.is-active {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 24px 48px -16px rgba(0, 0, 0, .65);
+}
+
+/* ---------- v15-C 其余部位玻璃加强 ---------- */
+/* 弹窗/确认框：根因已查实（见 VERSIONS.md v15 节）——标准级联里
+   弹窗早就是滑块跟随的半透明（50% 时浅 .20 / 深 .30），并无实色
+   钉死规则；观感实是 .40 遮罩叠加 + 仅 6px 模糊 + 深色同色衬底
+   所致。本版不改透明度映射（滑块单调性、0% 仍较实、100% 文字
+   仍可读一律守住），只把霜化做 visible：模糊 6px→14px，加一圈
+   细亮边；文字规则一字不动。 */
+.cf-box,
+.dp-box {
+  background: var(--lg-panel, var(--lg-glass));
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  backdrop-filter: blur(14px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .75), inset 0 0 0 1px rgba(255, 255, 255, .06), 0 24px 60px -12px rgba(6, 10, 22, .50);
+}
+html[data-theme="dark"] .cf-box,
+html[data-theme="dark"] .dp-box {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(255, 255, 255, .06), 0 24px 60px -12px rgba(0, 0, 0, .65);
+}
+/* 遮罩：透明度 .40 不动（保证弹窗文字可读），模糊 2px→6px，霜感上来。 */
+.cf-mask,
+.dp-mask,
+.wb-mask {
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  backdrop-filter: blur(6px) saturate(140%);
+}
+/* 生词本抽屉：根因是 v50 玻璃组给它的 --lg-glass 在 50% 时 .75，
+   加 22px 模糊，读着像实心；本版改走与弹窗同一条滑块跟随链
+   --lg-panel（50% 时浅 .20 / 深 .30），抽屉内 .wb-head/.wb-body
+   本来就没有背景，换层后直接透出，文字全实心。 */
+.wb-panel {
+  background: var(--lg-panel, var(--lg-glass));
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  backdrop-filter: blur(14px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .75), inset 0 0 0 1px rgba(255, 255, 255, .06), 0 24px 60px -12px rgba(6, 10, 22, .50);
+}
+html[data-theme="dark"] .wb-panel {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(255, 255, 255, .06), 0 24px 60px -12px rgba(0, 0, 0, .65);
+}
+/* 考试 HUD 条（视觉 only：不碰 display/定位/全屏逻辑，见 v15 护栏）：
+   工具条原来走 .75 的铬层玻璃，本版同样改走滑块跟随链；计时器/
+   交卷/退出按钮本身的文字与布局一字不动。 */
+.exam-hud,
+.r-toolbar,
+.w-toolbar {
+  background: var(--lg-panel, var(--lg-glass));
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  backdrop-filter: blur(14px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .60), 0 8px 20px -12px rgba(6, 10, 22, .40);
+}
+html[data-theme="dark"] .exam-hud,
+html[data-theme="dark"] .r-toolbar,
+html[data-theme="dark"] .w-toolbar {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 8px 20px -12px rgba(0, 0, 0, .65);
+}
+/* 设置行/仪表盘行：三段主题控件（v14）、全宽玻璃滑块（v14）、
+   仪表盘行本来就没有实色背景，My 统计格 v14 已做深——本版不再叠加。 */
+
+/* ---------- v15-首页再加强（库存/顺序/文案一律不动） ---------- */
+/* 分层背景：微光提亮 + 第二层同色微光（只改已有色值的透明度，
+   不引新色）；噪点层原样保留，提亮由两层渐变承担。 */
+#view-home { --home-glow: rgba(96, 130, 180, .26); }
+html[data-theme="dark"] #view-home { --home-glow: rgba(90, 120, 160, .28); }
+#view-home .home-hero::before {
+  background:
+    radial-gradient(640px 360px at 50% 0%, var(--home-glow), transparent 70%),
+    radial-gradient(460px 260px at 88% 12%, var(--home-glow), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-size: auto, auto, 120px 120px;
+}
+/* 展示层级上调一档：标题、环心数字、概览数字、主按钮。 */
+#view-home .home-title { font-size: clamp(44px, 10vw, 72px); }
+.home-ring { width: 176px; height: 176px; }
+.home-ring-center { height: 176px; }
+.home-ring-center b { font-size: 42px; }
+#view-home .home-ov-item b { font-size: 36px; }
+@media (max-width: 900px) {
+  #view-home .home-ov-item b { font-size: 30px; }
+}
+#view-home .home-next-card #homeContinue { min-height: 52px; font-size: 16px; font-weight: 700; }
+@media (min-width: 901px) {
+  #view-home .home-next-card #homeContinue { min-width: 260px; }
+}
+
+/* ---------- v15-学习区下方小条 ---------- */
+/* 一张小而弱的条卡：居中封面的下一步（跟随旋转）+ 一行用法提示；
+   无新功能、无新按钮、无新颜色，只复用已有 token。 */
+.learn-strip {
+  margin: 12px auto 0;
+  width: min(86vw, 400px);
+  padding: 10px 14px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid var(--stroke-soft);
+  background: var(--glass-2);
+  text-align: center;
+}
+.learn-strip-next {
+  display: block;
+  font-size: 13.5px; font-weight: 600; color: var(--ink-2); line-height: 1.5;
+}
+.learn-strip-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px; color: var(--muted); line-height: 1.5;
 }

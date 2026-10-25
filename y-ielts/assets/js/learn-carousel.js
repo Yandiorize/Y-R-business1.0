@@ -53,6 +53,14 @@
         dots[i].removeAttribute('aria-current');
       }
     }
+    /* v15：学习区下方小条跟随居中封面——直接读居中封面已有的
+       .lr-next 文案（app.js 会动态改它，小条每次 layout 都重读，
+       故数据与封面永远一致，不新增任何数据或入口）。 */
+    var stripNext = document.getElementById('learnStripNext');
+    if (stripNext && slides[index]) {
+      var nx = slides[index].querySelector('.lr-next');
+      if (nx) stripNext.textContent = nx.textContent;
+    }
   }
 
   function goTo(i) {

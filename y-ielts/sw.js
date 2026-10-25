@@ -28,6 +28,9 @@
  *             ui-iter.css，均已在预缓存清单里，无需新增条目）。
  *  ui-iter v14：同 v13，仅加注释触发 SW 更新（v14 改 index.html / theme.js /
  *             learn-carousel.js / ui-iter.css，均已在预缓存清单里，无需新增条目）。
+ *  ui-iter v15：新增 tabbar-indicator.js 预缓存条目（新文件，必须进清单）+
+ *             注释触发 SW 更新（其余 v15 改动均已在清单里；v15 改 index.html /
+ *             theme.js / learn-carousel.js / vocab.js / ui-iter.css / sw.js）。
  * ============================================================ */
 'use strict';
 
@@ -72,6 +75,7 @@ var CORE = [
   './assets/js/listening.js',
   './assets/js/exam-shell.js',
   './assets/js/learn-carousel.js',
+  './assets/js/tabbar-indicator.js',
   './assets/js/app.js?v=51',
   './assets/js/comments.js?v=51',
   './assets/js/me.js',

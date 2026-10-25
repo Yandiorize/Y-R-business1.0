@@ -58,7 +58,11 @@ window.Vocab = (function () {
   }
   /* 汉译英防剧透：答前题面喇叭置灰「答后可听」，答后才可点（data-speak 已是正确英文词） */
   function spkBtnLocked(word) {
-    return '<button class="spk spk-head spk-locked" type="button" disabled ' +
+    /* v15：去掉 disabled——被禁用的按钮根本不派发 click，委托里
+       的 spk-locked 分支（toast「答后可听，先作答」）永远到不了，
+       iOS 上点它就是全静默；灰态仍由 .spk-locked 类 + aria-disabled
+       表达，点按后由处理器给 toast 说明。 */
+    return '<button class="spk spk-head spk-locked" type="button" ' +
       'data-speak="' + esc(word) + '" data-accent="' + accent + '" ' +
       'title="答后可听（防止泄题）" aria-label="答后可听（防止泄题）" aria-disabled="true">' +
       Icons.get('volume', 24) + '</button>';
@@ -146,6 +150,13 @@ window.Vocab = (function () {
     return 'play';
   }
 
+  /* v15：闸门释放——兜底结束（本地音频播完 / 失败）后必须释放
+     spkActive，否则失败 pill 明明写着「点我重试」，同词重点击
+     却被闸门静默忽略（死锁：旧代码里 fallbackAudio 从不清它）。 */
+  function releaseSpk(word) {
+    if (spkActive === word) spkActive = '';
+  }
+
   /* 立即停止：cancel 掉系统语音队列 + 本地音频，清按钮播放态与 pill */
   function spkStopNow(btns, silent) {
     spkGen++;
@@ -209,7 +220,7 @@ window.Vocab = (function () {
    * st = 本次朗读的播放上下文 {local:bool}，供 TTS 晚到时做单路互斥（v15 旧账1） */
   function fallbackAudio(w, btns, st) {
     st = st || { local: false };
-    if (!window.DictAudio) { markFail(btns, '当前设备暂无可用语音'); return false; }
+    if (!window.DictAudio) { markFail(btns, '当前设备暂无可用语音'); releaseSpk(w); return false; }
     DictAudio.play(w, accent, { offlineOnly: true }).then(function (r) {
       if (r === 'local' || r === 'cache') {
         st.local = true;
@@ -218,10 +229,11 @@ window.Vocab = (function () {
           st.local = false;
           btns.forEach(function (b) { b.classList.remove('is-playing'); });
           spkStatus('');
+          releaseSpk(w);
         }, 900);
       }
-      else markFail(btns, '当前设备暂无可用语音');
-    }).catch(function () { markFail(btns, '当前设备暂无可用语音'); });
+      else { markFail(btns, '当前设备暂无可用语音'); releaseSpk(w); }
+    }).catch(function () { markFail(btns, '当前设备暂无可用语音'); releaseSpk(w); });
     return true;
   }
 
@@ -242,7 +254,10 @@ window.Vocab = (function () {
     var btns = $$('[data-speak="' + w.replace(/"/g, '\\"') + '"]');
     /* P2-3：播放中再点=停止；连点忽略；停止后冷却 —— 连点 5–8 下只播 1 遍 */
     var act = spkGate(w, isAuto);
-    if (act === 'ignore') return false;
+    /* v15：忽略也要可见——正在播时重按同词，刷新播放中 pill，
+       点按永不全静默（600ms 连点窗 / 900ms 停后冷却窗是亚秒级
+       防抖，不属失败，不弹 toast 刷屏）。 */
+    if (act === 'ignore') { if (spkActive) spkStatus('playing'); return false; }
     if (act === 'stop') { spkStopNow(btns); return false; }
     spkActive = w;
     spkStartAt = Date.now ? Date.now() : 0;
@@ -335,7 +350,8 @@ window.Vocab = (function () {
     var btns = $$('[data-speak="' + t.replace(/"/g, '\\"') + '"]');
     /* P2-3：例句走同一闸门（播放中再点=停止，连点忽略） */
     var act = spkGate(t, false);
-    if (act === 'ignore') return false;
+    /* v15：同 speakWord，忽略时刷新播放中 pill，点按永不全静默。 */
+    if (act === 'ignore') { if (spkActive) spkStatus('playing'); return false; }
     if (act === 'stop') { spkStopNow(btns); return false; }
     spkActive = t;
     spkStartAt = Date.now ? Date.now() : 0;
@@ -371,12 +387,13 @@ window.Vocab = (function () {
         return;
       }
       markFail(btns, '朗读失败，点我重试');
+      releaseSpk(t);
     };
     /* v15 旧账3：先亮 pill 再 speak，不依赖 onstart */
     markPlay(btns);
     setTimeout(function () {
       if (myGen !== spkGen) return;
-      if (!started) markFail(btns, '朗读失败，点我重试');
+      if (!started) { markFail(btns, '朗读失败，点我重试'); releaseSpk(t); }
     }, 1500);
     try { window.speechSynthesis.speak(u); return true; }
     catch (e) { markFail(btns, '朗读失败，点我重试'); return false; }

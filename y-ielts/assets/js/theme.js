@@ -46,7 +46,10 @@ window.Theme = (function () {
 
   function select(m) {
     set(m);
-    toast('主题：' + LABEL[mode] + ' · 已记住');
+    /* v15：主题确认 toast 显式 3000ms（默认 2000ms 的瞬时提示在
+       v14 验收里没被截到——机制本身无问题，见 VERSIONS.md v15 节；
+       文案一字未动，主题值/持久化/三段控件一律不动）。 */
+    toast('主题：' + LABEL[mode] + ' · 已记住', 3000);
   }
 
   function init(segSel) {
