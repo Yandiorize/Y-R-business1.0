@@ -162,7 +162,7 @@ html[data-theme="dark"] .dp-box {
   margin: 0 auto;
 }
 #view-home .home-hero > * { position: relative; z-index: 1; }
-/* 分层背景：顶部柔光（单一金色强调）+ 细噪点铺底，文字对比不受影响 */
+/* 分层背景：顶部柔光（单一蓝色强调）+ 细噪点铺底，文字对比不受影响 */
 #view-home .home-hero::before {
   content: '';
   position: absolute;
@@ -170,7 +170,7 @@ html[data-theme="dark"] .dp-box {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(600px 320px at 50% 0%, rgba(232, 200, 106, .14), transparent 70%),
+    radial-gradient(600px 320px at 50% 0%, var(--home-glow, rgba(96, 130, 180, .14)), transparent 70%),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
   background-repeat: no-repeat, repeat;
   background-size: auto, 120px 120px;
@@ -225,7 +225,7 @@ html[data-theme="dark"] .dp-box {
 .home-ring-track { fill: none; stroke: var(--lg-border); stroke-width: 12; }
 .home-ring-fill {
   fill: none;
-  stroke: var(--lg-gold);
+  stroke: var(--lg-accent);
   stroke-width: 12;
   stroke-linecap: round;
   transform: rotate(-90deg);
@@ -256,7 +256,7 @@ html[data-theme="dark"] .dp-box {
 .ov-ico .lbl:empty { display: none; }
 .ov-dots { display: flex; gap: 5px; margin-top: 4px; }
 .ov-dots i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--lg-border); background: transparent; }
-.ov-dots i.on { background: var(--lg-gold); border-color: var(--lg-gold); }
+.ov-dots i.on { background: var(--lg-accent); border-color: var(--lg-accent); }
 @media (min-width: 901px) {
   #view-home .home-hero { grid-template-columns: 1fr 300px; }
   #view-home .home-next-card { grid-column: 1; }
@@ -269,7 +269,7 @@ html[data-theme="dark"] .dp-box {
 }
 
 /* ---------- v7-2 Apple 按键语言（样式与层级，不改文案与功能） ----------
-   主按钮：实心填充（金色 + 深色字，两档通用，对比约 8.5:1）；
+   主按钮：实心填充（蓝色 #0071e3 + 白字，两档通用，对比 4.70:1 AA）；
    次按钮：描边/幽灵（透明底 + 可见描边，无玻璃底）；
    圆角：全站 .btn 家族本来就是 pill，本版确认并守住，不另起半径；
    触靶：.btn 家族与段控/底栏/图标钮桌面端也提到 44px（与移动端已有规则一致）。
@@ -286,17 +286,17 @@ html[data-theme="dark"] .dp-box {
 .btn-lg { min-height: 48px; padding: 14px 28px; }
 .seg-btn, .tabbar-btn, .icon-btn { min-height: 44px; }
 .btn-primary {
-  background: var(--lg-gold);
+  background: #0071e3;
   border-color: transparent;
-  color: #1a2338;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 8px 22px rgba(232, 200, 106, .35);
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 8px 22px rgba(0, 113, 227, .35);
 }
 .btn-primary:hover {
-  background: #edcf7e;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .65), 0 10px 26px rgba(232, 200, 106, .42);
+  background: #0066d6;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .65), 0 10px 26px rgba(0, 113, 227, .42);
 }
 html[data-theme="dark"] .btn-primary,
-html:not([data-theme="light"]) .btn-primary { color: #1a2338; }
+html:not([data-theme="light"]) .btn-primary { color: #ffffff; }
 .btn-ghost {
   background: transparent;
   -webkit-backdrop-filter: none;
@@ -479,4 +479,24 @@ html[data-theme="dark"] {
 html[data-theme="dark"] .cf-box,
 html[data-theme="dark"] .dp-box {
   background: var(--lg-panel, var(--lg-glass));
+}
+
+/* =============================================================
+ *  ui-iter v9：暖色强调清零，换 Apple 式系统蓝（只换颜色；玻璃数值/
+ *  布局/功能一字不动）
+ *  ---------------------------------------------------------------
+ *  映射（证据与数值见 VERSIONS.md v9 节）：
+ *  · 旧暖色强调变量 → --lg-accent 系（浅 #0071e3 / 深 #0a84ff 图形色；
+ *    主按钮两档 #0071e3 + 白字，对比 4.70:1 AA）；
+ *  · 首页顶部柔光：暖色 → 冷色微渐变（浅柔和蓝灰 wash，见
+ *    --home-glow；深档低饱和蓝灰微光，下方深档规则）；
+ *  · 关键数字本来就是墨色（圆环中心 var(--ink)、统计数字继承），
+ *    细分条本来就是品牌蓝渐变（styles .bar > i），两处无需改；
+ *  · v50 的 --lg-accent 系定义见 liquid-glass-v50.css（浅/深两档）。
+ * ============================================================= */
+:root {
+  --home-glow: rgba(96, 130, 180, .14);
+}
+html[data-theme="dark"] {
+  --home-glow: rgba(90, 120, 160, .16);
 }

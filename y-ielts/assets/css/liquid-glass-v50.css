@@ -6,7 +6,7 @@
  *  因此这里的规则会覆盖前面所有视觉定义。
  *
  *  设计要点：
- *    · 深藏青底景 + 金色微光晕（呼应开屏星空），fixed 不随内容滚动
+ *    · 深藏青底景 + 蓝色微光晕（呼应开屏星空），fixed 不随内容滚动
  *    · 统一玻璃材质：rgba(255,255,255,.55) + blur(20px) saturate(180%)
  *    · 悬浮胶囊导航：距屏幕 12px、圆角 28px
  *    · 同心圆角：外层 28 / 20 / 14 / 10
@@ -26,9 +26,11 @@
   --lg-highlight: inset 0 1px 0 rgba(255, 255, 255, .55);
   --lg-shadow: 0 8px 32px rgba(0, 0, 0, .12);
 
-  --lg-gold: #e8c86a;
-  --lg-gold-2: #f6e2a4;
-  --lg-gold-deep: #6a4f12;
+  --lg-accent: #0071e3;
+  --lg-accent-2: #8ec5ff;
+  --lg-accent-deep: #004a80;
+  --lg-accent-rgb: 0, 113, 227;
+  --lg-accent-2-rgb: 142, 197, 255;
 
   --lg-blur: blur(26px) saturate(190%);
   --lg-blur-soft: blur(14px) saturate(160%);
@@ -64,7 +66,7 @@ html[data-theme="light"] {
   z-index: -1;
   overflow: hidden;
   background:
-    radial-gradient(55% 45% at 50% -8%, rgba(232, 200, 106, .10), transparent 70%),
+    radial-gradient(55% 45% at 50% -8%, rgba(var(--lg-accent-rgb), .10), transparent 70%),
     radial-gradient(42% 40% at 88% 10%, rgba(157, 178, 255, .20), transparent 72%),
     linear-gradient(180deg, #f2f5fc 0%, #e9edf7 46%, #eef1f8 100%);
 }
@@ -74,19 +76,19 @@ html[data-theme="light"] {
 .bg .b3 { background: radial-gradient(circle at 50% 50%, #d9bdff 0%, transparent 70%); }
 .bg .b4 { background: radial-gradient(circle at 50% 50%, #a8ecdc 0%, transparent 70%); }
 
-/* 深色主题：保持原深藏青 + 金色光晕，不动 */
+/* 深色主题：深藏青底景 + 蓝色光晕（v9 改用蓝色） */
 [data-theme="dark"] .bg {
   background:
-    radial-gradient(55% 45% at 50% -8%, rgba(232, 200, 106, .18), transparent 70%),
-    radial-gradient(38% 38% at 88% 12%, rgba(232, 200, 106, .12), transparent 72%),
-    radial-gradient(45% 45% at 8% 92%, rgba(201, 162, 74, .10), transparent 72%),
+    radial-gradient(55% 45% at 50% -8%, rgba(var(--lg-accent-rgb), .18), transparent 70%),
+    radial-gradient(38% 38% at 88% 12%, rgba(var(--lg-accent-rgb), .12), transparent 72%),
+    radial-gradient(45% 45% at 8% 92%, rgba(var(--lg-accent-rgb), .10), transparent 72%),
     linear-gradient(160deg, #0b1228 0%, #0d1630 46%, #060a16 100%);
 }
 [data-theme="dark"] .bg .blob { filter: blur(96px); opacity: .32; }
-[data-theme="dark"] .bg .b1 { background: radial-gradient(circle at 50% 50%, #e8c86a 0%, transparent 70%); }
-[data-theme="dark"] .bg .b2 { background: radial-gradient(circle at 50% 50%, #c9a24a 0%, transparent 70%); }
-[data-theme="dark"] .bg .b3 { background: radial-gradient(circle at 50% 50%, #8a6d2f 0%, transparent 70%); }
-[data-theme="dark"] .bg .b4 { background: radial-gradient(circle at 50% 50%, #f0d98a 0%, transparent 70%); }
+[data-theme="dark"] .bg .b1 { background: radial-gradient(circle at 50% 50%, #0a84ff 0%, transparent 70%); }
+[data-theme="dark"] .bg .b2 { background: radial-gradient(circle at 50% 50%, #0071e3 0%, transparent 70%); }
+[data-theme="dark"] .bg .b3 { background: radial-gradient(circle at 50% 50%, #004a80 0%, transparent 70%); }
+[data-theme="dark"] .bg .b4 { background: radial-gradient(circle at 50% 50%, #5ea0ff 0%, transparent 70%); }
 
 /* ---------- 2. 统一玻璃材质 ---------- */
 .glass,
@@ -163,20 +165,20 @@ html[data-theme="light"] {
 }
 .btn:active { transform: scale(.97); }
 
-/* 主按钮：玻璃 + 金色描边高光 */
+/* 主按钮：玻璃 + 蓝色描边高光 */
 .btn-primary {
-  background: linear-gradient(135deg, rgba(232, 200, 106, .26), rgba(255, 255, 255, .10));
-  border: 1px solid rgba(232, 200, 106, .85);
-  color: var(--lg-gold-deep);
+  background: linear-gradient(135deg, rgba(var(--lg-accent-rgb), .26), rgba(255, 255, 255, .10));
+  border: 1px solid rgba(var(--lg-accent-rgb), .85);
+  color: var(--lg-accent-deep);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6),
-              0 0 0 1px rgba(232, 200, 106, .28),
-              0 8px 22px rgba(232, 200, 106, .20);
+              0 0 0 1px rgba(var(--lg-accent-rgb), .28),
+              0 8px 22px rgba(var(--lg-accent-rgb), .20);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, rgba(232, 200, 106, .36), rgba(255, 255, 255, .16));
+  background: linear-gradient(135deg, rgba(var(--lg-accent-rgb), .36), rgba(255, 255, 255, .16));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7),
-              0 0 0 1px rgba(232, 200, 106, .40),
-              0 10px 28px rgba(232, 200, 106, .26);
+              0 0 0 1px rgba(var(--lg-accent-rgb), .40),
+              0 10px 28px rgba(var(--lg-accent-rgb), .26);
 }
 
 /* 危险按钮：玻璃 + 红色文字 */
@@ -221,7 +223,7 @@ html[data-theme="light"] {
 }
 [data-theme="dark"] .q-nav { background: rgba(28, 28, 30, .62); }
 
-/* ---------- 6. 计时器：悬浮玻璃胶囊 + 金色进度 ---------- */
+/* ---------- 6. 计时器：悬浮玻璃胶囊 + 蓝色进度 ---------- */
 .timer {
   background: var(--lg-glass);
   -webkit-backdrop-filter: var(--lg-blur);
@@ -237,7 +239,7 @@ html[data-theme="light"] {
   border-radius: 999px;
 }
 .bar > i {
-  background: linear-gradient(90deg, var(--lg-gold), var(--lg-gold-2));
+  background: linear-gradient(90deg, var(--lg-accent), var(--lg-accent-2));
   border-radius: 999px;
 }
 .timer.is-low .timer-num {
@@ -248,7 +250,7 @@ html[data-theme="light"] {
   background: linear-gradient(90deg, #ff9a6b, #ff5470);
 }
 
-/* 阅读顶部：金色玻璃进度带（计时进度由 .bar 呈现） */
+/* 阅读顶部：蓝色玻璃进度带（计时进度由 .bar 呈现） */
 .r-toolbar {
   position: relative;
   overflow: hidden;
@@ -261,8 +263,8 @@ html[data-theme="light"] {
   bottom: 0;
   height: 2px;
   background: linear-gradient(90deg, transparent,
-              rgba(232, 200, 106, .75), rgba(246, 226, 164, .95),
-              rgba(232, 200, 106, .75), transparent);
+              rgba(var(--lg-accent-rgb), .75), rgba(var(--lg-accent-2-rgb), .95),
+              rgba(var(--lg-accent-rgb), .75), transparent);
   opacity: .9;
   pointer-events: none;
 }
@@ -364,9 +366,13 @@ html[data-theme="light"] {
   --lg-border: rgba(255, 255, 255, .16);
   --lg-highlight: inset 0 1px 0 rgba(255, 255, 255, .12);
   --lg-shadow: 0 8px 32px rgba(0, 0, 0, .42);
-  --lg-gold-deep: #f4dfa0;
+  --lg-accent: #0a84ff;
+  --lg-accent-2: #6db3ff;
+  --lg-accent-deep: #a8d4ff;
+  --lg-accent-rgb: 10, 132, 255;
+  --lg-accent-2-rgb: 109, 179, 255;
 }
-[data-theme="dark"] .btn-primary { color: #f4dfa0; }
+[data-theme="dark"] .btn-primary { color: #a8d4ff; }
 [data-theme="dark"] .nav-seg { background: var(--lg-glass-soft); }
 
 /* 系统深色兜底：站内手动选浅色时不被覆盖 */
@@ -378,9 +384,13 @@ html[data-theme="light"] {
     --lg-border: rgba(255, 255, 255, .14);
     --lg-highlight: inset 0 1px 0 rgba(255, 255, 255, .10);
     --lg-shadow: 0 8px 32px rgba(0, 0, 0, .38);
-    --lg-gold-deep: #f4dfa0;
+    --lg-accent: #0a84ff;
+    --lg-accent-2: #6db3ff;
+    --lg-accent-deep: #a8d4ff;
+    --lg-accent-rgb: 10, 132, 255;
+    --lg-accent-2-rgb: 109, 179, 255;
   }
-  html:not([data-theme="light"]) .btn-primary { color: #f4dfa0; }
+  html:not([data-theme="light"]) .btn-primary { color: #a8d4ff; }
 }
 
 /* ---------- 13. macOS 减少透明度：近实色 + 关闭 blur ---------- */
@@ -450,8 +460,8 @@ html[data-theme="light"] {
   line-height: 1.1;
   padding: 4px 14px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(232, 200, 106, .18), rgba(255, 255, 255, .08));
-  border: 1px solid rgba(232, 200, 106, .55);
+  background: linear-gradient(135deg, rgba(var(--lg-accent-rgb), .18), rgba(255, 255, 255, .08));
+  border: 1px solid rgba(var(--lg-accent-rgb), .55);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
 }
 .rpt-band b {
@@ -459,7 +469,7 @@ html[data-theme="light"] {
   font-size: 30px;
   font-weight: 800;
   letter-spacing: -.5px;
-  color: #8a6a12;
+  color: var(--ink);
 }
 .rpt-band em {
   font-style: normal;
@@ -467,7 +477,7 @@ html[data-theme="light"] {
   color: var(--muted);
   margin-top: 2px;
 }
-[data-theme="dark"] .rpt-band b { color: #f4dfa0; }
+[data-theme="dark"] .rpt-band b { color: var(--ink); }
 .rpt-hist {
   display: flex;
   flex-wrap: wrap;
@@ -491,17 +501,17 @@ html[data-theme="light"] {
   transition: background-color .6s ease, box-shadow .6s ease;
 }
 .article p.loc-flash {
-  background: rgba(232, 200, 106, .45);
-  box-shadow: 0 0 0 6px rgba(232, 200, 106, .16);
+  background: rgba(var(--lg-accent-rgb), .45);
+  box-shadow: 0 0 0 6px rgba(var(--lg-accent-rgb), .16);
   border-radius: 6px;
 }
 [data-theme="dark"] .article p.loc-flash {
-  background: rgba(232, 200, 106, .30);
+  background: rgba(var(--lg-accent-rgb), .30);
 }
 .rpt-table tr[data-locate] { cursor: pointer; }
 .rpt-table tr[data-locate]:hover {
-  background: rgba(232, 200, 106, .16);
-  box-shadow: inset 3px 0 0 rgba(232, 200, 106, .8);
+  background: rgba(var(--lg-accent-rgb), .16);
+  box-shadow: inset 3px 0 0 rgba(var(--lg-accent-rgb), .8);
 }
 
 /* ---------- 17. 听力模块 ---------- */
@@ -529,13 +539,13 @@ html[data-theme="light"] {
   transition: box-shadow var(--lg-dur) var(--lg-ease);
 }
 .l-now.is-live {
-  box-shadow: inset 3px 0 0 var(--lg-gold);
+  box-shadow: inset 3px 0 0 var(--lg-accent);
   background: rgba(255, 255, 255, .72);
 }
 .l-who {
   font-size: 11px;
   letter-spacing: 1.2px;
-  color: var(--lg-gold-deep);
+  color: var(--lg-accent-deep);
   font-weight: 700;
 }
 .l-text {
@@ -545,7 +555,7 @@ html[data-theme="light"] {
 }
 .l-bar { height: 8px; }
 .l-bar > i {
-  background: linear-gradient(90deg, var(--lg-gold), var(--lg-gold-2));
+  background: linear-gradient(90deg, var(--lg-accent), var(--lg-accent-2));
 }
 .l-time {
   display: flex;
@@ -591,13 +601,13 @@ html[data-theme="light"] {
 .l-seg.active {
   opacity: 1;
   background: rgba(255, 255, 255, .72);
-  border-color: var(--lg-gold);
-  box-shadow: inset 3px 0 0 var(--lg-gold);
+  border-color: var(--lg-accent);
+  box-shadow: inset 3px 0 0 var(--lg-accent);
 }
 .l-seg-who {
   font-size: 10px;
   letter-spacing: 1px;
-  color: var(--lg-gold-deep);
+  color: var(--lg-accent-deep);
   font-weight: 700;
   min-width: 74px;
   flex: 0 0 auto;
@@ -779,7 +789,7 @@ html[data-theme="light"] {
 }
 .vs-bar i { display: block; height: 100%; transition: width .35s var(--ease); }
 #vsBarNew { background: #9aa6bf; }
-#vsBarFam { background: var(--lg-gold); }
+#vsBarFam { background: var(--lg-accent); }
 #vsBarMst { background: #4ec27f; }
 .vs-legend {
   display: flex;
@@ -868,7 +878,7 @@ body.practice-open .site-foot { display: none !important; }
   height: 100%;
   width: 0;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--lg-gold), var(--lg-gold-2));
+  background: linear-gradient(90deg, var(--lg-accent), var(--lg-accent-2));
   transition: width .35s var(--ease);
 }
 .pf-body {
@@ -1540,7 +1550,7 @@ html[data-theme="dark"] .tabbar {
 [data-theme="dark"] .bg {
   background:
     radial-gradient(62% 52% at 18% 2%,  rgba(79, 110, 247, .32), transparent 70%),
-    radial-gradient(56% 46% at 86% 12%, rgba(232, 200, 106, .20), transparent 72%),
+    radial-gradient(56% 46% at 86% 12%, rgba(var(--lg-accent-rgb), .20), transparent 72%),
     radial-gradient(52% 46% at 52% 102%, rgba(140, 109, 47, .24), transparent 72%),
     linear-gradient(160deg, #0b1228 0%, #0d1630 46%, #060a16 100%);
 }
@@ -1566,21 +1576,21 @@ html[data-theme="dark"] .tabbar {
 }
 .glass-op-range::-webkit-slider-runnable-track {
   height: 4px; border-radius: 999px;
-  background: linear-gradient(90deg, var(--lg-gold), var(--lg-gold-2));
+  background: linear-gradient(90deg, var(--lg-accent), var(--lg-accent-2));
 }
 .glass-op-range::-webkit-slider-thumb {
   -webkit-appearance: none; appearance: none;
   width: 14px; height: 14px; margin-top: -5px; border-radius: 50%;
-  background: #fff; border: 1px solid var(--lg-gold);
+  background: #fff; border: 1px solid var(--lg-accent);
   box-shadow: 0 1px 4px rgba(0, 0, 0, .2);
 }
 .glass-op-range::-moz-range-track {
   height: 4px; border-radius: 999px;
-  background: linear-gradient(90deg, var(--lg-gold), var(--lg-gold-2));
+  background: linear-gradient(90deg, var(--lg-accent), var(--lg-accent-2));
 }
 .glass-op-range::-moz-range-thumb {
   width: 14px; height: 14px; border-radius: 50%;
-  background: #fff; border: 1px solid var(--lg-gold);
+  background: #fff; border: 1px solid var(--lg-accent);
 }
 .glass-op-val {
   font-size: 12px; line-height: 1; min-width: 30px; text-align: right;
@@ -1787,7 +1797,7 @@ html[data-theme="dark"] .tabbar {
   box-shadow: var(--lg-highlight), 0 14px 34px rgba(0, 0, 0, .16);
 }
 .home-tile:active { transform: scale(.98); }
-.home-tile .icon { color: var(--lg-gold); }
+.home-tile .icon { color: var(--lg-accent); }
 .home-tile .icon svg { width: 24px; height: 24px; }
 .ht-name { font-size: 16.5px; font-weight: 700; color: #161c2e; }
 .ht-desc { font-size: 12px; line-height: 1.55; color: var(--muted); }
@@ -2199,7 +2209,7 @@ body[data-view="reading"] #lBtnSubmitTop { display: none !important; }
 .qnav-pill:hover { background: var(--brand-soft); color: var(--brand-700); }
 .qnav-pill::before {
   content: ''; width: 7px; height: 7px; border-radius: 50%;
-  background: var(--lg-gold); box-shadow: 0 0 0 3px rgba(232, 200, 106, .22);
+  background: var(--lg-accent); box-shadow: 0 0 0 3px rgba(var(--lg-accent-rgb), .22);
 }
 /* 语义兜底：.btn/.qnav-pill 的 class display 会压过 UA [hidden]（等同特异性作者赢），
    这里显式恢复 hidden 语义；可见性由父级 #examHud（默认 display:none）控制，
@@ -2219,7 +2229,7 @@ body[data-view="reading"] #lBtnSubmitTop { display: none !important; }
 }
 .ht-prog::before {
   content: ''; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--lg-gold); flex: none;
+  background: var(--lg-accent); flex: none;
 }
 [data-theme="dark"] .ht-prog { color: #c7d0e4; }
 /* 五张大卡：桌面 5 列等高；≤900 三列；≤560 两列（既有断点不动） */
@@ -2258,7 +2268,7 @@ html, :root, html[data-theme="light"], html[data-theme="dark"] {
   -webkit-backdrop-filter: none; backdrop-filter: none;
   border: 1px solid var(--lg-border);
 }
-.l-now.is-live { background: var(--lg-longtext); box-shadow: inset 3px 0 0 var(--lg-gold); }
+.l-now.is-live { background: var(--lg-longtext); box-shadow: inset 3px 0 0 var(--lg-accent); }
 [data-theme="dark"] .l-now { background: var(--lg-longtext); }
 [data-theme="dark"] .l-now.is-live { background: var(--lg-longtext); }.l-transcript {
   background: var(--lg-longtext);
@@ -2373,13 +2383,13 @@ html[data-theme] #editor, html[data-theme] .ans-body {
   transition: transform var(--lg-dur) var(--lg-ease), border-color .2s var(--ease);
   font-family: inherit;
 }
-.pf-mode-btn:hover { transform: translateY(-2px); border-color: var(--lg-gold); }
+.pf-mode-btn:hover { transform: translateY(-2px); border-color: var(--lg-accent); }
 .pf-mode-btn:active { transform: scale(.98); }
-.pf-mode-btn .icon { color: var(--lg-gold); }
+.pf-mode-btn .icon { color: var(--lg-accent); }
 .pf-mode-btn .icon svg { width: 22px; height: 22px; }
 .pf-mode-btn b { font-size: 16px; font-weight: 700; color: var(--ink); }
 .pf-mode-btn span { font-size: 12px; line-height: 1.55; color: var(--muted); }
-.pf-mode-btn.is-review { border-color: rgba(232, 200, 106, .55); }
+.pf-mode-btn.is-review { border-color: rgba(var(--lg-accent-rgb), .55); }
 .pf-mode-note {
   margin: 16px 0 0; text-align: center;
   font-size: 12px; color: var(--muted);
@@ -2515,7 +2525,7 @@ html[data-theme="dark"] {
  *   （桌面必须 hover 才现形，深色/低对比下几乎看不见）。
  * 改后：≥901 统一 54×48、数字 17px、圆角 12px；旗标 20×20、
  *   常显 opacity .55（未标记也能一眼看到有旗标位）；已标记
- *   订单=金色实心 + 外发光环，一眼可辨。>1401 桌面 48×44/16px
+ *   订单=蓝色实心 + 外发光环，一眼可辨。>1401 桌面 48×44/16px
  *   （格子数多，略收一档防换行过多）；≤900 手机维持 40px 触达，
  *   仅数字提到 14px。
  * --------------------------------------------------------------- */
@@ -2732,7 +2742,7 @@ html[data-theme="dark"] {
 .es-side .es-select { border-bottom: 1px solid var(--stroke); }
 
 /* P2-2 收尾：未标记的旗标去掉灰圆底，只留淡灰旗形（不喧宾夺主，
-   但与「已标记」的金色实心徽章形成强对比，一眼能分辨） */
+   但与「已标记」的蓝色实心徽章形成强对比，一眼能分辨） */
 @media (min-width: 901px) {
   .q-nav button.qnav-cell .qnav-f {
     background: transparent; border-color: transparent;
