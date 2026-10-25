@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f6f1e8" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#16140f" media="(prefers-color-scheme: dark)" />
 <link rel="icon" href="data:," />
-<title>你是哪位哲学家？</title>
+<title>《思想的坐标：在众声之中，辨认自我》</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet" />
@@ -703,10 +703,10 @@ font-size:16.5px; line-height:1.75; font-weight:600; letter-spacing:.01em; color
 <line x1="32" y1="3" x2="32" y2="13" stroke="var(--gold)" stroke-width="1.6"/>
 </svg>
 <p class="gate-kicker">INVITATION ONLY</p>
-<h2 class="gate-title serif" id="gate-title">输入邀请码</h2>
-<p class="gate-sub">这是一场受邀的思想之旅。输入邀请码，即可开始 22 道题的探索。</p>
+<h2 class="gate-title serif" id="gate-title">输入专属码</h2>
+<p class="gate-sub">输入卖家私信发给你的4位数字码，即可开始22道题的探索。一码一台设备，输错10次锁定。</p>
 <form id="gate-form" novalidate>
-<input class="gate-input" id="gate-input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="邀请码" aria-label="邀请码" />
+<input class="gate-input" id="gate-input" type="text" inputmode="numeric" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="4位数字码" aria-label="4位数字码" />
 <p class="gate-err" id="gate-err" role="alert"></p>
 <button class="cta gate-btn" id="gate-btn" type="submit">进入测试</button>
 </form>
@@ -825,7 +825,7 @@ font-size:16.5px; line-height:1.75; font-weight:600; letter-spacing:.01em; color
 </main>
 <div class="flip-wrap" id="flip-wrap" aria-hidden="true"><div class="flip-leaf">
 <svg width="54" height="54" viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle cx="32" cy="32" r="29" stroke="var(--gold)" stroke-width="1.6"/><circle cx="32" cy="32" r="19" stroke="var(--ink)" stroke-width="1.2" opacity=".55"/><circle cx="32" cy="32" r="4.5" fill="var(--gold)"/></svg>
-<span class="f-title serif">你是哪位哲学家？</span>
+<span class="f-title serif">《思想的坐标：在众声之中，辨认自我》</span>
 <span class="f-en">A PHILOSOPHER WITHIN YOU</span>
 <span class="f-dots" aria-hidden="true"><i></i><i></i><i></i></span>
 </div></div>
@@ -834,33 +834,60 @@ font-size:16.5px; line-height:1.75; font-weight:600; letter-spacing:.01em; color
 
 <script>
 "use strict";
-/* ================= 邀请码门禁 ================= */
-var GATE_KEY = "phil_gate_ok_v1";
-var gatePassed = false;
-try { gatePassed = window.localStorage.getItem(GATE_KEY) === "1"; } catch (e) { gatePassed = false; }
+/* ================= 一人一码门禁（最新版，简单版） ================= */
+/* 卖家用法：每单生成一个随机4位数字码，填进 VALID_CODES； */
+/* 哪个码泄露了、换设备了，就把那个码移到 USED_CODES 并重新发一版， */
+/* 第二台设备再输已用码就会被拦。不禁复制，买家可复制自己的结果。 */
+/* 静态页自己查不到别的设备，真实时拦新设备要靠后端，这版是手动版。 */
+var VALID_CODES = ['0512', '0978', '2608', '5039', '8989'];
+var USED_CODES = [];
+var GATE_CODE_KEY = "philo_one_code_v1";
+var GATE_ATTEMPT_KEY = "philo_attempts_v1";
+var GATE_LOCK_KEY = "philo_lock_until_v1";
+var gatePassedCode = null;
+try { gatePassedCode = window.localStorage.getItem(GATE_CODE_KEY); } catch (e) { gatePassedCode = null; }
 var gateEl = document.getElementById("gate");
-if (!gatePassed && gateEl){
-gateEl.hidden = false;
-document.body.classList.add("gate-locked");
-var gateInput = document.getElementById("gate-input");
-var gateErr = document.getElementById("gate-err");
-var gateCard = document.getElementById("gate-card");
-document.getElementById("gate-form").addEventListener("submit", function(ev){
-ev.preventDefault();
-var code = (gateInput.value || "").replace(/\s+/g, "").toUpperCase();
-if (code === "YANDI"){
-try { window.localStorage.setItem(GATE_KEY, "1"); } catch (e) {}
-gateEl.classList.add("gate-out");
-document.body.classList.remove("gate-locked");
-setTimeout(function(){ gateEl.hidden = true; }, 240);
-} else {
-gateErr.textContent = "邀请码不对，请再试一次";
-gateCard.classList.remove("shake"); void gateCard.offsetWidth; gateCard.classList.add("shake");
-gateInput.select();
+function gateIsLocked(){
+  try { return Date.now() < Number(window.localStorage.getItem(GATE_LOCK_KEY) || 0); } catch (e) { return false; }
 }
-});
-gateInput.addEventListener("input", function(){ if (gateErr.textContent) gateErr.textContent = ""; });
-setTimeout(function(){ try { gateInput.focus({ preventScroll: true }); } catch (e) { gateInput.focus(); } }, 60);
+function gateAttempts(){
+  try { return Number(window.localStorage.getItem(GATE_ATTEMPT_KEY) || 0); } catch (e) { return 0; }
+}
+if (gatePassedCode && VALID_CODES.indexOf(gatePassedCode) !== -1 && USED_CODES.indexOf(gatePassedCode) === -1 && gateEl){
+  gateEl.hidden = true;
+} else if (gateEl){
+  gateEl.hidden = false;
+  document.body.classList.add("gate-locked");
+  var gateInput = document.getElementById("gate-input");
+  var gateErr = document.getElementById("gate-err");
+  var gateCard = document.getElementById("gate-card");
+  if (gateIsLocked()){ gateErr.textContent = "已锁定，请联系卖家换码。"; }
+  document.getElementById("gate-form").addEventListener("submit", function(ev){
+    ev.preventDefault();
+    if (gateIsLocked()){ gateErr.textContent = "已锁定，请联系卖家换码。"; return; }
+    var code = (gateInput.value || "").replace(/\s+/g, "");
+    if (!/^\d{4}$/.test(code)){ gateErr.textContent = "请输入4位数字码。"; return; }
+    if (USED_CODES.indexOf(code) !== -1){ gateErr.textContent = "这个码已经在别的设备上用过了，请联系卖家换码。"; return; }
+    if (VALID_CODES.indexOf(code) !== -1){
+      try { window.localStorage.setItem(GATE_ATTEMPT_KEY, "0"); window.localStorage.setItem(GATE_CODE_KEY, code); } catch (e) {}
+      gateEl.classList.add("gate-out");
+      document.body.classList.remove("gate-locked");
+      setTimeout(function(){ gateEl.hidden = true; }, 240);
+    } else {
+      var n = gateAttempts() + 1;
+      try { window.localStorage.setItem(GATE_ATTEMPT_KEY, String(n)); } catch (e) {}
+      if (n >= 10){
+        try { window.localStorage.setItem(GATE_LOCK_KEY, String(Date.now() + 30*60*1000)); } catch (e) {}
+        gateErr.textContent = "输错10次，已锁定30分钟，请联系卖家换码。";
+      } else {
+        gateErr.textContent = "码不对，还剩 " + (10 - n) + " 次机会。";
+      }
+      gateCard.classList.remove("shake"); void gateCard.offsetWidth; gateCard.classList.add("shake");
+      gateInput.select();
+    }
+  });
+  gateInput.addEventListener("input", function(){ if (gateErr.textContent) gateErr.textContent = ""; });
+  setTimeout(function(){ try { gateInput.focus({ preventScroll: true }); } catch (e) { gateInput.focus(); } }, 60);
 }
 /* ================= 数据层：哲学家 ================= */
 /*DATA-START*/
