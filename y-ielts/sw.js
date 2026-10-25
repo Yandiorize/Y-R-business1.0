@@ -22,6 +22,8 @@
  *             弹窗/选中态，均已在预缓存清单里，无需新增条目）。
  *  ui-iter v11：新增 exam-shell.js 预缓存条目（新文件，必须进清单）+
  *             注释触发 SW 更新（其余 v11 改动均已在清单里）。
+ *  ui-iter v12：新增 learn-carousel.js 预缓存条目（新文件，必须进清单）+
+ *             注释触发 SW 更新（其余 v12 改动均已在清单里）。
  * ============================================================ */
 'use strict';
 
@@ -65,6 +67,7 @@ var CORE = [
   './assets/js/listening-data.js',
   './assets/js/listening.js',
   './assets/js/exam-shell.js',
+  './assets/js/learn-carousel.js',
   './assets/js/app.js?v=51',
   './assets/js/comments.js?v=51',
   './assets/js/me.js',
