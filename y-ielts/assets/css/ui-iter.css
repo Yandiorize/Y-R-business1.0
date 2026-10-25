@@ -426,3 +426,57 @@ html[data-theme="dark"] .dp-box {
   .home-ring-fill { transition: none; }
   .home-next-bar .bar > i { transition: none; }
 }
+
+/* =============================================================
+ *  ui-iter v8：面板透光（只动面板一层；首页/按键/留言一字不动）
+ *  ---------------------------------------------------------------
+ *  根查结论（证据链见 VERSIONS.md v8 节；v7 的“信号翻倍”没过阈值）：
+ *  · 级联没有输：ui-iter 最后引入，同选择器后胜；深色
+ *    html[data-theme] (0,2,1) 压过 styles [data-theme] (0,2,0)；
+ *    styles .94/.96 与 v57 深色 .78 均已被压过；reduced-transparency
+ *    与 print 的 backdrop-filter:none/实色块只在偏好/打印时生效；
+ *    essays 的深色 .95 .glass 在 @supports not (backdrop-filter)
+ *    里，现代浏览器根本不走——以上嫌疑全部排除。
+ *  · 变量链没有断：滑杆 glass-v33.js 在 <html> 行内写
+ *    --g-container，50% 档 = .75；v57 重映射 --lg-glass = .55 浅 /
+ *    .67 深；v7 --lg-panel = .40 浅 / .52 深，calc 均合法——
+ *    v7 面板在浏览器里确实就是 .40/.52 + 10/12px 模糊。
+ *  · 视觉上仍显实色的真因：面板盖在遮罩之上，光要过两层——
+ *    遮罩 .40（透光 .60）× 面板 .40/.52（透光 .60/.48）=
+ *    净透光 .36/.29，低于已通过的卡片单层透光（.45 浅 / .33 深
+ *    附近），再经 10–12px 模糊糊掉细节、背后又是白底白卡，
+ *    眼里就是实色板。v7 只把信号翻倍，没过阈值。
+ *  修法（滑杆继续生效，失效时 var() 回退 --lg-glass）：
+ *  · 面板 alpha 大幅压低：50% 档浅色 .20、深色 .30——叠遮罩后
+ *    净透光 .48/.42，超过卡片层，形状可辨；
+ *  · 模糊降到保形档：抽屉 5px、弹窗 6px（卡片/行形状留边，
+ *    背后文字糊成柔带，不抢面板正文）；
+ *  · 滑杆全程单调：0% 档浅 .60 / 深 .70（仍较实），100% 档
+ *    clamp 兜底 .10/.12（面板不消失）；遮罩 .40 + 2px 不动
+ *    （面板外区域观感已对），面板文字、内容区、高光/阴影不动；
+ *  · 生词本抽屉 .wb-panel 本次不动（它走卡片层玻璃，不在
+ *    本次 FAIL 范围内，见 VERSIONS.md）。
+ * ============================================================= */
+:root,
+html[data-theme="light"] {
+  --lg-panel: rgba(255, 255, 255, clamp(.10, calc(var(--g-container) * 2 - 1.30), .90));
+}
+html[data-theme="dark"] {
+  --lg-panel: rgba(22, 28, 40, clamp(.12, calc(var(--g-container) * 2 - 1.20), .90));
+}
+.drawer-panel,
+.me-panel {
+  background: var(--lg-panel, var(--lg-glass));
+  -webkit-backdrop-filter: blur(5px) saturate(160%);
+  backdrop-filter: blur(5px) saturate(160%);
+}
+.cf-box,
+.dp-box {
+  background: var(--lg-panel, var(--lg-glass));
+  -webkit-backdrop-filter: blur(6px) saturate(180%);
+  backdrop-filter: blur(6px) saturate(180%);
+}
+html[data-theme="dark"] .cf-box,
+html[data-theme="dark"] .dp-box {
+  background: var(--lg-panel, var(--lg-glass));
+}
