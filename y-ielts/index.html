@@ -201,18 +201,35 @@
     <div class="home-hero">
       <h1 class="home-title">Y-IELTS</h1>
       <p class="home-sub">ACADEMIC · CBT SIMULATOR · 数据只存本机浏览器</p>
-      <!-- v18 0.2：今日概览条（三项实时数据），与五卡进度同一数据源 -->
-      <div class="home-overview" id="homeOverview">
-        <div class="home-ov-item"><b id="ovDue">0</b><span>今日待复习</span><i class="ov-hint" id="ovDueHint">词库为空</i></div>
-        <div class="home-ov-item"><b id="ovBand">—</b><span>最近 Band</span><i class="ov-hint" id="ovBandHint">尚无交卷</i></div>
-        <div class="home-ov-item"><b id="ovStreak">0</b><span>连续学习（天）</span><i class="ov-hint" id="ovStreakHint">今天还没开始</i></div>
-      </div>
-      <div class="home-acts">
+      <!-- v7：下一步宽卡（主按钮 + 提示 + 有真实分母时才出现的细分进度条；
+           细分条用 visibility 预留高度，不随显隐推动下方内容，避免位移） -->
+      <div class="home-next-card">
+        <div class="home-next-label">下一步</div>
         <button class="btn btn-primary btn-lg" id="homeContinue" type="button" data-icon="play">
           <span class="lbl">开始练习</span>
         </button>
+        <p class="home-hint" id="homeContinueHint" aria-live="polite"></p>
+        <div class="home-next-bar" id="homeNextBar" hidden>
+          <div class="bar"><i id="homeNextFill"></i></div>
+          <em id="homeNextBarLabel"></em>
+        </div>
       </div>
-      <p class="home-hint" id="homeContinueHint" aria-live="polite"></p>
+      <!-- v7：掌握进度圆环卡（口径与「我的」面板一致：right>=2 且 wrong==0 / 词库总数；
+           圆环只可视化已有指标，不新增任何数据；空词库时如实显示 0%） -->
+      <div class="home-ring-card">
+        <svg class="home-ring" viewBox="0 0 160 160" aria-hidden="true">
+          <circle class="home-ring-track" cx="80" cy="80" r="64"></circle>
+          <circle class="home-ring-fill" id="homeRingFill" cx="80" cy="80" r="64"></circle>
+        </svg>
+        <div class="home-ring-center"><b id="homeRingNum">0%</b><span>词库掌握进度</span></div>
+        <p class="home-ring-togo" id="homeRingToGo">词库还是空的，载入示例词表开始</p>
+      </div>
+      <!-- v18 0.2：今日概览条（三项实时数据），与五卡进度同一数据源 -->
+      <div class="home-overview" id="homeOverview">
+        <div class="home-ov-item"><span class="ov-ico" data-icon="cards"></span><b id="ovDue">0</b><span>今日待复习</span><i class="ov-hint" id="ovDueHint">词库为空</i></div>
+        <div class="home-ov-item"><span class="ov-ico" data-icon="target"></span><b id="ovBand">—</b><span>最近 Band</span><i class="ov-hint" id="ovBandHint">尚无交卷</i></div>
+        <div class="home-ov-item"><span class="ov-ico" data-icon="clock"></span><b id="ovStreak">0</b><span>连续学习（天）</span><i class="ov-hint" id="ovStreakHint">今天还没开始</i><span class="ov-dots" id="homeStreakDots" aria-hidden="true"></span></div>
+      </div>
     </div>
     <!-- super 结构手术①：首页不再堆模块卡，只留概览 + 继续练习 + 进学习区 -->
     <div class="home-jump">
@@ -317,7 +334,7 @@
     <header class="learn-head">
       <div class="learn-t">
         <h2>留言区</h2>
-        <p>记下今天做了什么、哪道题卡住、想加什么功能。只存在这台设备上。</p>
+        <p>记下今天做了什么、哪道题卡住、想加什么功能。先存在这台设备上——以后接上共享墙，这里就是大家的贴吧。</p>
       </div>
       <div class="learn-meta" id="cmCount">0 条留言</div>
     </header>
@@ -334,6 +351,18 @@
                   aria-required="true" aria-describedby="cmHint cmErr"
                   placeholder="比如：阅读 Test 2 的 Q27 总是错，有没有定位技巧？"></textarea>
       </div>
+      <!-- v7：话题标签（只给本机留言分类，不接后端、不代表已共享） -->
+      <div class="cm-field">
+        <span class="cm-label" id="cmTagLabel">话题</span>
+        <div class="cm-tags" id="cmTagPicker" role="group" aria-labelledby="cmTagLabel">
+          <button class="cm-tag" type="button" data-tag="阅读" aria-pressed="false">阅读</button>
+          <button class="cm-tag" type="button" data-tag="听力" aria-pressed="false">听力</button>
+          <button class="cm-tag" type="button" data-tag="写作" aria-pressed="false">写作</button>
+          <button class="cm-tag" type="button" data-tag="单词" aria-pressed="false">单词</button>
+          <button class="cm-tag" type="button" data-tag="范文" aria-pressed="false">范文</button>
+          <button class="cm-tag is-on" type="button" data-tag="闲聊" aria-pressed="true">闲聊</button>
+        </div>
+      </div>
       <p class="cm-err" id="cmErr" role="alert" hidden></p>
       <div class="cm-bar">
         <span class="cm-hint" id="cmHint">只存本机，不上传 · 还能写 <b id="cmLeft">500</b> 字</span>
@@ -341,7 +370,20 @@
       </div>
     </form>
 
+    <!-- v7：话题筛选（只筛本机列表，不改条数统计） -->
+    <div class="cm-filter" id="cmFilter" role="group" aria-label="按话题筛选留言">
+      <span class="cm-filter-label">看哪个话题</span>
+      <button class="cm-tag is-on" type="button" data-filter="全部" aria-pressed="true">全部</button>
+      <button class="cm-tag" type="button" data-filter="阅读" aria-pressed="false">阅读</button>
+      <button class="cm-tag" type="button" data-filter="听力" aria-pressed="false">听力</button>
+      <button class="cm-tag" type="button" data-filter="写作" aria-pressed="false">写作</button>
+      <button class="cm-tag" type="button" data-filter="单词" aria-pressed="false">单词</button>
+      <button class="cm-tag" type="button" data-filter="范文" aria-pressed="false">范文</button>
+      <button class="cm-tag" type="button" data-filter="闲聊" aria-pressed="false">闲聊</button>
+    </div>
+
     <ul class="cm-list" id="cmList" aria-live="polite"></ul>
+    <p class="cm-nomatch" id="cmNomatch" hidden>这个话题下还没有留言，写第一条吧。</p>
 
     <div class="cm-empty" id="cmEmpty">
       <p class="cm-empty-t">还没有留言。写下第一条，下次打开还在。</p>
@@ -594,7 +636,7 @@
           <div class="foot-right">
             <button class="btn btn-ghost btn-sm" id="btnClear" data-icon="trash">清空</button>
             <button class="btn btn-ghost btn-sm" id="btnCopy" data-icon="copy">复制全文</button>
-            <button class="btn btn-primary btn-sm" id="btnSave" data-icon="download">保存本次作答</button>
+            <button class="btn btn-ghost btn-sm" id="btnSave" data-icon="download">保存本次作答</button>
           </div>
         </div>
       </section>
@@ -657,7 +699,7 @@
               导入后可在下方列表中直接点开修改释义。
             </p>
             <div class="row-acts">
-              <button class="btn btn-primary btn-sm" id="btnImport" data-icon="download">导入词表</button>
+              <button class="btn btn-ghost btn-sm" id="btnImport" data-icon="download">导入词表</button>
               <button class="btn btn-ghost btn-sm" id="btnSample" data-icon="cards">载入示例（50 词）</button>
               <button class="btn btn-ghost btn-sm" id="btnExportDeck" data-icon="copy">导出词库</button>
               <button class="btn btn-ghost btn-sm btn-danger" id="btnClearDeck" data-icon="trash">清空词库</button>

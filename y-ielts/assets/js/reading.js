@@ -1101,7 +1101,7 @@ window.Reading = (function () {
       '</div>' +
       '<p class="r-landing-p">作答已锁定。想再练一遍就点「重做本套」；想看答案点右下「展开回顾」。</p>' +
       '<div class="r-landing-acts">' +
-        '<button type="button" class="btn btn-primary btn-sm" id="rLandingRetry" data-icon="reset">重做本套</button>' +
+        '<button type="button" class="btn btn-ghost btn-sm" id="rLandingRetry" data-icon="reset">重做本套</button>' +
       '</div>';
   }
 

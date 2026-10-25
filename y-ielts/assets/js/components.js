@@ -213,7 +213,7 @@ window.UI = (function () {
         '<h4 class="cf-title" id="cfTitle"></h4>' +
         '<p class="cf-text" id="cfText"></p>' +
         '<div class="cf-acts">' +
-          '<button type="button" class="btn cf-cancel" data-cf="0">取消</button>' +
+          '<button type="button" class="btn btn-ghost cf-cancel" data-cf="0">取消</button>' +
           '<button type="button" class="btn btn-primary cf-ok" data-cf="1">确定</button>' +
         '</div>' +
       '</div>';

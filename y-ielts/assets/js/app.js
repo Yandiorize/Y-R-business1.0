@@ -118,6 +118,22 @@
     return { view: '', reason: '' };
   }
 
+  /* v7：300ms 数字滚动（圆环百分比 + 首页整数统计共用；减动效偏好时直接写终值） */
+  function countUpNum(id, target, suffix) {
+    var n = document.getElementById(id);
+    if (!n) return;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { n.textContent = String(target) + (suffix || ''); return; }
+    var t0 = null;
+    var step = function (t) {
+      if (t0 === null) t0 = t;
+      var p = Math.min(1, (t - t0) / 300);
+      n.textContent = String(Math.round(target * p)) + (suffix || '');
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
   function refreshHomeContinue() {
     var btn = $('#homeContinue');
     if (!btn) return;
@@ -253,7 +269,7 @@
     }
 
     /* ---------- v18 0.2：今日概览条 ---------- */
-    set('ovDue', due);
+    countUpNum('ovDue', due);
     set('ovDueHint', deck.length ? ('词库 ' + deck.length + ' 词') : '词库为空');
 
     var rAt = (hist.length && hist[0].at) ? hist[0].at : 0;
@@ -278,8 +294,59 @@
       streak++;
       dd.setDate(dd.getDate() - 1);
     }
-    set('ovStreak', streak);
+    countUpNum('ovStreak', streak);
     set('ovStreakHint', streak ? '保持住' : '今天还没开始');
+
+    /* ---------- v7：首页圆环 + 打卡点 + 下一步细分条（只读 Store，不写数据） ---------- */
+    /* 掌握口径与「我的」面板 renderStats 一致（right>=2 且 wrong===0），
+       与学习区单词行用的 !inWrong 口径不同——圆环取面板口径，特此说明。 */
+    var masteredMe = deck.filter(function (d) { return d && d.right >= 2 && d.wrong === 0; }).length;
+    var ringPct = deck.length ? Math.round(masteredMe / deck.length * 100) : 0;
+    var ringEl = document.getElementById('homeRingFill');
+    if (ringEl) {
+      var circ = 402.1; /* 2π×64 */
+      ringEl.style.strokeDasharray = String(circ);
+      /* CSS 里先给满偏移（0%）；下一帧再写目标值，transition 才能画出入场弧 */
+      var setRing = function () { ringEl.style.strokeDashoffset = String(circ * (1 - ringPct / 100)); };
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) setRing();
+      else requestAnimationFrame(function () { requestAnimationFrame(setRing); });
+    }
+    countUpNum('homeRingNum', ringPct, '%');
+    set('homeRingToGo', !deck.length
+      ? '词库还是空的，载入示例词表开始'
+      : (masteredMe >= deck.length ? '词库已全部掌握' : ('还差 ' + (deck.length - masteredMe) + ' 词掌握')));
+
+    /* 近 7 天打卡点：左旧右新（今天在最右），只读 vdaily 键 */
+    var dotsEl = document.getElementById('homeStreakDots');
+    if (dotsEl) {
+      var dotsHtml = '';
+      for (var di = 6; di >= 0; di--) {
+        var dd2 = new Date();
+        dd2.setDate(dd2.getDate() - di);
+        var k3 = dd2.getFullYear() + '-' + pp(dd2.getMonth() + 1) + '-' + pp(dd2.getDate());
+        dotsHtml += '<i class="' + (daily[k3] ? 'on' : '') + '"></i>';
+      }
+      dotsEl.innerHTML = dotsHtml;
+    }
+
+    /* 下一步细分条：只有真实分母时才出现（阅读=交卷套数/4，写作=草稿字数/250；
+       听力与未开始没有分母，不画装饰条） */
+    var pick2 = pickContinue();
+    var bar2 = document.getElementById('homeNextBar');
+    if (bar2) {
+      var showBar = false, barPct = 0, barLabel = '';
+      if (pick2.view === 'reading' && hist.length > 0 && hist.length < 4) {
+        showBar = true; barPct = Math.round(hist.length / 4 * 100); barLabel = hist.length + '/4 套';
+      } else if (pick2.view === 'writing' && dN > 0 && maxDraft < 250) {
+        showBar = true; barPct = Math.round(wPct); barLabel = Math.round(wPct) + '%';
+      }
+      bar2.hidden = !showBar;
+      if (showBar) {
+        var fill2 = document.getElementById('homeNextFill');
+        if (fill2) fill2.style.width = Math.max(4, barPct) + '%';
+        set('homeNextBarLabel', barLabel);
+      }
+    }
 
   }
   /* 时间格式：MM-DD HH:mm（首页进度行用） */
