@@ -74,6 +74,107 @@
     setText('#meDeckDue', due);
   }
 
+  /* ---------------- v13：学习仪表盘（Band.pk 式本地仪表盘；只读既有数据） ----------------
+     · Band：取阅读与听力最近一次交卷中时间较晚者的 Band（两者都存 Band；
+       只取其一时 meta 写明科目，不混成“总 Band”）；无记录时 '—' + 空态文案。
+     · 目标：站内没有任何目标分数记录（无目标设定功能、无目标存储键），
+       故目标行如实写“未设”，不编造数字；目标功能若要加，需新功能 +
+       新存储键，另起一版，不在本版偷偷加。
+     · 分技能正确率：阅读 = 最新 rhist got/total；听力 = 最新 lsubmitted
+       got/total（按 at 取最新）；写作不评分，只列草稿篇数与历史条数；
+       单词 = 掌握口径（right>=2 且 wrong===0 / 词库总数，与 renderStats 一致）。
+     · 连续学习：与首页 ovStreak 同口径（从今天往前推 vdaily），7 点条
+       左旧右新、今天在最右，与首页打卡点同一渲染。 */
+  function fmtMD(ts) {
+    var d = new Date(ts);
+    return (d.getMonth() + 1) + '/' + d.getDate();
+  }
+
+  function pctOf(got, total) {
+    return total ? Math.round((got / total) * 100) : 0;
+  }
+
+  function numOf(v) {
+    return (typeof v === 'number') ? v : 0;
+  }
+
+  function dashSkillRow(name, text, pct, hasBar) {
+    var row = '<div class="me-dash-row"><span class="me-dash-name">' + name + '</span>';
+    if (hasBar) {
+      row += '<span class="me-dash-bar"><i style="width:' + pct + '%"></i></span>';
+    }
+    row += '<span class="me-dash-val">' + text + '</span></div>';
+    return row;
+  }
+
+  function renderDashboard() {
+    var hist = Store.get('rhist', []);
+    hist = Array.isArray(hist) ? hist : [];
+    var lsub = Store.get('lsubmitted', {}) || {};
+    var drafts = Store.get('drafts', {}) || {};
+    var wHist = Store.get('history', []);
+    wHist = Array.isArray(wHist) ? wHist : [];
+    var deck = Store.get('deck', []);
+    deck = Array.isArray(deck) ? deck : [];
+    var daily = Store.get('vdaily', {}) || {};
+
+    var rLatest = hist.length ? hist[0] : null;
+    var lLatest = null, k;
+    for (k in lsub) {
+      if (!lsub.hasOwnProperty(k)) continue;
+      var e = lsub[k];
+      if (e && typeof e.at === 'number' && (!lLatest || e.at > lLatest.at)) lLatest = e;
+    }
+    var hero = null, heroSkill = '';
+    if (rLatest && typeof rLatest.band === 'number') { hero = rLatest; heroSkill = '阅读'; }
+    if (lLatest && typeof lLatest.band === 'number' && (!hero || lLatest.at > hero.at)) { hero = lLatest; heroSkill = '听力'; }
+    setText('#meDashBand', hero ? hero.band.toFixed(1) : '—');
+    setText('#meDashBandMeta', hero
+      ? ('最近一次：' + heroSkill + ' · ' + numOf(hero.got) + '/' + numOf(hero.total) + ' · ' + fmtMD(hero.at))
+      : '暂无记录，交卷后自动记录');
+
+    var rows = '';
+    rows += dashSkillRow('阅读',
+      rLatest ? (numOf(rLatest.got) + '/' + numOf(rLatest.total) + ' · ' + pctOf(numOf(rLatest.got), numOf(rLatest.total)) + '%') : '暂无记录',
+      rLatest ? pctOf(numOf(rLatest.got), numOf(rLatest.total)) : 0, !!rLatest);
+    rows += dashSkillRow('听力',
+      lLatest ? (numOf(lLatest.got) + '/' + numOf(lLatest.total) + ' · ' + pctOf(numOf(lLatest.got), numOf(lLatest.total)) + '%') : '暂无记录',
+      lLatest ? pctOf(numOf(lLatest.got), numOf(lLatest.total)) : 0, !!lLatest);
+    var draftN = Object.keys(drafts).length;
+    rows += dashSkillRow('写作',
+      (draftN || wHist.length) ? ('不评分 · 草稿 ' + draftN + ' 篇 / 历史 ' + wHist.length + ' 条') : '不评分 · 暂无草稿与历史',
+      0, false);
+    var mastered = deck.filter(function (d) { return d.right >= 2 && d.wrong === 0; }).length;
+    var mpct = deck.length ? Math.round((mastered / deck.length) * 100) : 0;
+    rows += dashSkillRow('单词',
+      deck.length ? ('掌握 ' + mastered + '/' + deck.length + ' 词 · ' + mpct + '%') : '词库为空',
+      mpct, !!deck.length);
+    var host = document.getElementById('meDashSkills');
+    if (host) host.innerHTML = rows;
+
+    var streak = 0, dd = new Date();
+    var pp = function (n) { return (n < 10 ? '0' : '') + n; };
+    for (;;) {
+      var k2 = dd.getFullYear() + '-' + pp(dd.getMonth() + 1) + '-' + pp(dd.getDate());
+      if (!daily[k2]) break;
+      streak++;
+      dd.setDate(dd.getDate() - 1);
+    }
+    setText('#meDashStreak', streak);
+    setText('#meDashStreakHint', streak ? '保持住' : '今天还没开始');
+    var dotsEl = document.getElementById('meDashDots');
+    if (dotsEl) {
+      var dotsHtml = '';
+      for (var di = 6; di >= 0; di--) {
+        var dd2 = new Date();
+        dd2.setDate(dd2.getDate() - di);
+        var k3 = dd2.getFullYear() + '-' + pp(dd2.getMonth() + 1) + '-' + pp(dd2.getDate());
+        dotsHtml += '<i class="' + (daily[k3] ? 'on' : '') + '"></i>';
+      }
+      dotsEl.innerHTML = dotsHtml;
+    }
+  }
+
   /* ---------------- ③ 成绩趋势（复用阅读模块渲染，真图真点） ---------------- */
   function renderTrend() {
     var host = $('#meTrendBody');
@@ -165,6 +266,7 @@
       try { window.Store.syncFromStorage(); } catch (e) {}
     }
     renderStats();
+    renderDashboard();
     renderTrend();
     renderFont();
   }

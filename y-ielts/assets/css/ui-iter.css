@@ -829,3 +829,135 @@ html[data-theme="dark"] {
   .lc-track,
   .lc-slide { transition: none !important; }
 }
+
+/* =============================================================
+ *  ui-iter v13：借鉴优秀模版的大改动（精进 UI；只动呈现与 chrome）
+ *  ---------------------------------------------------------------
+ *  四个落点（全部是呈现层；功能、计分、题库、计时阈值、存储键一字不动）：
+ *  A 首页（IELTSimulator 首页公式）：展示字阶（标题紧字距 + 副标题
+ *    眉标化 + 统计数字/圆环中心数字放大并用等宽数字）、进度即主视觉
+ *    打磨（细分条加高）、CTA 按压态、卡片半径与间距统一。元素清单
+ *    一字未动：h1 + 副标题 + 下一步宽卡 + 圆环卡 + 概览三项 +
+ *    幽灵 CTA；无模块行、无日期 pill、无新区块。
+ *  B 学习区轮播（iStudy 课程卡变体）：封面构图（图标柔底 tile、
+ *    模块名 22px、居中封面 › 转品牌蓝、进度条加宽加高）、两侧封面
+ *    更收敛（scale .92 / 透明度 .60，居中更突出）、箭头玻璃化 +
+ *    悬停抬升、圆点激活态改 pill 形。轮播控制器一字未动（手动旋转、
+ *    无自动轮播、封面信息 1:1、范文仍无 meter）。
+ *  C 考试 chrome（IDP 机考规范）：题号格三态可辨——已答 = 实心品牌蓝
+ *    （图例同步改蓝；深档白字对蓝底 3.65:1，16–17px 粗体数字属大文本，
+ *    过 3:1）、当前 = 品牌蓝描边环（已答 + 当前 = 蓝底 + 白环 + 蓝环）、
+ *    待检查仍为警告色（已答 + 待检查 = 蓝底 + 警告旗标点）；计时器
+ *    红闪 sharpen（timerBlink 50% 档 .52 → .30，时长 2.4s/1s 不动，
+ *    减动效下关动画只留实色红字）；交卷确认框标题/正文/按钮行距；
+ *    写作字数与自动保存提示字阶；字号四联按钮 44px 触靶 + 焦点环。
+ *    计时阈值与自动交卷逻辑一字未动：阅读红闪自 10 分钟起（含 5 分钟
+ *    时段内一直在闪）、听力自 5 分钟起、写作提示在 10 分钟/1 分钟；
+ *    所谓“10 分钟和 5 分钟都红闪”在本版体现为既有警告档的红闪视觉，
+ *    不新增 5 分钟分档（那是阈值改动，已冻结）。
+ *  D 我的仪表盘（Band.pk 本地仪表盘）：见 me.js renderDashboard；
+ *    本节只给仪表盘排版（Band 大数字、分技能行 + 条、连胜点）。
+ *  冻结项：v8/v10 玻璃数值一字未动；内容区（文章/编辑器/听力句/
+ *    范文）一字未动；颜色零新增（只复用已有 token 与已在库中的
+ *    #ffffff；无新色值）；顶栏保持取消、底栏恰好 4 项、我的保持整页、
+ *    作答全屏保持；计分/题库/分母/存储键一字未动。
+ * ============================================================= */
+
+/* ---------- v13-A 首页：展示字阶 + 进度主视觉 + CTA + 卡片节奏 ---------- */
+#view-home .home-title { letter-spacing: -1.5px; }
+#view-home .home-sub { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--muted); }
+#view-home .home-hero { gap: 16px; }
+#view-home .home-next-card,
+#view-home .home-ring-card { border-radius: 20px; }
+#view-home .home-next-card { padding: 20px 22px; }
+#view-home .home-ring-card { padding: 22px 18px 18px; }
+#view-home .home-ov-item b { font-size: 36px; font-weight: 800; font-family: var(--font-num); }
+.home-ring-center b { font-size: 38px; }
+.home-next-bar .bar { height: 8px; }
+.btn-primary:active { transform: translateY(1px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 4px 12px rgba(0, 113, 227, .30); }
+@media (max-width: 900px) {
+  #view-home .home-ov-item b { font-size: 28px; }
+}
+
+/* ---------- v13-B 学习区轮播：封面构图 + 露出节奏 + 箭头/圆点 ---------- */
+.lc-slide { opacity: .60; transform: scale(.92); }
+.lc-slide.is-active { opacity: 1; transform: scale(1); }
+.lc-slide > .icon {
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  background: var(--brand-soft);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+.lc-slide .lr-name { font-size: 22px; letter-spacing: -.2px; }
+.lc-slide .lr-meter i { width: 64px; height: 6px; border-radius: 3px; }
+.lc-slide .ht-go { font-size: 24px; }
+.lc-slide.is-active .ht-go { color: var(--lg-accent); }
+.lc-arrow {
+  background: var(--lg-glass);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
+  box-shadow: 0 4px 14px -8px rgba(16, 24, 40, .40);
+  transition: transform .2s var(--ease), border-color .2s var(--ease);
+}
+.lc-arrow:hover { transform: translateY(-1px); border-color: var(--brand-line); }
+.lc-arrow:active { transform: translateY(0); }
+.lc-dot.is-active::after {
+  left: 4px; top: 10px;
+  width: 20px; height: 8px;
+  border-radius: 999px;
+}
+
+/* ---------- v13-C 考试 chrome：题号格三态 + 计时红闪 + 确认框 + 字数/字号 ---------- */
+/* 已答 = 实心品牌蓝（听力格只有 done 态，同样命中；图例 .lg-done 同步改蓝，
+   否则图例与格子对不上；待检查格仍走警告色，已答 + 待检查 = 蓝底 + 警告旗标点）。 */
+.q-nav button.qnav-cell.done {
+  background: var(--lg-accent);
+  border-color: transparent;
+  color: #ffffff;
+}
+/* 当前 = 品牌蓝描边环（不填色，与已答蓝底可辨；已答 + 当前 = 蓝底 + 白环 + 蓝环）。 */
+.q-nav button.qnav-cell.cur { box-shadow: 0 0 0 2px var(--lg-accent); }
+.q-nav button.qnav-cell.done.cur { box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--lg-accent); }
+.q-nav-legend .lg-done { background: var(--lg-accent); }
+/* 计时红闪 sharpen：只改闪烁关键帧（50% 档 .52 → .30），时长（2.4s/1s）
+   与阈值（阅读 10 分钟、听力 5 分钟、写作 10 分钟/1 分钟提示）一字未动；
+   减动效下关动画、只留实色红字。 */
+@keyframes timerBlink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .30; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .timer.is-low,
+  .timer.is-crit { animation: none; }
+}
+/* 交卷确认框：标题/正文/按钮行距（文案与按钮层级不动：取消幽灵、确定主按钮/危险色）。 */
+.cf-box .cf-title { font-size: 18px; font-weight: 800; letter-spacing: -.2px; }
+.cf-box .cf-text { line-height: 1.6; color: var(--ink-2); }
+.cf-box .cf-acts { display: flex; gap: 10px; margin-top: 16px; }
+.cf-box .cf-acts .btn { flex: 1 1 0; }
+/* 写作字数与自动保存提示：字数数字放大 + 等宽，提示行更易读（达标/未达标颜色不动）。 */
+.wc-num b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.wc-note { font-size: 13px; line-height: 1.5; }
+.ed-note { font-size: 12.5px; }
+/* 字号四联按钮：44px 触靶 + 焦点环（选中态蓝色 v10 已定，本版不动颜色）。 */
+.me-font-btns button { min-height: 44px; }
+.me-font-btns button:focus-visible { outline: 2px solid var(--lg-accent); outline-offset: 2px; }
+
+/* ---------- v13-D 我的仪表盘排版（数据见 me.js renderDashboard） ---------- */
+.me-dash { display: flex; flex-direction: column; gap: 14px; }
+.me-dash-band { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.me-dash-band b { font-family: var(--font-num); font-size: 40px; font-weight: 800; letter-spacing: -.5px; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1; }
+.me-dash-band span { font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.me-dash-band em { font-style: normal; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.me-dash-target { margin: 0; font-size: 12.5px; color: var(--muted); }
+.me-dash-skills { display: flex; flex-direction: column; gap: 8px; }
+.me-dash-row { display: flex; align-items: center; gap: 10px; }
+.me-dash-name { flex: 0 0 40px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.me-dash-bar { flex: 1 1 auto; height: 6px; border-radius: 3px; background: var(--stroke-soft); overflow: hidden; }
+.me-dash-bar i { display: block; height: 100%; background: var(--lg-accent); border-radius: 3px; }
+.me-dash-val { font-size: 12.5px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.me-dash-streak { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.me-dash-streak b { font-family: var(--font-num); font-size: 28px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1; }
+.me-dash-streak span { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.me-dash-hint { font-style: normal; font-size: 12px; color: var(--brand-700); }

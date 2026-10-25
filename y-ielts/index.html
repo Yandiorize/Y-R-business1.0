@@ -405,6 +405,27 @@
         </div>
       </section>
 
+      <!-- v13：学习仪表盘（Band.pk 式本地仪表盘；只读既有 ielts.cbt.v1 数据，
+           不新增存储键；站内无目标分数记录，目标行如实写“未设”，不编造数字；
+           写作不评分，只列草稿与历史数；无记录时各行给空态文案，不画假数据） -->
+      <section class="me-sec">
+        <h4 class="me-sec-t">学习仪表盘</h4>
+        <div class="me-dash">
+          <div class="me-dash-band">
+            <b id="meDashBand">—</b>
+            <span>最新 Band</span>
+            <em id="meDashBandMeta">暂无记录，交卷后自动记录</em>
+          </div>
+          <p class="me-dash-target" id="meDashTarget">目标 Band：未设</p>
+          <div class="me-dash-skills" id="meDashSkills"></div>
+          <div class="me-dash-streak">
+            <b id="meDashStreak">0</b><span>连续学习（天）</span>
+            <i class="me-dash-hint" id="meDashStreakHint">今天还没开始</i>
+            <span class="ov-dots" id="meDashDots" aria-hidden="true"></span>
+          </div>
+        </div>
+      </section>
+
       <!-- ③ 成绩趋势（Band 趋势图 + 近期交卷记录 + 按题型正确率；复用阅读模块同一渲染） -->
       <section class="me-sec">
         <h4 class="me-sec-t">成绩趋势</h4>
