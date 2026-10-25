@@ -500,3 +500,84 @@ html[data-theme="dark"] .dp-box {
 html[data-theme="dark"] {
   --home-glow: rgba(90, 120, 160, .16);
 }
+
+/* =============================================================
+ *  ui-iter v10：弹窗跟滑杆 + 抽屉主体透光 + 选中态紫改蓝
+ *  （只动面板/弹窗/抽屉内表面/选中态；v9 蓝色体系、布局、Bento、
+ *  圆环、按键结构、留言、实时刷新路径一字不动）
+ *  ---------------------------------------------------------------
+ *  断链证据（级联审计 /tmp/v10/cascade.js + grep，见 VERSIONS.md）：
+ *  · 标准级联里弹窗与抽屉走同一条链：.cf-box/.dp-box 与
+ *    .drawer-panel/.me-panel 的胜出背景都是 ui-iter 末尾的
+ *    var(--lg-panel, var(--lg-glass))，滑杆经 glass-v33.js 行内写
+ *    --g-container（0%→.95 / 50%→.75 / 100%→.55），v8 公式给出
+ *    50% 浅 .20 / 深 .30、0% .60/.70、100% 钳制 .10/.12——标准级联
+ *    没有断链，弹窗本就该跟滑杆。
+ *  · 唯一能让“弹窗 100% 仍实色、抽屉却跟滑杆”同时成立的代码路径，
+ *    是 v50 两处 @media (prefers-reduced-transparency: reduce)：
+ *    1607 节把 .cf-box/.dp-box/.drawer-panel/.btn 钉成
+ *    background: var(--lg-glass) !important（该块内 --lg-glass 重定义
+ *    为实色 hex 浅 #f3f5fa / 深 #1c1e22）+ backdrop-filter: none
+ *    !important；而 .me-panel 不在该组里，仍走 --lg-panel 跟滑杆。
+ *    遮罩（.cf-mask/.me-mask）不在组里，故“面板外仍糊、面板内全实”
+ *    与 v9 实测逐字吻合。抽屉容器（.drawer/.me-drawer）与主体容器
+ *    （.drawer-body/.me-body）经查均无底色规则。
+ *  · 抽屉主体第二层（标准级联）：.me-stat 浅 .08 / 深 .06、
+ *    .me-font-btns button var(--glass-2)（50% 档 .50）、
+ *    .drawer-panel .hist-item var(--glass-2)（50% 档 .50，全宽卡片，
+ *    是历史抽屉主体真正的第二层）；.btn 50% 档 .55/.67，且在
+ *    reduced-transparency 下被钉成实色 !important。
+ *  修法（滑杆继续生效；面板/弹窗文字颜色一律不动，仍实色）：
+ *  · v10-1 弹窗对齐抽屉：仅在同一 reduced-transparency 媒体内，
+ *    用同特异性 + 后文件胜出的 !important 把 .cf-box/.dp-box 拉回
+ *    面板玻璃 + 6px 模糊、.drawer-panel 拉回面板玻璃 + 5px 模糊、
+ *    抽屉内 .btn 拉回透明（只去实色钉，不改按钮结构/文案）。
+ *    说明：.me-panel 本就被排除在该组之外、一直跟滑杆，本次只是
+ *    把弹窗与历史抽屉对齐到同一既有行为；若要恢复“偏好开启时全站
+ *    近实色”，删本媒体节即可（标准级联不受影响）。
+ *  · v10-2 抽屉主体去第二层：抽屉内 .me-stat、字号按钮底、历史卡片
+ *    底一律透明（边框/文字不动），面板玻璃成为唯一一层。
+ *  · v10-3 选中态：.me-font-btns button.is-active 的紫渐变
+ *    （#6366f1→#8b5cf6，v50:1972）改扁平 v9 蓝 #0071e3 + 白字
+ *    （两档同值，白字对比 4.70:1，AA 正常文本；深档不用 #0a84ff，
+ *    否则白字对比跌到约 3.65:1）。图表条渐变（.tbar/.tt-latest）、
+ *    焦点环、.seg/.nav-seg、语义色一律不动。
+ *  预期表现（glass-v33 映射 container .95/.75/.55 × v8 --lg-panel 公式，
+ *  遮罩 .40 不动；净透光 = 遮罩透光 .60 × 面板透光）：
+ *  · 50%：面板浅 .20 / 深 .30，净 .48/.42，模糊抽屉 5px / 弹窗 6px，
+ *    背后内容形状可辨；文字实色，50% 为默认平衡档。
+ *  · 0%：面板浅 .60 / 深 .70，净 .24/.18，接近实色（“清晰”档，
+ *    可读性最强）。
+ *  · 100%：面板钳制 .10/.12，净 .54/.53，最通透但面板不消失；
+ *    文字仍实色，内容繁忙时用户可往回拖（默认 50%）。
+ * ============================================================= */
+.me-panel .me-stat { background: transparent; }
+.drawer-panel .hist-item { background: transparent; }
+.me-panel .me-font-btns button { background: transparent; }
+.me-font-btns button.is-active {
+  background: #0071e3;
+  border-color: transparent;
+  color: #fff;
+}
+html[data-theme="dark"] .me-font-btns button.is-active {
+  background: #0071e3;
+  border-color: transparent;
+  color: #fff;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .cf-box,
+  .dp-box {
+    background: var(--lg-panel, var(--lg-glass)) !important;
+    -webkit-backdrop-filter: blur(6px) saturate(180%) !important;
+    backdrop-filter: blur(6px) saturate(180%) !important;
+  }
+  .drawer-panel {
+    background: var(--lg-panel, var(--lg-glass)) !important;
+    -webkit-backdrop-filter: blur(5px) saturate(160%) !important;
+    backdrop-filter: blur(5px) saturate(160%) !important;
+  }
+  .me-panel .btn,
+  .drawer-panel .btn {
+    background: transparent !important;
+  }
+}
