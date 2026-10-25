@@ -1,0 +1,144 @@
+/* =============================================================
+ *  词典发音 · 交互样式（本次新增）
+ *  ---------------------------------------------------------------
+ *  只负责「喇叭按钮」这一件事，与发音逻辑（audio.js）解耦：
+ *    .spk          卡片 / 列表里的圆形喇叭按钮
+ *    .spk-center   翻卡正面居中摆放
+ *    .spk-deck     词库列表行内的小号按钮
+ *    .q-word-inline 让「单词 + 喇叭」水平居中排列
+ *    .is-on        正在播放时的反馈（放大 + 品牌色）
+ *  影响范围：仅 Vocabulary 视图内的发音控件；不改动既有排版。
+ * ============================================================= */
+
+.spk {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--stroke-soft);
+  border-radius: 50%;
+  background: rgba(120, 132, 156, .10);
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: background .18s var(--ease), color .18s var(--ease), transform .18s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  flex: 0 0 auto;
+}
+/* 播放中 / 失败两种可见状态（禁止静默失败） */
+.spk.is-playing {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.spk.is-fail {
+  background: rgba(239, 68, 68, .14);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+/* 词库行：单词与喇叭几何垂直居中（不再靠 vertical-align 猜偏移） */
+.deck-w { display: inline-flex; align-items: center; gap: 6px; }
+.spk-deck { vertical-align: 0; }
+
+.spk:hover { background: var(--brand-soft); color: var(--brand); }
+.spk:active { transform: scale(.94); }
+.spk .icon { display: inline-flex; }
+.spk.is-on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  animation: spkPulse .7s var(--ease);
+}
+@keyframes spkPulse {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+/* 翻卡正面：单词下方居中 */
+.spk-center { display: flex; margin: 12px auto 2px; }
+/* 三种模式统一后的「居中喇叭行」（翻卡等竖排题面用） */
+.spk-row-center { display: flex; justify-content: center; margin: 12px auto 2px; }
+
+/* 英译汉四选一：单词与喇叭同一行居中 */
+.q-word-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* 词库列表：跟在小号单词后面 */
+.spk-deck {
+  width: 24px;
+  height: 24px;
+  margin-left: 6px;
+  vertical-align: -6px;
+}
+
+/* 汉译英防剧透：答前喇叭置灰、不可点（答后由 JS 移除 spk-locked 解锁） */
+.spk.spk-locked {
+  opacity: .4;
+  cursor: not-allowed;
+  background: rgba(120, 132, 156, .06);
+  color: var(--ink-3);
+  border-color: var(--stroke-soft);
+}
+.spk.spk-locked:hover {
+  background: rgba(120, 132, 156, .06);
+  color: var(--ink-3);
+}
+
+/* 答后反馈卡片里的「再听一遍」按钮（与其他模式同一套，走统一朗读逻辑） */
+.spk-again {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 900px) {
+  /* iOS 最小点击区：卡片上的喇叭放大到 44pt（三种模式题面喇叭统一 44pt） */
+  .spk-center, .q-word-inline .spk, .spk-head, .spk-row-center .spk { width: var(--tap-min, 44px); height: var(--tap-min, 44px); }
+  .spk-deck { width: 32px; height: 32px; vertical-align: 0; }
+}
+
+/* v8 P-8：英译汉题目旁喇叭（与单词同一行，明显可点） */
+.q-head { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.practice-full .q-head { margin-bottom: 6px; }
+.spk-head {
+  width: 46px; height: 46px; border-radius: 14px; flex: 0 0 auto;
+  background: var(--lg-glass); border: 1px solid var(--lg-border); color: var(--brand);
+}
+.spk-head .icon svg { width: 24px; height: 24px; }
+
+/* v8 P-4：拼写默写题目旁大号喇叭 + 提示 */
+.spell-spk { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 4px 0 12px; }
+.spk-big {
+  width: 56px; height: 56px; border-radius: 16px; flex: 0 0 auto;
+  background: var(--lg-glass); border: 1px solid var(--lg-border); color: var(--brand);
+}
+.spk-big .icon svg { width: 30px; height: 30px; }
+.spell-spk-tip { font-size: 13px; color: var(--ink-3); }
+
+/* v8 P-3：喇叭状态文字条（播放中 / 朗读失败，必须有可见文字） */
+.spk-status {
+  position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  transform: translateX(-50%); z-index: 360; display: none;
+  padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 600;
+  max-width: 88vw; text-align: center; box-shadow: var(--lg-shadow);
+  background: var(--lg-glass-strong); color: var(--ink); border: 1px solid var(--lg-border);
+}
+.spk-status.show { display: inline-flex; align-items: center; gap: 6px; }
+.spk-status.is-playing { background: var(--brand); color: #fff; border-color: transparent; }
+.spk-status.is-fail { background: var(--bad); color: #fff; border-color: transparent; cursor: pointer; }
+@media (max-width: 900px) {
+  /* 避开底部 tabbar，抬到其上方 */
+  .spk-status { bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spk.is-on { animation: none; }
+}

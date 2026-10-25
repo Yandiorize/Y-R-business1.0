@@ -1,0 +1,215 @@
+{
+ "version": 1,
+ "updatedAt": "2026-10-18T04:42:44.211Z",
+ "count": 100,
+ "provider": {
+  "name": "youdao-dict-voice",
+  "unofficial": true,
+  "voices": {
+   "us": "type=1",
+   "uk": "type=2"
+  }
+ },
+ "items": {
+  "abandon": {
+   "uk": "abandon-uk.mp3",
+   "us": "abandon-us.mp3"
+  },
+  "accommodate": {
+   "us": "accommodate-us.mp3",
+   "uk": "accommodate-uk.mp3"
+  },
+  "accumulate": {
+   "us": "accumulate-us.mp3",
+   "uk": "accumulate-uk.mp3"
+  },
+  "advocate": {
+   "us": "advocate-us.mp3",
+   "uk": "advocate-uk.mp3"
+  },
+  "analyse": {
+   "us": "analyse-us.mp3",
+   "uk": "analyse-uk.mp3"
+  },
+  "adequate": {
+   "us": "adequate-us.mp3",
+   "uk": "adequate-uk.mp3"
+  },
+  "beneficial": {
+   "uk": "beneficial-uk.mp3",
+   "us": "beneficial-us.mp3"
+  },
+  "coherent": {
+   "us": "coherent-us.mp3",
+   "uk": "coherent-uk.mp3"
+  },
+  "compensate": {
+   "us": "compensate-us.mp3",
+   "uk": "compensate-uk.mp3"
+  },
+  "capacity": {
+   "uk": "capacity-uk.mp3",
+   "us": "capacity-us.mp3"
+  },
+  "controversial": {
+   "us": "controversial-us.mp3",
+   "uk": "controversial-uk.mp3"
+  },
+  "conventional": {
+   "us": "conventional-us.mp3",
+   "uk": "conventional-uk.mp3"
+  },
+  "crucial": {
+   "us": "crucial-us.mp3",
+   "uk": "crucial-uk.mp3"
+  },
+  "decline": {
+   "uk": "decline-uk.mp3",
+   "us": "decline-us.mp3"
+  },
+  "demonstrate": {
+   "us": "demonstrate-us.mp3",
+   "uk": "demonstrate-uk.mp3"
+  },
+  "diminish": {
+   "uk": "diminish-uk.mp3",
+   "us": "diminish-us.mp3"
+  },
+  "distinct": {
+   "us": "distinct-us.mp3",
+   "uk": "distinct-uk.mp3"
+  },
+  "diverse": {
+   "us": "diverse-us.mp3",
+   "uk": "diverse-uk.mp3"
+  },
+  "distribute": {
+   "uk": "distribute-uk.mp3",
+   "us": "distribute-us.mp3"
+  },
+  "emerge": {
+   "uk": "emerge-uk.mp3",
+   "us": "emerge-us.mp3"
+  },
+  "essential": {
+   "us": "essential-us.mp3",
+   "uk": "essential-uk.mp3"
+  },
+  "eliminate": {
+   "uk": "eliminate-uk.mp3",
+   "us": "eliminate-us.mp3"
+  },
+  "enhance": {
+   "uk": "enhance-uk.mp3",
+   "us": "enhance-us.mp3"
+  },
+  "evident": {
+   "uk": "evident-uk.mp3",
+   "us": "evident-us.mp3"
+  },
+  "fundamental": {
+   "us": "fundamental-us.mp3",
+   "uk": "fundamental-uk.mp3"
+  },
+  "generate": {
+   "us": "generate-us.mp3",
+   "uk": "generate-uk.mp3"
+  },
+  "hinder": {
+   "us": "hinder-us.mp3",
+   "uk": "hinder-uk.mp3"
+  },
+  "implement": {
+   "us": "implement-us.mp3",
+   "uk": "implement-uk.mp3"
+  },
+  "fluctuate": {
+   "uk": "fluctuate-uk.mp3",
+   "us": "fluctuate-us.mp3"
+  },
+  "incentive": {
+   "uk": "incentive-uk.mp3",
+   "us": "incentive-us.mp3"
+  },
+  "inevitable": {
+   "us": "inevitable-us.mp3",
+   "uk": "inevitable-uk.mp3"
+  },
+  "innovation": {
+   "uk": "innovation-uk.mp3",
+   "us": "innovation-us.mp3"
+  },
+  "inherent": {
+   "uk": "inherent-uk.mp3",
+   "us": "inherent-us.mp3"
+  },
+  "maintain": {
+   "us": "maintain-us.mp3",
+   "uk": "maintain-uk.mp3"
+  },
+  "interpret": {
+   "us": "interpret-us.mp3",
+   "uk": "interpret-uk.mp3"
+  },
+  "perspective": {
+   "uk": "perspective-uk.mp3",
+   "us": "perspective-us.mp3"
+  },
+  "prevalent": {
+   "us": "prevalent-us.mp3",
+   "uk": "prevalent-uk.mp3"
+  },
+  "reinforce": {
+   "uk": "reinforce-uk.mp3",
+   "us": "reinforce-us.mp3"
+  },
+  "proportion": {
+   "uk": "proportion-uk.mp3",
+   "us": "proportion-us.mp3"
+  },
+  "reluctant": {
+   "uk": "reluctant-uk.mp3",
+   "us": "reluctant-us.mp3"
+  },
+  "significant": {
+   "us": "significant-us.mp3",
+   "uk": "significant-uk.mp3"
+  },
+  "sophisticated": {
+   "us": "sophisticated-us.mp3",
+   "uk": "sophisticated-uk.mp3"
+  },
+  "stimulate": {
+   "us": "stimulate-us.mp3",
+   "uk": "stimulate-uk.mp3"
+  },
+  "sustain": {
+   "us": "sustain-us.mp3",
+   "uk": "sustain-uk.mp3"
+  },
+  "tendency": {
+   "us": "tendency-us.mp3",
+   "uk": "tendency-uk.mp3"
+  },
+  "sufficient": {
+   "us": "sufficient-us.mp3",
+   "uk": "sufficient-uk.mp3"
+  },
+  "transform": {
+   "uk": "transform-uk.mp3",
+   "us": "transform-us.mp3"
+  },
+  "undergo": {
+   "uk": "undergo-uk.mp3",
+   "us": "undergo-us.mp3"
+  },
+  "vulnerable": {
+   "uk": "vulnerable-uk.mp3",
+   "us": "vulnerable-us.mp3"
+  },
+  "widespread": {
+   "uk": "widespread-uk.mp3",
+   "us": "widespread-us.mp3"
+  }
+ }
+}

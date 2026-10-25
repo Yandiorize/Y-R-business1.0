@@ -1,0 +1,337 @@
+/* =============================================================
+ *  iOS 移动端适配层（本次新增）
+ *  ---------------------------------------------------------------
+ *  设计目标：
+ *    · 安全区（safe-area）适配 iPhone 刘海/灵动岛/底部小白条
+ *    · 44pt 最小可点击区域（iOS HIG 推荐尺寸）
+ *    · 三态 + 滑动手势 / 下拉刷新 / 页面切换动画
+ *    · 字号动态缩放（4 档：较小 / 标准 / 较大 / 特大）
+ *    · 引入更具设计感的字体栈（ui-serif / ui-rounded / Avenir Next）
+ *      —— "避免系统默认正文字体" 并不意味着不调 iOS 私有栈，
+ *      而是不让 PingFang / Helvetica 占据所有正文。
+ *    · 底部 Tabbar（iPhone 习惯布局）
+ *
+ *  加载顺序：紧随 styles.css 之后。
+ *
+ *  重要说明：
+ *    - 不引入任何第三方依赖。
+ *    - 桌面端（≥ 900px）完全不生效：tabbar 隐藏，topbar 正常显示。
+ *    - 原有的 Reading / Writing / Vocabulary 视图 DOM 与类名保持不变。
+ *
+ *  本次修改点：
+ *    1) 新增字体变量 --font-display / --font-read，扩展 --font-sans
+ *       优先 Avenir Next（更人文化的无衬线）。
+ *    2) 新增 .safe-top / .safe-bottom / .safe-l / .safe-r 一组工具类。
+ *    3) 新增底部 Tabbar .tabbar（iPhone 习惯），与顶部 nav 联动。
+ *    4) 新增 .pull-indicator（下拉刷新指示器样式）。
+ *    5) 新增页面切换动画 .view-enter / .view-leave。
+ *    6) 新增 4 档字号 --fs-scale（0.9 / 1 / 1.12 / 1.25）。
+ *    7) 新增 .essay-* 全部样式（卡片 / 详情 / 点评 / 通用思路）。
+ *
+ *  影响范围：仅在 ≤ 900px 设备上启用移动端特有样式；范文模块 UI。
+ * ============================================================= */
+
+/* ---------- 字体扩展（更具设计感，避免 PingFang/Helvetica 占所有正文） ---------- */
+:root {
+  --font-display: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN",
+                  "Avenir Next", Avenir, "PingFang SC",
+                  "Hiragino Sans GB", system-ui, sans-serif;
+  --font-read:    ui-serif, "New York", "Iowan Old Style", "Palatino Linotype",
+                  Palatino, Georgia, "Songti SC", STSong, "Noto Serif CJK SC",
+                  "Source Han Serif SC", "Source Han Serif", serif;
+  --font-ui:      "Avenir Next", Avenir, "Helvetica Neue", "Inter", -apple-system,
+                  "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+
+  --fs-scale: 1;          /* 4 档：0.9 / 1 / 1.12 / 1.25，由 app.js 控制 */
+  --tabbar-h: 54px;       /* 底部 tabbar 高度（不含安全区）—— v8 改矮一档 */
+  --tap-min: 44px;        /* iOS HIG 最小可点击区域 */
+}
+
+/* ---------- 安全区工具类（不依赖 viewport 元 tag 也能用 env() 兜底） ---------- */
+.safe-top    { padding-top:    max(env(safe-area-inset-top),    0px); }
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
+.safe-l      { padding-left:   max(env(safe-area-inset-left),   0px); }
+.safe-r      { padding-right:  max(env(safe-area-inset-right),  0px); }
+
+/* ---------- 44pt 最小可点击（仅移动端） ---------- */
+@media (max-width: 900px) {
+  .btn, .seg-btn, .opt, .icon-btn, .q-nav button, .rate, .tabbar-btn,
+  .theme-toggle, [data-icon] {
+    min-height: var(--tap-min);
+  }
+  /* 滚动弹性：iOS 风格 */
+  .pane-body, .wrap, .article, .r-split, .tabbar, .drawer-body,
+  .essay-body, .guide-list, .essay-detail {
+    -webkit-overflow-scrolling: touch;
+  }
+  /* 防止双击放大 / 文本选择破坏交互 */
+  .btn, .tabbar-btn, .seg-btn, .opt, .rate, .q-nav button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+  }
+}
+
+/* ---------- 页面切换动画（iOS 风格推入/推出） ---------- */
+.view { transform: translateZ(0); will-change: transform, opacity; }
+.view.is-active { animation: iosViewIn .36s var(--ease) both; }
+.view.is-leaving { animation: iosViewOut .28s var(--ease) both; }
+@keyframes iosViewIn {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes iosViewOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-28px); }
+}
+
+/* ---------- 顶部：移动端把 nav 折叠到 tabbar；字号按钮加入 ---------- */
+@media (max-width: 900px) {
+  .topbar { padding-top: max(env(safe-area-inset-top), 8px); }
+  .topbar-in { height: auto !important; min-height: 52px; padding: 8px 14px; flex-wrap: wrap; }
+  .topbar-in .nav-seg { display: none; }      /* 桌面 nav 在移动端隐藏 */
+  .topbar-right .chip { display: none; }
+  .brand-text strong { font-size: var(--fs-md); }
+  .topbar-right { gap: 6px; }
+  .btn-font {
+    width: var(--tap-min); height: var(--tap-min);
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: var(--r-pill); border: 1px solid var(--stroke-soft);
+    background: var(--glass-2); color: var(--ink-2);
+    font-family: var(--font-num); font-size: 12px; font-weight: 600;
+    letter-spacing: .04em;
+  }
+}
+
+/* ---------- 底部 Tabbar（iPhone 习惯） ---------- */
+.tabbar {
+  display: none;
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  padding-bottom: max(env(safe-area-inset-bottom), 6px);
+  /* v8 P-6：透明液态玻璃——浅色白底半透明、深色深底半透明，内容从栏下透出 */
+  background: rgba(255, 255, 255, .6);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border-top: 1px solid var(--stroke-soft);
+  box-shadow: 0 -6px 20px rgba(0,0,0,.05);
+}
+[data-theme="dark"] .tabbar { background: rgba(28, 30, 36, .64); }
+/* 极淡渐变衬底，保证滚动内容压到栏下时按钮仍清晰（不改回实色） */
+.tabbar::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; top: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(0,0,0,.05), transparent 55%);
+}
+.tabbar-inner {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  height: var(--tabbar-h); align-items: stretch; position: relative;
+}
+.tabbar-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 6px 4px; color: var(--ink-3);
+  background: transparent; border: 0; cursor: pointer;
+  font-size: 12.5px; line-height: 1; font-family: var(--font-ui);
+  transition: color .2s var(--ease);
+}
+/* 按钮图标放大一档（约 10%~15%），保证触点 ≥ 40px（栏高 54px 已满足） */
+.tabbar-btn .icon { color: inherit; }
+.tabbar-btn .icon svg { width: 20px; height: 20px; }
+.tabbar-btn.is-active { color: var(--brand); }
+.tabbar-btn.is-active .icon { transform: scale(1.05); }
+
+@media (max-width: 900px) {
+  .tabbar { display: block; }
+  /* 给 main 留出 tabbar 高度 */
+  .wrap { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px); }
+  /* 抽屉/灯箱之上的全屏层：tabbar 让位 */
+  .drawer.is-open ~ .tabbar,
+  .lightbox.is-open ~ .tabbar { display: none; }
+}
+
+/* ---------- 下拉刷新指示器 ---------- */
+.pull-indicator {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: 0; overflow: hidden; color: var(--ink-3);
+  font-size: var(--fs-xs); font-family: var(--font-ui);
+  transition: height .18s var(--ease);
+}
+.pull-indicator.is-active { height: 38px; }
+.pull-indicator.is-loading .icon { animation: iosSpin 1s linear infinite; }
+@keyframes iosSpin { to { transform: rotate(360deg); } }
+
+/* ---------- 字号档位（在 app.js 给 <html> 加 .fs-1 .. .fs-3） ---------- */
+html.fs-0 { --fs-scale: 0.9; }
+html.fs-2 { --fs-scale: 1.12; }
+html.fs-3 { --fs-scale: 1.25; }
+html.fs-1 { --fs-scale: 1; }
+/* 仅对阅读类视图生效：文章正文、范文正文 */
+html.fs-2 #rArticle, html.fs-2 .article { font-size: 16px; line-height: 2; }
+html.fs-3 #rArticle, html.fs-3 .article { font-size: 18px; line-height: 2.05; }
+html.fs-2 .essay-body p { font-size: 17px; }
+html.fs-3 .essay-body p { font-size: 18.5px; }
+
+/* ============================================================
+ *  范文模块视图
+ * ============================================================ */
+.view-essays-wrap {
+  display: flex; flex-direction: column;
+  max-width: 880px; margin: 0 auto; gap: 14px;
+}
+.essay-toolbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  font-family: var(--font-display);
+  font-weight: 600; letter-spacing: .02em;
+}
+.essay-toolbar .essay-h1 { font-size: 22px; color: var(--ink); margin: 0; }
+.essay-toolbar .essay-sub { color: var(--ink-3); font-size: 12.5px; font-weight: 600; }  /* v15.5 0.1：400→500 */
+
+.essay-card {
+  display: block; padding: 18px 20px; border-radius: var(--r-lg);
+  text-decoration: none; color: inherit; cursor: pointer;
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease);
+}
+.essay-card:hover { transform: translateY(-1px); box-shadow: var(--sh-lg); }
+.essay-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  font-size: var(--fs-xs); color: var(--ink-3);
+  margin-bottom: 8px;
+}
+.chip.level-易  { background: var(--ok-soft);    color: var(--ok); }
+.chip.level-中  { background: var(--warn-soft);  color: var(--warn); }
+.chip.level-难  { background: var(--bad-soft);   color: var(--bad); }
+.chip.type      { background: var(--brand-soft); color: var(--brand); }
+.essay-title {
+  font-family: var(--font-read);
+  font-size: calc(22px * var(--fs-scale));
+  font-weight: 700; line-height: 1.35; margin: 4px 0 8px;
+  color: var(--ink);
+}
+.essay-lead {
+  color: var(--ink-2); font-size: var(--fs-sm); line-height: 1.75;
+  margin: 0 0 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.essay-foot {
+  display: inline-flex; align-items: center; gap: 4px;
+  color: var(--brand); font-size: var(--fs-xs); font-weight: 600;
+}
+
+/* 详情 */
+.essay-detail-head { padding: 6px 4px 16px; border-bottom: 1px solid var(--stroke-soft); margin-bottom: 18px; }
+.essay-detail-title {
+  font-family: var(--font-read);
+  font-size: calc(30px * var(--fs-scale));
+  font-weight: 800; line-height: 1.3; color: var(--ink); margin: 8px 0 0;
+  letter-spacing: .01em;
+}
+.essay-body p {
+  font-family: var(--font-read);
+  font-size: calc(16.5px * var(--fs-scale));
+  line-height: 1.95; color: var(--ink); margin: 0 0 16px; text-indent: 2em;
+}
+.essay-section { margin-top: 26px; }
+.essay-h {
+  font-family: var(--font-display);
+  font-size: 18px; color: var(--ink); margin: 0 0 12px;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.essay-h::before {
+  content: ''; width: 4px; height: 18px; background: var(--brand); border-radius: 2px;
+}
+.essay-line {
+  font-family: var(--font-ui);
+  font-size: 15px; line-height: 1.85; color: var(--ink-2);
+  background: var(--glass-2); padding: 12px 14px; border-radius: var(--r-sm);
+  border-left: 3px solid var(--brand-line); margin: 0 0 10px;
+}
+.essay-good {
+  margin: 0; padding-left: 0; list-style: none; font-family: var(--font-read);
+}
+.essay-good li {
+  position: relative; padding: 8px 0 8px 22px; line-height: 1.8; color: var(--ink-2);
+  border-bottom: 1px dashed var(--stroke-soft); font-size: 15px;
+}
+.essay-good li:last-child { border-bottom: 0; }
+.essay-good li::before {
+  content: '“'; position: absolute; left: 4px; top: 6px; color: var(--brand);
+  font-family: var(--font-serif); font-size: 22px; line-height: 1;
+}
+
+/* 通用思路卡片 */
+.essay-guide {
+  margin-top: 18px; padding: 18px 20px; border-radius: var(--r-lg);
+}
+.essay-guide.inline { margin-top: 26px; }
+.guide-list { margin: 0; padding: 0; list-style: none; counter-reset: g; }
+.guide-list li {
+  counter-increment: g; display: grid; grid-template-columns: 28px 1fr; gap: 12px;
+  padding: 10px 0; border-bottom: 1px dashed var(--stroke-soft);
+  font-family: var(--font-ui);
+}
+.guide-list li:last-child { border-bottom: 0; }
+.guide-list li::before {
+  content: counter(g); display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%; background: var(--brand);
+  color: #fff; font-family: var(--font-num); font-size: 13px; font-weight: 700;
+}
+.guide-list li b { color: var(--ink); font-weight: 700; display: block; margin-bottom: 2px; }
+.guide-list li span { color: var(--ink-3); font-size: 14px; line-height: 1.75; }
+
+/* 详情顶部"返回"按钮 + 移动端增强 */
+#btnEssayBack {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: var(--r-pill);
+  background: var(--glass-2); border: 1px solid var(--stroke-soft);
+  color: var(--ink-2); font-size: 13px; cursor: pointer;
+  font-family: var(--font-ui);
+}
+#btnEssayBack .icon { display: inline-block; transform: rotate(180deg); }
+@media (max-width: 900px) {
+  #btnEssayBack { min-height: var(--tap-min); padding: 10px 16px; }
+}
+
+/* 路由隐藏 */
+.view:not(.is-active) { display: none; }
+.view.is-active { display: block; }
+
+/* =============================================================
+ *  移动端顶栏：两行布局（考试 HUD 上栏后必须重排）
+ *  ---------------------------------------------------------------
+ *  背景：视觉要求 1 把「计时器 + 交卷」固定进顶栏右侧。桌面端放得下，
+ *        但 iPhone 上按 44pt 触控标准，品牌 + 计时器 + 交卷 + 三个圆形
+ *        图标一行至少需要 ~366px，而 390px 屏的可用宽度只有 334px。
+ *        原来会折成「品牌独占一行、其余挤第二行」，品牌行右侧大片留白。
+ *  做法：.topbar-right 用 display:contents 摊平成 .topbar-in 的直接子项，
+ *        再用 order 重排成：
+ *          第 1 行  品牌（左） + 清空/字号/主题三个图标（右）
+ *          第 2 行  考试 HUD 整行（计时器自动拉伸 + 交卷靠右）
+ *        非阅读视图 HUD 是 display:none，此时自动回到单行，不多占高度。
+ *  影响范围：仅 ≤900px 的 .topbar 内部，桌面布局不受影响。
+ * ============================================================= */
+@media (max-width: 900px) {
+  .topbar-in { row-gap: 8px; }
+  .topbar-right { display: contents; }
+  .brand { order: 1; flex: 1 1 auto; min-width: 0; }
+  /* 拆成两行后品牌行有富余空间，阅读视图不必再隐藏品牌文字
+     （styles.css 里那条隐藏规则是为了旧的一行布局加的） */
+  body[data-view="reading"] .brand-text { display: flex; }
+  .topbar-right .icon-btn,
+  .topbar-right .btn-font,
+  .topbar-right .theme-toggle { order: 2; }
+  .exam-hud {
+    order: 3; flex: 1 0 100%;
+    justify-content: flex-end;
+  }
+  .exam-hud .timer { flex: 1 1 auto; }
+  .exam-hud .timer .bar { margin-top: 5px; }
+}
+
+/* 320–380px（iPhone SE 一代等）连品牌文字也放不下：44pt 触控下
+   品牌 180 + 三个图标 132 + 间距 36 = 348 > 292 可用宽度。
+   这里只留品牌图标，保证三个操作图标不折行。 */
+@media (max-width: 380px) {
+  body .brand-text,
+  body[data-view="reading"] .brand-text { display: none; }
+  .topbar-in { column-gap: 8px; }
+}

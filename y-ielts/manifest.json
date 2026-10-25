@@ -1,0 +1,32 @@
+{
+  "name": "Y-IELTS",
+  "short_name": "Y-IELTS",
+  "description": "Y-IELTS：阅读机考双栏练习、写作计时与草稿、单词记忆（含离线发音）、写作范文库。数据只存在本机浏览器。",
+  "lang": "zh-CN",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f2f5fc",
+  "theme_color": "#f2f5fc",
+  "icons": [
+    {
+      "src": "assets/yandi-ventures-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/yandi-ventures-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/yandi-ventures-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

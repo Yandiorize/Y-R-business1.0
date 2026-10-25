@@ -1,0 +1,217 @@
+/* =============================================================
+ * 第 56 节：设计 token + 玻璃材质系统（源码级）
+ * ---------------------------------------------------------------
+ * 这一段是全站 UI 的取值来源：间距、圆角、字阶、动效、玻璃参数。
+ * 新增/本轮触及的样式一律走变量，不再写裸数字。
+ * ============================================================= */
+
+/* ---------- 56.0 token 层 ---------- */
+:root {
+  /* 间距（4 的倍数为主，保留 6/10 两档给紧凑行） */
+  --sp-1: 4px;  --sp-2: 6px;  --sp-3: 8px;  --sp-4: 10px;
+  --sp-5: 12px; --sp-6: 14px; --sp-7: 16px; --sp-8: 20px;
+  --sp-9: 24px; --sp-10: 28px; --sp-11: 32px;
+
+  /* 圆角 */
+  --r-xs: 6px;  --r-sm: 8px;  --r-md: 10px; --r-lg: 12px;
+  --r-xl: 14px; --r-2xl: 16px; --r-3xl: 18px; --r-4xl: 20px;
+  --r-pill: 999px;
+
+  /* 字阶：6 档（辅助 / 正文 / 强调 / 标题 / 大标题 / 页标题） */
+  --fs-xs: 11px;  --fs-sm: 12px;  --fs-md: 13px;
+  --fs-base: 14px; --fs-lg: 16px; --fs-2xl: 22px;
+
+  /* 动效 */
+  --dur-1: 200ms; --dur-2: 260ms;
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+
+  /* 玻璃参数（透明度由滑杆 --g-* 驱动，其余固定） */
+  --glass-blur-chrome: blur(32px) saturate(190%);
+  --glass-blur-card: blur(18px) saturate(165%);
+  --glass-blur-panel: blur(24px) saturate(180%);
+  --glass-blur-drawer: blur(12px) saturate(160%);
+  --glass-hairline: 1px;
+}
+html[data-theme="dark"] {
+  --glass-blur-card: blur(18px) saturate(150%);
+}
+
+/* =============================================================
+ * 第 56 节：玻璃材质系统（源码级）
+ * ---------------------------------------------------------------
+ * 病灶（改前实测，见表 1）：
+ *   · 50% 档时铬层 alpha = .75、容器层 = .78 —— 半透明已经退化成"白卡"；
+ *   · 容器层 .pane 压根没有 backdrop-filter，只有 alpha，透光看不出；
+ *   · 深色容器层 alpha = .92，等于实色；
+ *   · 顶部高光只有 .55，1px 太弱，材质边看不出"玻璃边"。
+ * 改法：只动 alpha 映射与壳的模糊/高光，不动深色 palette 数值体系。
+ * ============================================================= */
+
+/* ---------- 56.1 alpha 重映射（滑杆仍按 0–100 驱动 --g-*） ----------
+   注意：v50 的 token 用的是 `:root, html[data-theme="light"]`（0,1,1），
+   裸 :root（0,1,0）会被压住 —— 这里必须用同规格选择器才对得上。 */
+:root,
+html[data-theme="light"] {
+  /* 50% 档：chrome .55→.43、container .75→.55 */
+  --lg-chrome: rgba(255, 255, 255, calc(var(--g-chrome) - .12));
+  --lg-glass: rgba(255, 255, 255, calc(var(--g-container) - .20));
+  --lg-glass-strong: rgba(255, 255, 255, calc(var(--g-container) - .08));
+  --lg-glass-soft: rgba(255, 255, 255, calc(var(--g-container) - .34));
+  /* 内容区反过来：比原来更实（.78 → .86），正文不靠透明撑对比 */
+  --lg-longtext: rgba(255, 255, 255, calc(var(--g-long) + .08));
+  /* 顶部高光：1px 主线 + 2px 余晖 */
+  --lg-highlight: inset 0 1px 0 rgba(255, 255, 255, .92), inset 0 2px 0 rgba(255, 255, 255, .32);
+}
+html[data-theme="dark"] {
+  --lg-chrome: rgba(20, 26, 38, calc(var(--g-chrome) + .06));
+  --lg-glass: rgba(22, 28, 40, calc(var(--g-container) - .08));
+  --lg-glass-strong: rgba(26, 33, 48, calc(var(--g-container) - .02));
+  --lg-glass-soft: rgba(18, 23, 34, calc(var(--g-container) - .26));
+  --lg-longtext: rgba(18, 23, 34, .94);
+  --lg-highlight: inset 0 1px 0 rgba(255, 255, 255, .16), inset 0 2px 0 rgba(255, 255, 255, .05);
+}
+
+/* ---------- 56.2 容器层补模糊（原来只有 alpha，看着就是实色） ---------- */
+.pane,
+.home-ov,
+.stat-box,
+.review-card,
+.v-stats,
+.rpt,
+.es-card,
+.es-side {
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+}
+
+/* 壳统一：1px 描边 + 顶部高光 + 柔和外阴影（不叠第二层圆角边框） */
+.pane,
+.home-ov,
+.stat-box,
+.review-card,
+.v-stats,
+.rpt {
+  border: 1px solid var(--lg-border);
+  box-shadow: var(--lg-highlight), 0 10px 30px -18px rgba(16, 24, 40, .38);
+}
+
+
+/* ---------- 56.2b 模块卡 / 留言卡也属于「壳」 ----------
+   上一版把它们当成内容区写成了实色，材质感因此消失；
+   这里回到玻璃，但内容文字仍是实色（正文对比度另测）。 */
+.learn-grid .learn-row,
+.learn-row,
+.cm-form,
+.cm-item,
+.home-ov {
+  background: var(--lg-glass);
+  -webkit-backdrop-filter: blur(18px) saturate(165%);
+  backdrop-filter: blur(18px) saturate(165%);
+  border: 1px solid var(--lg-border);
+  box-shadow: var(--lg-highlight), 0 8px 26px -20px rgba(16, 24, 40, .40);
+}
+[data-theme="dark"] .learn-grid .learn-row,
+[data-theme="dark"] .learn-row,
+[data-theme="dark"] .cm-form,
+[data-theme="dark"] .cm-item,
+[data-theme="dark"] .home-ov {
+  border-color: rgba(255, 255, 255, .14);
+  box-shadow: var(--lg-highlight), 0 8px 26px -20px rgba(0, 0, 0, .55);
+}
+
+/* ---------- 56.3 弹窗 / 抽屉 ---------- */
+/* 确认弹窗：与卡片同一套玻璃，不是纯白卡 */
+.cf-box,
+.dp-box {
+  background: var(--lg-glass-strong);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--lg-border);
+  box-shadow: var(--lg-highlight), 0 24px 60px -12px rgba(6, 10, 22, .42);
+}
+
+/* 深色弹窗：被旧规则写成了 .96 近实色，这里拉回玻璃（同规格选择器） */
+html[data-theme="dark"] .cf-box,
+html[data-theme="dark"] .dp-box {
+  background: rgba(26, 31, 43, .78);
+  border: 1px solid rgba(255, 255, 255, .14);
+  box-shadow: var(--lg-highlight), 0 24px 60px -12px rgba(0, 0, 0, .60);
+}
+
+/* 遮罩：变暗为主、模糊为辅，背景文字仍然读得出来 */
+.cf-mask,
+.dp-mask { background: rgba(6, 10, 22, .58); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.me-mask,
+.drawer-mask { background: rgba(6, 10, 22, .52); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+
+/* 抽屉：面板从 28px 强模糊降到 12px，背景不再糊成一片 */
+.drawer-panel,
+.me-panel {
+  background: var(--lg-glass-strong);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
+  border-left: 1px solid var(--lg-border);
+  box-shadow: var(--lg-highlight), -18px 0 60px -18px rgba(6, 10, 22, .40);
+}
+
+
+/* ---------- 56.6 桌面底栏同样浮层化（全站一个形态） ---------- */
+@media (min-width: 901px) {
+  .tabbar {
+    left: 50%;
+    right: auto;
+    bottom: 16px;
+    width: min(720px, calc(100% - 48px));
+    transform: translateX(-50%);
+    border-radius: var(--r-4xl);
+    border: 1px solid var(--lg-border);
+    border-top-width: 1px;
+    padding-bottom: 0;
+    background: var(--lg-chrome);
+    -webkit-backdrop-filter: var(--lg-chrome-blur);
+    backdrop-filter: var(--lg-chrome-blur);
+    box-shadow: 0 12px 34px -10px rgba(16, 24, 40, .34), inset 0 1px 0 rgba(255, 255, 255, .90);
+  }
+  [data-theme="dark"] .tabbar {
+    background: rgba(20, 26, 38, .74);
+    border-color: rgba(255, 255, 255, .12);
+    box-shadow: 0 14px 36px -10px rgba(0, 0, 0, .66), inset 0 1px 0 rgba(255, 255, 255, .14);
+  }
+  .tabbar::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, .40), rgba(255, 255, 255, 0) 58%);
+  }
+  body[data-view="home"] .tabbar { display: none !important; }
+}
+
+
+/* 桌面底栏浮起后占位变高（56 + 16 = 72），页脚留白跟着加到 104 */
+@media (min-width: 901px) {
+  .site-foot { padding-bottom: 104px; }
+  body[data-view="home"] .site-foot { padding-bottom: 16px; }
+}
+
+/* ---------- 56.4 滑杆档位标识 ---------- */
+.mgr-scale {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin: 2px 0 0 34px;
+  padding: 0 2px;
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+.mgr-scale span { flex: 0 0 auto; }
+.mgr-scale span.is-mid { color: var(--ink-2); font-weight: 600; }
+
+/* ---------- 56.5 触屏 / 降级 / 减动效 ---------- */
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  :root { --lg-chrome: rgba(255, 255, 255, .96); --lg-glass: rgba(255, 255, 255, .96); }
+  html[data-theme="dark"] { --lg-chrome: rgba(20, 26, 38, .97); --lg-glass: rgba(22, 28, 40, .97); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cf-box, .drawer-panel, .me-panel { transition: none; }
+}

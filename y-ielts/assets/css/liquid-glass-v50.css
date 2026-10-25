@@ -1,0 +1,3718 @@
+/* =============================================================
+ *  IELTS 机考备考 · Liquid Glass 2.0（纯样式覆盖层）
+ *  ---------------------------------------------------------------
+ *  本文件只做视觉覆盖，不包含任何功能逻辑。
+ *  加载顺序：styles.css → ios.css → essays.css → audio.css → 本文件，
+ *  因此这里的规则会覆盖前面所有视觉定义。
+ *
+ *  设计要点：
+ *    · 深藏青底景 + 金色微光晕（呼应开屏星空），fixed 不随内容滚动
+ *    · 统一玻璃材质：rgba(255,255,255,.55) + blur(20px) saturate(180%)
+ *    · 悬浮胶囊导航：距屏幕 12px、圆角 28px
+ *    · 同心圆角：外层 28 / 20 / 14 / 10
+ *    · 阅读与写作正文接近实色（≥ .95），保证可读性
+ *    · 弹性曲线 cubic-bezier(.22,1,.36,1)，时长 .35s
+ * ============================================================= */
+
+/* ---------- 0. 设计令牌 ---------- */
+:root {
+  --lg-ease: cubic-bezier(.22, 1, .36, 1);
+  --lg-dur: .35s;
+
+  --lg-glass: rgba(255, 255, 255, .58);
+  --lg-glass-strong: rgba(255, 255, 255, .76);
+  --lg-glass-soft: rgba(255, 255, 255, .38);
+  --lg-border: rgba(255, 255, 255, .4);
+  --lg-highlight: inset 0 1px 0 rgba(255, 255, 255, .55);
+  --lg-shadow: 0 8px 32px rgba(0, 0, 0, .12);
+
+  --lg-gold: #e8c86a;
+  --lg-gold-2: #f6e2a4;
+  --lg-gold-deep: #6a4f12;
+
+  --lg-blur: blur(26px) saturate(190%);
+  --lg-blur-soft: blur(14px) saturate(160%);
+
+  /* 同心圆角：外层 28 = 内层 20 + 8 间距 */
+  --r-xl: 28px;
+  --r-lg: 20px;
+  --r-md: 14px;
+  --r-sm: 10px;
+
+  /* macOS 原生字体栈：SF Pro + 苹方 */
+  --font-sans: -apple-system, "SF Pro Text", "PingFang SC", "Helvetica Neue",
+               system-ui, sans-serif;
+
+  --ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+/* 浅色主题：真浅色（浅底 + 白玻璃 + 深字），提升次级文字对比 */
+html[data-theme="light"] {
+  --lg-glass: rgba(255, 255, 255, .68);
+  --lg-glass-strong: rgba(255, 255, 255, .86);
+  --lg-glass-soft: rgba(255, 255, 255, .46);
+  --lg-border: rgba(255, 255, 255, .58);
+  --lg-shadow: 0 8px 32px rgba(22, 28, 46, .10);
+  --muted: #5b6478;
+  --ink-3: #454d61;
+}
+
+/* ---------- 1. 固定底景：浅色浅底 / 深色深藏青 ---------- */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background:
+    radial-gradient(55% 45% at 50% -8%, rgba(232, 200, 106, .10), transparent 70%),
+    radial-gradient(42% 40% at 88% 10%, rgba(157, 178, 255, .20), transparent 72%),
+    linear-gradient(180deg, #f2f5fc 0%, #e9edf7 46%, #eef1f8 100%);
+}
+.bg .blob { filter: blur(70px); opacity: .5; }
+.bg .b1 { background: radial-gradient(circle at 50% 50%, #9db2ff 0%, transparent 70%); }
+.bg .b2 { background: radial-gradient(circle at 50% 50%, #a6e2ff 0%, transparent 70%); }
+.bg .b3 { background: radial-gradient(circle at 50% 50%, #d9bdff 0%, transparent 70%); }
+.bg .b4 { background: radial-gradient(circle at 50% 50%, #a8ecdc 0%, transparent 70%); }
+
+/* 深色主题：保持原深藏青 + 金色光晕，不动 */
+[data-theme="dark"] .bg {
+  background:
+    radial-gradient(55% 45% at 50% -8%, rgba(232, 200, 106, .18), transparent 70%),
+    radial-gradient(38% 38% at 88% 12%, rgba(232, 200, 106, .12), transparent 72%),
+    radial-gradient(45% 45% at 8% 92%, rgba(201, 162, 74, .10), transparent 72%),
+    linear-gradient(160deg, #0b1228 0%, #0d1630 46%, #060a16 100%);
+}
+[data-theme="dark"] .bg .blob { filter: blur(96px); opacity: .32; }
+[data-theme="dark"] .bg .b1 { background: radial-gradient(circle at 50% 50%, #e8c86a 0%, transparent 70%); }
+[data-theme="dark"] .bg .b2 { background: radial-gradient(circle at 50% 50%, #c9a24a 0%, transparent 70%); }
+[data-theme="dark"] .bg .b3 { background: radial-gradient(circle at 50% 50%, #8a6d2f 0%, transparent 70%); }
+[data-theme="dark"] .bg .b4 { background: radial-gradient(circle at 50% 50%, #f0d98a 0%, transparent 70%); }
+
+/* ---------- 2. 统一玻璃材质 ---------- */
+.glass,
+.glass-soft,
+.topbar-in,
+.r-toolbar,
+.w-toolbar,
+.pane,
+.es-card,
+.essay-guide,
+.stat-box,
+.cf-box,
+.dp-box,
+.wb-panel,
+.drawer-panel,
+.es-side,
+.ed-head {
+  background: var(--lg-glass);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1px solid var(--lg-border);
+  box-shadow: var(--lg-highlight), var(--lg-shadow);
+}
+
+/* ---------- 3. 悬浮玻璃胶囊导航 ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: 12px 12px 4px;
+}
+.topbar-in {
+  height: 64px;
+  max-width: 1360px;
+  margin: 0 auto;
+  border-radius: 28px;
+  /* v8 P-7：顶栏改为半透明毛玻璃，与全站玻璃语言一致 */
+  background: var(--lg-glass);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1px solid var(--lg-border);
+  box-shadow: var(--lg-shadow);
+}
+.nav-seg {
+  background: var(--lg-glass-soft);
+  -webkit-backdrop-filter: var(--lg-blur-soft);
+  backdrop-filter: var(--lg-blur-soft);
+  border: 1px solid var(--lg-border);
+}
+/* 顶栏已是玻璃容器：nav-seg 不再叠加第二层模糊，避免发雾（仅保留描边区分） */
+.topbar-in .nav-seg {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-color: var(--lg-border);
+}
+
+/* ---------- 4. 按钮三级 ---------- */
+.btn {
+  background: var(--lg-glass);
+  -webkit-backdrop-filter: var(--lg-blur-soft);
+  backdrop-filter: var(--lg-blur-soft);
+  border: 1px solid var(--lg-border);
+  box-shadow: var(--lg-highlight), 0 4px 16px rgba(0, 0, 0, .10);
+  transition: transform var(--lg-dur) var(--lg-ease),
+              background var(--lg-dur) var(--lg-ease),
+              box-shadow var(--lg-dur) var(--lg-ease),
+              color var(--lg-dur) var(--lg-ease);
+}
+.btn:hover {
+  transform: translateY(-1px);
+  background: var(--lg-glass-strong);
+  box-shadow: var(--lg-highlight), 0 10px 26px rgba(0, 0, 0, .14);
+}
+.btn:active { transform: scale(.97); }
+
+/* 主按钮：玻璃 + 金色描边高光 */
+.btn-primary {
+  background: linear-gradient(135deg, rgba(232, 200, 106, .26), rgba(255, 255, 255, .10));
+  border: 1px solid rgba(232, 200, 106, .85);
+  color: var(--lg-gold-deep);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6),
+              0 0 0 1px rgba(232, 200, 106, .28),
+              0 8px 22px rgba(232, 200, 106, .20);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, rgba(232, 200, 106, .36), rgba(255, 255, 255, .16));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7),
+              0 0 0 1px rgba(232, 200, 106, .40),
+              0 10px 28px rgba(232, 200, 106, .26);
+}
+
+/* 危险按钮：玻璃 + 红色文字 */
+.btn-danger,
+.cf-acts .btn-danger,
+.dp-acts .btn-danger {
+  background: var(--lg-glass);
+  border: 1px solid rgba(220, 77, 92, .48);
+  color: var(--bad);
+}
+.btn-danger:hover,
+.cf-acts .btn-danger:hover,
+.dp-acts .btn-danger:hover {
+  background: rgba(220, 77, 92, .14);
+}
+
+/* ---------- 5. 阅读 / 写作：正文接近实色 ---------- */
+.apane,
+.qpane {
+  background: rgba(255, 255, 255, .95);
+  -webkit-backdrop-filter: blur(4px) saturate(120%);
+  backdrop-filter: blur(4px) saturate(120%);
+}
+.ans-body,
+#editor {
+  background: rgba(255, 255, 255, .96);
+}
+#editor {
+  border: 1px solid var(--lg-border);
+  border-radius: var(--r-md);
+}
+[data-theme="dark"] .apane,
+[data-theme="dark"] .qpane { background: rgba(20, 22, 30, .95); }
+[data-theme="dark"] .ans-body,
+[data-theme="dark"] #editor { background: rgba(20, 22, 30, .96); }
+
+/* 题号导航：轻玻璃，不遮挡正文 */
+.q-nav {
+  background: rgba(255, 255, 255, .62);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+}
+[data-theme="dark"] .q-nav { background: rgba(28, 28, 30, .62); }
+
+/* ---------- 6. 计时器：悬浮玻璃胶囊 + 金色进度 ---------- */
+.timer {
+  background: var(--lg-glass);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1px solid var(--lg-border);
+  border-radius: 999px;
+  padding: 7px 16px;
+  box-shadow: var(--lg-highlight), var(--lg-shadow);
+}
+.timer .bar {
+  height: 5px;
+  background: rgba(255, 255, 255, .20);
+  border-radius: 999px;
+}
+.bar > i {
+  background: linear-gradient(90deg, var(--lg-gold), var(--lg-gold-2));
+  border-radius: 999px;
+}
+.timer.is-low .timer-num {
+  color: #ff6b6b;
+  font-weight: 700;
+}
+.timer.is-low .bar > i {
+  background: linear-gradient(90deg, #ff9a6b, #ff5470);
+}
+
+/* 阅读顶部：金色玻璃进度带（计时进度由 .bar 呈现） */
+.r-toolbar {
+  position: relative;
+  overflow: hidden;
+}
+.r-toolbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent,
+              rgba(232, 200, 106, .75), rgba(246, 226, 164, .95),
+              rgba(232, 200, 106, .75), transparent);
+  opacity: .9;
+  pointer-events: none;
+}
+
+/* ---------- 7. 答案对照表 ---------- */
+.rpt {
+  background: var(--lg-glass);
+  -webkit-backdrop-filter: var(--lg-blur-soft);
+  backdrop-filter: var(--lg-blur-soft);
+  border: 1px solid var(--lg-border);
+  border-radius: var(--r-md);
+}
+.rpt-table tr.ok { background: rgba(34, 197, 94, .16); }
+.rpt-table tr.bad { background: rgba(239, 68, 68, .16); }
+.rpt-table tr.blank { background: rgba(148, 163, 184, .16); }
+.rpt-table tr.ok td.c-mark { color: #22c55e; }
+.rpt-table tr.blank td.c-mark { color: #94a3b8; }
+[data-theme="dark"] .rpt-table tr.ok { background: rgba(34, 197, 94, .20); }
+[data-theme="dark"] .rpt-table tr.bad { background: rgba(239, 68, 68, .20); }
+[data-theme="dark"] .rpt-table tr.blank { background: rgba(148, 163, 184, .18); }
+
+/* ---------- 8. 卡片 hover：阴影加深 + 上浮 2px ---------- */
+.es-card {
+  transition: transform var(--lg-dur) var(--lg-ease),
+              box-shadow var(--lg-dur) var(--lg-ease),
+              background var(--lg-dur) var(--lg-ease);
+}
+.es-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, .24), var(--lg-highlight);
+}
+.card-wrap,
+.stat-box {
+  transition: transform var(--lg-dur) var(--lg-ease),
+              box-shadow var(--lg-dur) var(--lg-ease);
+}
+.card-wrap:hover,
+.stat-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .18), var(--lg-highlight);
+}
+
+/* ---------- 9. 弹窗：玻璃 + 遮罩模糊 ---------- */
+.cf-box,
+.dp-box {
+  background: var(--lg-glass-strong);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--lg-border);
+  box-shadow: var(--lg-highlight), 0 24px 64px rgba(0, 0, 0, .28);
+  border-radius: var(--r-lg);
+}
+.cf-mask,
+.dp-mask {
+  background: rgba(6, 10, 22, .55);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  backdrop-filter: blur(12px) saturate(120%);
+}
+
+/* ---------- 10. 统一弹性动效 ---------- */
+.btn,
+.glass,
+.pane,
+.es-card,
+.opt,
+.q-nav button,
+.icon-btn,
+.seg-btn,
+.theme-toggle,
+.btn-font,
+.mchip,
+.rate {
+  transition-timing-function: var(--lg-ease);
+  transition-duration: var(--lg-dur);
+}
+.view.is-active {
+  animation-duration: var(--lg-dur);
+  animation-timing-function: var(--lg-ease);
+}
+
+/* ---------- 11. 点击区域不小于 36px ---------- */
+.btn-sm,
+.seg-btn,
+.mchip,
+.q-nav button,
+.qnav-cell {
+  min-height: 36px;
+}
+.q-nav button,
+.qnav-cell {
+  min-width: 36px;
+}
+
+/* ---------- 12. 深色玻璃（跟随系统 + 站内手动） ---------- */
+[data-theme="dark"] {
+  --lg-glass: rgba(30, 32, 38, .58);
+  --lg-glass-strong: rgba(30, 32, 38, .78);
+  --lg-glass-soft: rgba(30, 32, 38, .42);
+  --lg-border: rgba(255, 255, 255, .16);
+  --lg-highlight: inset 0 1px 0 rgba(255, 255, 255, .12);
+  --lg-shadow: 0 8px 32px rgba(0, 0, 0, .42);
+  --lg-gold-deep: #f4dfa0;
+}
+[data-theme="dark"] .btn-primary { color: #f4dfa0; }
+[data-theme="dark"] .nav-seg { background: var(--lg-glass-soft); }
+
+/* 系统深色兜底：站内手动选浅色时不被覆盖 */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    --lg-glass: rgba(28, 28, 30, .55);
+    --lg-glass-strong: rgba(28, 28, 30, .76);
+    --lg-glass-soft: rgba(28, 28, 30, .34);
+    --lg-border: rgba(255, 255, 255, .14);
+    --lg-highlight: inset 0 1px 0 rgba(255, 255, 255, .10);
+    --lg-shadow: 0 8px 32px rgba(0, 0, 0, .38);
+    --lg-gold-deep: #f4dfa0;
+  }
+  html:not([data-theme="light"]) .btn-primary { color: #f4dfa0; }
+}
+
+/* ---------- 13. macOS 减少透明度：近实色 + 关闭 blur ---------- */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --lg-glass: #f3f5fa;
+    --lg-glass-strong: #ffffff;
+    --lg-border: rgba(0, 0, 0, .12);
+  }
+  [data-theme="dark"] {
+    --lg-glass: #1c1e22;
+    --lg-glass-strong: #24262c;
+    --lg-border: rgba(255, 255, 255, .16);
+  }
+  .glass,
+  .glass-soft,
+  .topbar-in,
+  .r-toolbar,
+  .w-toolbar,
+  .pane,
+  .es-card,
+  .essay-guide,
+  .stat-box,
+  .cf-box,
+  .dp-box,
+  .wb-panel,
+  .drawer-panel,
+  .es-side,
+  .ed-head,
+  .btn,
+  .timer,
+  .q-nav {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: var(--lg-glass);
+  }
+  .apane,
+  .qpane,
+  .ans-body,
+  #editor { background: #fff; }
+  [data-theme="dark"] .apane,
+  [data-theme="dark"] .qpane,
+  [data-theme="dark"] .ans-body,
+  [data-theme="dark"] #editor { background: #14161c; }
+}
+
+/* ---------- 14. 窗口适配 ---------- */
+/* MacBook 常见宽度：双栏比例微调，正文略宽 */
+@media (min-width: 1280px) and (max-width: 1512px) {
+  .r-split { grid-template-columns: minmax(0, 1.03fr) minmax(0, .97fr); }
+}
+
+/* 1024 以下：阅读改单栏上下（901–1024；900 以下交给 ios.css 的切页逻辑） */
+@media (min-width: 901px) and (max-width: 1024px) {
+  .r-split {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 0;
+  }
+  .r-split > .pane { min-height: 420px; }
+}
+
+/* ---------- 15. 阅读交卷：预估 Band + 近期交卷 ---------- */
+.rpt-band {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.1;
+  padding: 4px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(232, 200, 106, .18), rgba(255, 255, 255, .08));
+  border: 1px solid rgba(232, 200, 106, .55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.rpt-band b {
+  font-family: var(--font-num);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  color: #8a6a12;
+}
+.rpt-band em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+[data-theme="dark"] .rpt-band b { color: #f4dfa0; }
+.rpt-hist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 11.5px;
+}
+.rpt-hist-t { color: var(--muted); }
+.rpt-hist-i {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .5);
+  border: 1px solid var(--lg-border);
+  color: var(--ink-3);
+}
+[data-theme="dark"] .rpt-hist-i { background: rgba(255, 255, 255, .06); }
+
+/* ---------- 16. 答案对照表 · 原文定位 ---------- */
+.article p {
+  transition: background-color .6s ease, box-shadow .6s ease;
+}
+.article p.loc-flash {
+  background: rgba(232, 200, 106, .45);
+  box-shadow: 0 0 0 6px rgba(232, 200, 106, .16);
+  border-radius: 6px;
+}
+[data-theme="dark"] .article p.loc-flash {
+  background: rgba(232, 200, 106, .30);
+}
+.rpt-table tr[data-locate] { cursor: pointer; }
+.rpt-table tr[data-locate]:hover {
+  background: rgba(232, 200, 106, .16);
+  box-shadow: inset 3px 0 0 rgba(232, 200, 106, .8);
+}
+
+/* ---------- 17. 听力模块 ---------- */
+.l-split {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  gap: 18px;
+  height: calc(100vh - 236px);
+  min-height: 480px;
+}
+.l-player {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.l-now {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, .55);
+  border: 1px solid var(--lg-border);
+  transition: box-shadow var(--lg-dur) var(--lg-ease);
+}
+.l-now.is-live {
+  box-shadow: inset 3px 0 0 var(--lg-gold);
+  background: rgba(255, 255, 255, .72);
+}
+.l-who {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  color: var(--lg-gold-deep);
+  font-weight: 700;
+}
+.l-text {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+.l-bar { height: 8px; }
+.l-bar > i {
+  background: linear-gradient(90deg, var(--lg-gold), var(--lg-gold-2));
+}
+.l-time {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-num);
+}
+.l-tip {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+[data-theme="dark"] .l-now {
+  background: rgba(255, 255, 255, .06);
+}
+[data-theme="dark"] .l-now.is-live {
+  background: rgba(255, 255, 255, .10);
+}
+/* 字幕：逐句列出，播到哪句高亮哪句（当前句高亮 + 第 x / y 句进度） */
+.l-transcript {
+  margin: 10px 0 4px;
+  max-height: 220px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .40);
+  border: 1px solid var(--lg-border);
+}
+.l-seg {
+  display: flex;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: .58;
+  border: 1px solid transparent;
+}
+.l-seg.active {
+  opacity: 1;
+  background: rgba(255, 255, 255, .72);
+  border-color: var(--lg-gold);
+  box-shadow: inset 3px 0 0 var(--lg-gold);
+}
+.l-seg-who {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--lg-gold-deep);
+  font-weight: 700;
+  min-width: 74px;
+  flex: 0 0 auto;
+}
+.l-seg-text { color: var(--ink); }
+.l-now.is-fail {
+  box-shadow: inset 3px 0 0 #e5484d;
+  background: rgba(255, 255, 255, .72);
+}
+.is-fail-text { color: #e5484d !important; font-weight: 600; }
+[data-theme="dark"] .l-seg.active { background: rgba(255, 255, 255, .08); }
+[data-theme="dark"] .l-transcript { background: rgba(255, 255, 255, .05); }
+[data-theme="dark"] .l-now.is-fail { background: rgba(255, 255, 255, .10); }
+@media (max-width: 900px) {
+  .l-split {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 0;
+  }
+}
+
+/* ============================================================
+   18. Yan-di 品牌展示层
+   ============================================================ */
+
+/* 页脚签名 */
+.site-foot {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 10px 22px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.site-foot b { font-weight: 600; }
+.foot-about {
+  border: 0;
+  background: none;
+  padding: 2px 4px;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.foot-about:hover { color: var(--brand); }
+
+/* 关于弹窗 */
+.about-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.about-layer.is-open { display: flex; }
+.about-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 10, 22, .52);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.about-box {
+  position: relative;
+  z-index: 1;
+  width: min(360px, 100%);
+  padding: 26px 24px 20px;
+  border-radius: var(--r-lg);
+  text-align: center;
+  background: var(--lg-glass-strong);
+  border: 1px solid var(--lg-border);
+  box-shadow: var(--lg-highlight), 0 24px 64px rgba(0, 0, 0, .28);
+}
+.about-logo {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 12px;
+  border-radius: 16px;
+  background: #fff;
+  padding: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .12);
+}
+.about-box h3 { font-size: 22px; margin-bottom: 4px; }
+.about-sub { font-size: 12.5px; color: var(--muted); }
+.about-desc { margin: 14px 0 18px; font-size: 13px; color: var(--ink-3); }
+
+/* 成绩页水印（8%） */
+.rpt { position: relative; overflow: hidden; }
+.rpt::after {
+  content: "Yan-di";
+  position: absolute;
+  right: 14px;
+  bottom: 6px;
+  font-family: var(--font-sans);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  line-height: 1;
+  color: currentColor;
+  opacity: .08;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* 空状态品牌位（15%） */
+.empty { position: relative; }
+.empty::before {
+  content: "Yan-di";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-sans);
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: currentColor;
+  opacity: .15;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+.empty > * { position: relative; z-index: 1; }
+
+/* ============================================================
+   19. 单词：今日复习 / 学习统计 / 词库工具
+   ============================================================ */
+.v-top {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.4fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.review-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: var(--r-lg);
+}
+.rv-info { display: flex; align-items: baseline; gap: 8px; }
+.rv-info b {
+  font-family: var(--font-num);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--brand-700);
+  line-height: 1;
+}
+.rv-info span { font-size: 12.5px; color: var(--muted); }
+.v-stats {
+  padding: 14px 18px;
+  border-radius: var(--r-lg);
+  display: grid;
+  grid-template-columns: auto auto auto minmax(120px, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+.vs-item b {
+  display: block;
+  font-family: var(--font-num);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.vs-item span { font-size: 11px; color: var(--muted); }
+.vs-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--stroke-soft);
+}
+.vs-bar i { display: block; height: 100%; transition: width .35s var(--ease); }
+#vsBarNew { background: #9aa6bf; }
+#vsBarFam { background: var(--lg-gold); }
+#vsBarMst { background: #4ec27f; }
+.vs-legend {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.vs-legend b { color: var(--ink-2); }
+.deck-tools { display: flex; gap: 8px; margin-bottom: 10px; }
+.deck-tools .inp { flex: 1; min-width: 0; }
+.deck-tools select { flex: none; }
+@media (max-width: 900px) {
+  .v-top { grid-template-columns: 1fr; }
+  .v-stats { grid-template-columns: repeat(3, 1fr); }
+  .vs-dist { grid-column: 1 / -1; }
+  .review-card, .v-stats { padding: 14px 16px; }
+  /* 固定底栏不遮挡正文与页脚 */
+  body { padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px)); }
+  .site-foot { margin-bottom: 0; padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+  .btn-sm, .seg-btn { min-height: 40px; }
+}
+
+/* ============================================================
+   20. 全屏练习页
+   ============================================================ */
+.practice-full {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: none;
+  height: 100dvh;
+  background: var(--bg-b);
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+           env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+.practice-full.is-open { display: block; }
+body.practice-open { overflow: hidden; }
+body.practice-open .topbar,
+body.practice-open .tabbar,
+body.practice-open .site-foot { display: none !important; }
+
+.pf-inner {
+  width: 100%;
+  max-width: 760px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 10px 18px 14px;
+  display: flex;
+  flex-direction: column;
+}
+.pf-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0 10px;
+}
+.pf-exit {
+  flex: none;
+  border: 1px solid var(--lg-border);
+  background: var(--lg-glass);
+  color: var(--ink-2);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  min-height: 40px;
+}
+.pf-exit:active { transform: scale(.97); }
+.pf-idx {
+  flex: none;
+  font-family: var(--font-num);
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.pf-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--stroke-soft);
+  overflow: hidden;
+}
+.pf-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--lg-gold), var(--lg-gold-2));
+  transition: width .35s var(--ease);
+}
+.pf-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 0 12px;
+  -webkit-overflow-scrolling: touch;
+}
+.pf-body.is-result { justify-content: flex-start; }
+/* 练习页底部小统计 */
+.pf-stats {
+  flex: none;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--muted);
+  padding: 6px 0 2px;
+}
+/* 答后反馈卡片 */
+.fb-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--lg-glass);
+  border: 1px solid var(--lg-border);
+  font-size: 13.5px;
+}
+.fb-card b { font-size: 17px; }
+.fb-card span { color: var(--muted); flex: 1; }
+.fb-listen {
+  flex: none;
+  border: 1px solid var(--lg-border);
+  background: transparent;
+  color: var(--brand-700);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  min-height: 34px;
+}
+/* hidden 属性不被 display 覆盖 */
+.rate-row[hidden] { display: none !important; }
+/* 练习页不需要「跳过/结束本轮」，避免分心 */
+.practice-full #btnSkip,
+.practice-full #btnStop { display: none !important; }
+.practice-full #cardLive { margin: 0; }
+.practice-full #cardLive > .bar,
+.practice-full #cardLive > .round-meta { display: none; }
+.practice-full .q-word {
+  font-size: clamp(44px, 13vw, 76px);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+.practice-full .q-word.small { font-size: clamp(30px, 8vw, 44px); }
+.practice-full .q-sub { text-align: center; margin-bottom: 18px; }
+.practice-full .opts { gap: 14px; }
+.practice-full .opt {
+  min-height: 66px;
+  font-size: 18px;
+  padding: 16px 20px;
+  border-radius: var(--r-md);
+}
+
+/* 0-1 词性：单词与词性拆成两个独立元素，词性小字号、弱化、与单词基线对齐 */
+.practice-full .q-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.practice-full .q-head .q-word { margin-bottom: 0; }
+.practice-full .q-pos {
+  font-size: .56em;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: .4px;
+  align-self: baseline;
+  padding: 3px 11px;
+  border: 1px solid var(--lg-border);
+  border-radius: 999px;
+  background: var(--lg-glass);
+  line-height: 1;
+  white-space: nowrap;
+}
+.flip-face .q-pos-big {
+  font-size: .5em;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: .45em;
+  vertical-align: baseline;
+}
+/* 词库列表里的词性标记 */
+.deck-pos {
+  font-size: .72em;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: 6px;
+  padding: 1px 7px;
+  border: 1px solid var(--lg-border);
+  border-radius: 999px;
+  background: var(--lg-glass);
+  vertical-align: middle;
+}
+/* 反馈卡里的词性 / 例句 */
+.fb-card .fb-pos {
+  font-size: .62em;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: 8px;
+  padding: 1px 7px;
+  border: 1px solid var(--lg-border);
+  border-radius: 999px;
+  background: var(--lg-glass);
+  vertical-align: middle;
+}
+.fb-ex {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--lg-glass);
+  border: 1px solid var(--lg-border);
+  font-size: 13.5px;
+}
+.fb-ex .lb { color: var(--muted); flex: none; }
+.fb-ex .ex { flex: 1; }
+.fb-listen.sm { flex: none; min-height: 30px; padding: 4px 10px; font-size: 13px; }
+.practice-full .type-row { display: flex; gap: 10px; }
+.practice-full .type-row .inp {
+  flex: 1;
+  min-height: 54px;
+  font-size: 18px;
+}
+.practice-full .type-row .btn { min-height: 54px; }
+.practice-full .spell-slots { justify-content: center; }
+.practice-full .explain { text-align: left; }
+.pf-next {
+  flex: none;
+  width: 100%;
+  min-height: 54px;
+  font-size: 16px;
+  margin-top: 10px;
+}
+.pf-next[hidden] { display: none !important; }
+@media (max-width: 430px) {
+  .pf-inner { padding: 8px 14px 12px; }
+  .practice-full .opt { min-height: 56px; }
+}
+/* 确认弹层必须高于全屏练习页 */
+.cf-layer { z-index: 400; }
+
+/* ============================================================
+   21. v5：计时器去嵌套 / 阅读全屏与清晰度 / 弹窗按钮 / 手机量化
+   ============================================================ */
+
+/* A-2 计时器取消内层框，只保留工具条一层 */
+.exam-hud .timer {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* B-1 阅读接近全屏：桌面端容器 96vw + 12~16px 边距；超宽屏设上限防止行过长 */
+.wrap { max-width: min(96vw, 2000px); padding: 12px 16px 8px; }
+.r-split { height: calc(100dvh - 210px); }
+
+/* B-2 内容去雾：实色 + 关闭模糊 + 高对比 */
+.apane,
+.qpane {
+  background: #ffffff;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+[data-theme="dark"] .apane,
+[data-theme="dark"] .qpane { background: #15171d; }
+.pane { -webkit-backdrop-filter: none; backdrop-filter: none; }
+.article { color: var(--ink); }
+
+/* C-5 确认弹窗：按钮同高、垂直居中、红色 destructive 跟随主题 */
+.cf-acts {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.cf-acts .btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.cf-acts .btn-danger {
+  background: var(--lg-glass);
+  color: var(--bad);
+  border: 1px solid var(--bad);
+}
+html[data-theme="light"] .cf-acts .btn-danger {
+  background: var(--lg-glass);
+  color: var(--bad);
+  border: 1px solid var(--bad);
+}
+html[data-theme="dark"] .cf-acts .btn-danger {
+  background: var(--lg-glass) !important;
+  color: var(--bad) !important;
+  border: 1px solid var(--bad) !important;
+}
+
+/* D 手机端量化清单 */
+@media (max-width: 430px) {
+  .wrap { max-width: 100%; padding: 8px 10px; }
+  .r-split { height: auto; }
+  .q-nav button,
+  .qnav-cell { min-width: 40px; min-height: 40px; }
+  .q-nav button .qnav-f { width: 18px; height: 18px; font-size: 12px; }
+  .cf-box,
+  .dp-box,
+  .about-box { max-width: calc(100vw - 32px); }
+  /* 三个胶囊压缩到一行 */
+  .topbar-in { column-gap: 6px; row-gap: 6px; padding: 6px 10px; }
+  .icon-btn,
+  .btn-font,
+  .theme-toggle,
+  .wipe-btn {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    padding: 0 7px !important;
+    gap: 4px;
+  }
+  /* 手机端同样三个图标同尺寸（18px），不许一个大一个小 */
+  .icon-btn .icon,
+  .theme-toggle .icon,
+  .btn-font .fs-glyph { width: 18px; height: 18px; flex: 0 0 18px; }
+  .icon-btn .icon svg,
+  .theme-toggle .icon svg { width: 18px; height: 18px; }
+  .btn-font .fs-glyph { font-size: 14px; }
+  .review-top-btn .lbl,
+  .theme-toggle .lbl,
+  .me-top-btn .lbl,
+  .wipe-btn .lbl { font-size: 11.5px; }
+  .brand-text strong { font-size: 14px; }
+}
+
+/* 底部导航 6 项均分（v15：首页 / 阅读 / 听力 / 写作 / 单词 / 范文） */
+.tabbar-inner { grid-template-columns: repeat(6, 1fr); }
+
+/* ---------- 顶栏按钮：统一固定方形，禁止被标题挤压 ---------- */
+/* 顶栏设置按钮：图标 + 文字小胶囊（不再用圆圈） */
+.icon-btn,
+.btn-font,
+.theme-toggle,
+.wipe-btn {
+  width: auto !important;
+  height: 44px !important;
+  min-width: 0 !important;
+  min-height: 44px !important;
+  max-width: none !important;
+  max-height: 44px !important;
+  aspect-ratio: auto;
+  flex: 0 0 auto;
+  /* 必做2：三个按钮统一边框 + 背景 + 同高，避免「清空」矮一截且无边框 */
+  border: 1px solid var(--lg-border) !important;
+  background: var(--lg-glass-soft) !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px !important;
+  box-sizing: border-box;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+/* 图标统一 20px：图标盒与 svg 同尺寸，文字字形也占同样大的方盒，
+ * 保证三个胶囊里的“图标”视觉大小一致、垂直居中（A-3 几何标准） */
+.icon-btn .icon,
+.theme-toggle .icon,
+.btn-font .fs-glyph {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+}
+.icon-btn .icon svg,
+.theme-toggle .icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+.btn-font .fs-glyph {
+  font-family: var(--font-num);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+}
+.review-top-btn .lbl,
+.theme-toggle .lbl,
+.me-top-btn .lbl,
+.wipe-btn .lbl {
+  font-size: 12.5px;
+  line-height: 1;
+}
+.topbar-right { flex: 0 0 auto; gap: 8px; flex-wrap: nowrap; }
+.brand-text { min-width: 0; overflow: hidden; }
+.brand-text strong,
+.brand-text span {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- iPhone 安全区（不写死像素，全部 env） ---------- */
+.topbar {
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  padding-left: calc(12px + env(safe-area-inset-left, 0px));
+  padding-right: calc(12px + env(safe-area-inset-right, 0px));
+}
+.tabbar {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* 页眉数据快捷按钮 */
+.data-top-btn { width: 36px; height: 36px; flex: none; }
+/* 品牌区固定宽度，避免被导航挤压 */
+.brand { flex: 0 0 auto; }
+@media (min-width: 1401px) {
+  .topbar-in { gap: 10px; }
+  .data-top-btn { width: 34px; height: 34px; }
+  /* 大屏：品牌固定宽度，数据入口由三个快捷按钮承担，徽章让位 */
+  .brand { flex: 0 0 auto; }
+  .chip-btn { display: none; }
+  .nav-seg .seg-btn { padding: 8px 12px; font-size: 13px; }
+}
+@media (max-width: 1400px) {
+  /* 窄一些的窗口收起三个快捷按钮，改用「数据保存在本机」徽章打开数据面板 */
+  .data-top-btn { display: none !important; }
+}
+@media (min-width: 1181px) and (max-width: 1400px) {
+  .brand-text { display: flex !important; }
+  .brand-text span { display: none; }
+  .nav-seg .seg-btn { padding: 8px 8px; font-size: 12.5px; gap: 4px; }
+  .topbar-in { gap: 8px; }
+  .chip-btn { padding: 5px 9px; font-size: 10.5px; }
+}
+@media (min-width: 1161px) and (max-width: 1180px) {
+  .brand-text { display: flex !important; }
+  .brand-text span { display: none; }
+  .nav-seg .seg-btn { padding: 8px 7px; font-size: 12px; gap: 3px; }
+  .topbar-in { gap: 8px; }
+  .chip-btn { padding: 5px 8px; font-size: 10.5px; }
+}
+
+/* 窄窗口（901–1160）顶栏压缩，避免 5 个导航项挤压 */
+@media (max-width: 1160px) {
+  .nav-seg .seg-btn { padding: 8px 10px; font-size: 12.5px; gap: 4px; }
+  .brand-text span { display: none; }
+  .topbar-in { gap: 12px; padding: 0 12px; }
+}
+@media (max-width: 1060px) {
+  .nav-seg .seg-btn { padding: 8px 7px; font-size: 12px; letter-spacing: -.2px; }
+  .topbar-in { gap: 8px; padding: 0 10px; }
+}
+@media (max-width: 1120px) {
+  .nav-seg .seg-btn { padding: 8px 6px; font-size: 11.8px; }
+  .chip-btn { padding: 5px 9px; font-size: 10.5px; }
+}
+
+/* ---------- 设置处「实际语音」提示（跟随主题，不许写死颜色） ---------- */
+.field-note {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--muted, #64748b);
+  opacity: .95;
+}
+.field-note.is-fail { color: #b91c1c; opacity: 1; }
+[data-theme="dark"] .field-note { color: rgba(226, 232, 240, .82); }
+[data-theme="dark"] .field-note.is-fail { color: #f87171; }
+
+/* ---------- 顶栏宽度自适应（按钮组永不收缩、永不被裁切，品牌/导航让位） ---------- */
+.brand { flex: 0 1 auto; min-width: 0; }
+.nav-seg { flex: 0 1 auto; min-width: 0; }
+/* 桌面 / 平板：整条顶栏强制单行 */
+@media (min-width: 431px) {
+  .topbar-in { flex-wrap: nowrap !important; }
+  .topbar-right {
+    flex: 0 0 auto !important;
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+}
+.chip-btn {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 140px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* 胶囊瘦身：图标统一 18px（同组同尺寸），内边距与间距收紧 */
+.icon-btn,
+.btn-font,
+.theme-toggle,
+.wipe-btn { padding: 0 10px !important; gap: 5px; }
+.icon-btn .icon,
+.theme-toggle .icon,
+.btn-font .fs-glyph { width: 18px; height: 18px; flex: 0 0 18px; }
+.icon-btn .icon svg,
+.theme-toggle .icon svg { width: 18px; height: 18px; }
+.btn-font .fs-glyph { font-size: 15px; }
+.review-top-btn .lbl,
+.theme-toggle .lbl,
+.me-top-btn .lbl,
+.wipe-btn .lbl { font-size: 12px; }
+
+@media (max-width: 1500px) {
+  .brand-text span { display: none; }
+  .topbar-in { gap: 8px; }
+}
+@media (max-width: 1360px) {
+  .nav-seg .seg-btn { padding: 8px 9px; font-size: 12.5px; gap: 4px; }
+}
+@media (max-width: 1240px) {
+  .nav-seg .seg-btn { padding: 8px 7px; font-size: 12px; gap: 3px; }
+  .chip-btn { max-width: 112px; }
+}
+
+/* 手机（≤430）：品牌 + 三胶囊同一行；计时器/交卷条整行换行（不被挤没） */
+@media (max-width: 430px) {
+  .topbar-in { flex-wrap: wrap; }
+  .topbar-right { display: contents; gap: 5px; }
+  /* 手机上保留数据面板入口（压缩为「数据」二字） */
+  .topbar-right .chip { display: inline-flex !important; }
+  .icon-btn,
+  .btn-font,
+  .theme-toggle,
+  .wipe-btn {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    padding: 0 6px !important;
+    gap: 3px;
+  }
+  .icon-btn .icon,
+  .theme-toggle .icon,
+  .btn-font .fs-glyph { width: 16px; height: 16px; flex: 0 0 16px; }
+  .icon-btn .icon svg,
+  .theme-toggle .icon svg { width: 16px; height: 16px; }
+  .btn-font .fs-glyph { font-size: 14px; }
+  .review-top-btn .lbl,
+  .theme-toggle .lbl,
+  .me-top-btn .lbl,
+  .wipe-btn .lbl { font-size: 11px; }
+  .brand-text strong { font-size: 13px; }
+  #chipStat { font-size: 0; padding: 5px 9px; flex: 0 0 auto; }
+  #chipStat::after { content: '数据'; font-size: 10.5px; }
+}
+
+/* 超窄屏（≤360，iPhone SE 一代等）：再收一档，保证三胶囊仍在同一行 */
+@media (max-width: 360px) {
+  .topbar-in { column-gap: 4px; row-gap: 4px; padding: 6px 8px; }
+  .icon-btn,
+  .btn-font,
+  .theme-toggle,
+  .wipe-btn { padding: 0 5px !important; gap: 2px; }
+  .review-top-btn .lbl,
+  .theme-toggle .lbl,
+  .me-top-btn .lbl,
+  .wipe-btn .lbl { font-size: 10.5px; }
+  #chipStat { padding: 5px 7px; }
+}
+
+/* 导航英文副标：窄屏可隐藏，保证品牌与按钮永不被挤压 */
+.nav-en { font-style: normal; font-weight: 600; opacity: .78; margin-left: 2px; }
+.brand { flex: 0 0 auto !important; }
+@media (max-width: 1400px) {
+  .nav-en { display: none; }
+}
+
+/* 手机端顶栏次序：品牌 → 三个设置胶囊 → 数据入口，计时器整行在下一行 */
+@media (max-width: 430px) {
+  .brand { order: 0 !important; }
+  .topbar-right .chip { order: 4; }
+  .exam-hud { order: 9; }
+}
+
+/* =============================================================
+   22. v9 极端液态玻璃（只在末尾追加，覆盖前述取值；只改样式）
+   ---------------------------------------------------------------
+   · 令牌：chrome（铬层，最透）/ container（容器层，强透）/ longtext（长文下限）
+   · 边缘折射：1px 外侧高光 + 1px 内侧极淡内阴影 + 顶部高光更亮
+   · 悬停 / 按下：透明度微增 / 微减，过渡 200–300ms
+   · 主题切换：玻璃参数 300ms 平滑过渡（reduced-motion 由全局规则兜底取消）
+   · 可读性：文字纯色 + 极轻文字阴影；长文容器不低于 0.6(浅)/0.55(深)
+   · 背景：更大更柔的多色光斑（浅蓝紫粉 / 深蓝紫），fixed 不随滚动
+   ============================================================= */
+
+/* ---------- 22.1 令牌（覆盖 --glass* / --lg-*；alpha 由 #glassOp 滑杆实时调） ---------- */
+/* 玻璃层级 alpha：由滑杆控制（0=清晰/接近实色 → 100=通透/高度透明），默认中间档 */
+:root, html[data-theme="light"] {
+  --g-chrome: .55;      /* 铬层默认 0.55（必做4） */
+  --g-container: .75;   /* 容器层默认 0.75（必做4） */
+  --g-long: .78;        /* 长文容器下限 ≥0.75（必做5） */
+
+  --glass: rgba(255, 255, 255, var(--g-container));
+  --glass-2: rgba(255, 255, 255, calc(var(--g-container) - .25));
+  --glass-3: rgba(255, 255, 255, calc(var(--g-container) + .10));
+  --stroke: rgba(255, 255, 255, .82);
+  --stroke-soft: rgba(22, 28, 46, .10);
+
+  /* 容器层（卡片/弹窗）强透 */
+  --lg-glass: rgba(255, 255, 255, var(--g-container));
+  --lg-glass-strong: rgba(255, 255, 255, calc(var(--g-container) + .10));
+  --lg-glass-soft: rgba(255, 255, 255, calc(var(--g-container) - .30));
+  --lg-border: rgba(255, 255, 255, .62);
+
+  /* 铬层（顶栏/工具条/标签栏/计时器）默认 0.55（最透端可到 0.25） */
+  --lg-chrome: rgba(255, 255, 255, var(--g-chrome));
+  --lg-chrome-blur: blur(30px) saturate(180%);
+
+  --lg-blur: blur(22px) saturate(170%);
+  --lg-blur-soft: blur(14px) saturate(160%);
+
+  /* 边缘折射 + 顶部高光 */
+  --lg-highlight: inset 0 1px 0 rgba(255, 255, 255, .72);
+  --lg-edge: inset 0 0 0 1px rgba(255, 255, 255, .06);
+  --lg-shadow: 0 10px 40px rgba(0, 0, 0, .14);
+
+  /* 长文容器下限 */
+  --lg-longtext: rgba(255, 255, 255, var(--g-long));
+}
+html[data-theme="dark"] {
+  --g-chrome: .55;
+  --g-container: .75;
+  --g-long: .78;
+
+  --glass: rgba(30, 34, 48, var(--g-container));
+  --glass-2: rgba(28, 31, 42, calc(var(--g-container) - .25));
+  --glass-3: rgba(34, 38, 52, calc(var(--g-container) + .10));
+  --stroke: rgba(255, 255, 255, .22);
+  --stroke-soft: rgba(255, 255, 255, .10);
+
+  --lg-glass: rgba(30, 34, 48, var(--g-container));
+  --lg-glass-strong: rgba(34, 38, 52, calc(var(--g-container) + .10));
+  --lg-glass-soft: rgba(28, 31, 42, calc(var(--g-container) - .30));
+  --lg-border: rgba(255, 255, 255, .22);
+
+  --lg-chrome: rgba(28, 31, 42, var(--g-chrome));
+  --lg-chrome-blur: blur(30px) saturate(175%);
+  --lg-highlight: inset 0 1px 0 rgba(255, 255, 255, .14);
+  --lg-edge: inset 0 0 0 1px rgba(0, 0, 0, .20);
+  --lg-shadow: 0 10px 40px rgba(0, 0, 0, .46);
+
+  --lg-longtext: rgba(20, 22, 30, var(--g-long));
+}
+
+/* ---------- 22.2 边缘折射 + 顶部高光 + 主题平滑过渡（容器层统一套用） ---------- */
+.glass, .glass-soft, .topbar-in, .r-toolbar, .w-toolbar, .pane, .es-card,
+.essay-guide, .stat-box, .cf-box, .dp-box, .wb-panel, .drawer-panel, .es-side,
+.ed-head, .opt, .explain, .flip-face, .rate, .card-wrap, .fb-card, .fb-ex,
+.rpt, .coh, .placeholder, .hist-item, .wrong-row, .v-stats, .review-card {
+  box-shadow: var(--lg-highlight), var(--lg-edge), var(--lg-shadow);
+  transition: background-color .3s var(--ease), border-color .3s var(--ease),
+              box-shadow .3s var(--ease), backdrop-filter .3s var(--ease),
+              color .3s var(--ease);
+}
+body { transition: background-color .3s var(--ease), color .3s var(--ease); }
+
+/* ---------- 22.3 铬层（最透）：顶栏 / 阅读·写作工具条 / 计时器 / 考试 HUD / 划词浮条 / 标签栏 ---------- */
+.topbar-in, .r-toolbar, .w-toolbar, .timer, .exam-hud, .hl-bar, .tabbar {
+  background: var(--lg-chrome);
+  -webkit-backdrop-filter: var(--lg-chrome-blur);
+  backdrop-filter: var(--lg-chrome-blur);
+  border-color: var(--lg-border);
+  box-shadow: var(--lg-highlight), var(--lg-edge), var(--lg-shadow);
+}
+/* 标签栏：底部极淡渐变衬底保清晰（不改回实色） */
+.tabbar { border-top: 1px solid var(--lg-border); }
+.tabbar::after {
+  background: linear-gradient(to top, rgba(0, 0, 0, .05), transparent 55%);
+}
+
+/* ---------- 22.4 长文容器玻璃化（下限 0.6 / 0.55），正文锐利 + 极轻文字阴影托对比 ---------- */
+.apane, .qpane, .ed-pane, #editor, .ans-body {
+  background: var(--lg-longtext);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid var(--lg-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--lg-highlight), var(--lg-edge);
+  transition: background-color .3s var(--ease), backdrop-filter .3s var(--ease);
+}
+.article, .ed-essay { text-shadow: 0 1px 0 rgba(255, 255, 255, .45); }
+[data-theme="dark"] .article, [data-theme="dark"] .ed-essay {
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .35);
+}
+
+/* 深色下补齐特异性：压过前述 [data-theme=dark] 旧实色/高透明度取值
+   （旧规则特异性 0,2,0，这里用 html[data-theme=dark] X 提到 0,2,1） */
+html[data-theme="dark"] .apane,
+html[data-theme="dark"] .qpane,
+html[data-theme="dark"] .ed-pane,
+html[data-theme="dark"] #editor,
+html[data-theme="dark"] .ans-body {
+  background: var(--lg-longtext);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid var(--lg-border);
+  box-shadow: var(--lg-highlight), var(--lg-edge);
+}
+html[data-theme="dark"] .tabbar {
+  background: var(--lg-chrome);
+  -webkit-backdrop-filter: var(--lg-chrome-blur);
+  backdrop-filter: var(--lg-chrome-blur);
+  border-top: 1px solid var(--lg-border);
+}
+
+/* ---------- 22.5 悬停 / 按下微光（透明度微增 / 微减） ---------- */
+.opt:hover:not(:disabled) {
+  background: var(--lg-glass-strong);
+  box-shadow: var(--lg-highlight), var(--lg-edge), var(--sh-sm);
+}
+.btn:hover { background: var(--lg-glass-strong); }
+.card-wrap:hover, .es-card:hover, .stat-box:hover, .hist-item:hover, .wrong-row:hover {
+  box-shadow: var(--lg-highlight), var(--lg-edge), 0 18px 48px rgba(0, 0, 0, .22);
+}
+.fb-card:hover, .fb-ex:hover, .coh:hover, .rpt:hover, .review-card:hover {
+  box-shadow: var(--lg-highlight), var(--lg-edge), var(--lg-shadow);
+}
+.card-wrap:active, .es-card:active, .opt:active, .review-card:active {
+  transform: translateY(0) scale(.99);
+}
+
+/* ---------- 22.6 背景：更大更柔的多色光斑（fixed 不随滚动） ---------- */
+.bg {
+  background:
+    radial-gradient(62% 52% at 18% 2%,  rgba(157, 178, 255, .30), transparent 70%),
+    radial-gradient(56% 46% at 86% 12%, rgba(217, 189, 255, .28), transparent 72%),
+    radial-gradient(52% 46% at 52% 102%, rgba(168, 226, 220, .24), transparent 72%),
+    linear-gradient(180deg, #eef2fb 0%, #e7ecf7 46%, #eef1f8 100%);
+}
+.bg .blob { filter: blur(80px); opacity: .62; }
+.bg .b1 { width: 58vw; height: 58vw; left: -14vw; top: -20vw; }
+.bg .b2 { width: 52vw; height: 52vw; right: -12vw; top: -16vw; }
+.bg .b3 { width: 54vw; height: 54vw; right: -8vw; bottom: -24vw; }
+.bg .b4 { width: 48vw; height: 48vw; left: -10vw; bottom: -20vw; }
+[data-theme="dark"] .bg {
+  background:
+    radial-gradient(62% 52% at 18% 2%,  rgba(79, 110, 247, .32), transparent 70%),
+    radial-gradient(56% 46% at 86% 12%, rgba(232, 200, 106, .20), transparent 72%),
+    radial-gradient(52% 46% at 52% 102%, rgba(140, 109, 47, .24), transparent 72%),
+    linear-gradient(160deg, #0b1228 0%, #0d1630 46%, #060a16 100%);
+}
+[data-theme="dark"] .bg .blob { filter: blur(90px); opacity: .42; }
+
+/* =============================================================
+   23. v10 · 玻璃透明度滑杆 + 顶栏三按钮统一 + 无障碍兜底
+   ============================================================= */
+
+/* 23.1 顶栏「玻璃透明度」滑杆控件（≥1280px 显示在顶栏；其余宽度用数据面板内滑杆） */
+.glass-op-ctl {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 44px; padding: 0 10px; box-sizing: border-box;
+  border: 1px solid var(--lg-border);
+  background: var(--lg-glass-soft);
+  border-radius: 999px;
+  flex: 0 0 auto; white-space: nowrap;
+}
+.glass-op-ctl .lbl { font-size: 12px; line-height: 1; color: var(--ink-2); }
+.glass-op-range {
+  -webkit-appearance: none; appearance: none;
+  width: 84px; height: 22px; margin: 0; background: transparent; cursor: pointer;
+}
+.glass-op-range::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 999px;
+  background: linear-gradient(90deg, var(--lg-gold), var(--lg-gold-2));
+}
+.glass-op-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; margin-top: -5px; border-radius: 50%;
+  background: #fff; border: 1px solid var(--lg-gold);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .2);
+}
+.glass-op-range::-moz-range-track {
+  height: 4px; border-radius: 999px;
+  background: linear-gradient(90deg, var(--lg-gold), var(--lg-gold-2));
+}
+.glass-op-range::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff; border: 1px solid var(--lg-gold);
+}
+.glass-op-val {
+  font-size: 12px; line-height: 1; min-width: 30px; text-align: right;
+  color: var(--ink-3); font-family: var(--font-num);
+}
+@media (max-width: 1279px) { .glass-op-ctl { display: none !important; } }
+
+/* 数据面板内的同款滑杆：整行显示，所有宽度可用（移动端入口） */
+.dp-row.glass-op-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.dp-row.glass-op-row label { font-size: 12.5px; color: var(--ink-2); }
+.dp-row.glass-op-row .glass-op-range { width: 100%; flex: 1; max-width: 220px; }
+
+/* 23.2 减少透明度偏好：强制近实色 + 关闭模糊（置于末尾，覆盖前述取值） */
+@media (prefers-reduced-transparency: reduce) {
+  :root, html[data-theme="light"], html[data-theme="dark"] {
+    --g-chrome: 1; --g-container: 1; --g-long: 1;
+    --lg-glass: #f3f5fa; --lg-glass-strong: #ffffff; --lg-glass-soft: #eef1f7;
+    --lg-chrome: #eef1f7; --lg-longtext: #ffffff; --lg-border: rgba(0, 0, 0, .12);
+    --glass: #f3f5fa; --glass-2: #eef1f7; --glass-3: #ffffff;
+  }
+  [data-theme="dark"] {
+    --lg-glass: #1c1e22; --lg-glass-strong: #24262c; --lg-glass-soft: #16181d;
+    --lg-chrome: #181a20; --lg-longtext: #14161c; --lg-border: rgba(255, 255, 255, .16);
+    --glass: #1c1e22; --glass-2: #16181d; --glass-3: #24262c;
+  }
+  .glass, .glass-soft, .topbar-in, .r-toolbar, .w-toolbar, .pane, .es-card,
+  .essay-guide, .stat-box, .cf-box, .dp-box, .wb-panel, .drawer-panel, .es-side,
+  .ed-head, .btn, .timer, .q-nav, .apane, .qpane, .ans-body, #editor, .tabbar,
+  .review-card, .v-stats, .fb-card, .fb-ex, .rpt, .coh, .opt, .rate, .card-wrap,
+  .glass-op-ctl, .l-now {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: var(--lg-glass) !important;
+  }
+  .apane, .qpane, .ans-body, #editor { background: #fff !important; }
+  [data-theme="dark"] .apane, [data-theme="dark"] .qpane,
+  [data-theme="dark"] .ans-body, [data-theme="dark"] #editor { background: #14161c !important; }
+}
+
+/* 23.3 减少动态效果：取消玻璃过渡与悬停光流动画 */
+@media (prefers-reduced-motion: reduce) {
+  .glass, .glass-soft, .topbar-in, .r-toolbar, .w-toolbar, .pane, .es-card,
+  .essay-guide, .stat-box, .cf-box, .dp-box, .wb-panel, .drawer-panel, .es-side,
+  .ed-head, .opt, .explain, .flip-face, .rate, .card-wrap, .fb-card, .fb-ex,
+  .rpt, .coh, .placeholder, .hist-item, .wrong-row, .v-stats, .review-card,
+  .btn, .icon-btn, .theme-toggle, .btn-font, .wipe-btn, .tabbar, .glass-op-ctl,
+  .glass-op-range {
+    transition: none !important;
+    animation: none !important;
+  }
+  body { transition: none !important; }
+}
+
+/* =========================================================
+   24 · v14 成绩趋势（Band 趋势 + 按题型正确率 + 错题题号）
+   ========================================================= */
+.r-trend { margin-top: 14px; }
+.r-trend .pane-head { display: flex; align-items: center; gap: 10px; }
+.r-trend .pane-head .pane-title { flex: 1; }
+.r-trend .pane-body { display: flex; flex-direction: column; gap: 18px; }
+
+.trend-sec-t, .tw-title, .th-title, .rpt-trend-t {
+  font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 8px;
+}
+
+/* Band 柱状图 */
+.trend-chart {
+  display: flex; align-items: flex-end; gap: 8px;
+  height: 150px; padding: 6px 2px 0;
+  border-bottom: 1px solid rgba(120,130,150,.28);
+  overflow-x: auto;
+}
+.tcol { flex: 1 1 0; min-width: 34px; display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end; height: 100%; gap: 3px; }
+.tband { font-size: 11px; font-weight: 700; color: var(--ink-2); }
+.tbar {
+  width: 70%; min-height: 3px; border-radius: 5px 5px 0 0;
+  background: linear-gradient(180deg, #8b5cf6, #6366f1);
+}
+.tdate { font-size: 10px; color: var(--muted); white-space: nowrap; }
+.trend-empty {
+  padding: 26px 12px; text-align: center; color: var(--muted); font-size: 13px;
+  border: 1px dashed rgba(120,130,150,.4); border-radius: 12px;
+}
+
+/* 按题型：最新 vs 平均 */
+.trend-types { display: flex; flex-direction: column; gap: 8px; }
+.tt-head, .tt-row { display: grid; grid-template-columns: 64px 1fr 1fr; gap: 10px; align-items: center; }
+.tt-head { font-size: 11px; color: var(--muted); font-weight: 600; }
+.tt-head span:nth-child(2), .tt-head span:nth-child(3) { text-align: center; }
+.tt-name { font-size: 12px; color: var(--ink-2); font-weight: 600; }
+.tt-cell { display: flex; flex-direction: column; gap: 3px; }
+.tt-cell em { font-size: 10px; color: var(--muted); font-style: normal; text-align: center; }
+.tt-bar { height: 10px; border-radius: 6px; background: rgba(120,130,150,.18); overflow: hidden; }
+.tt-bar > i { display: block; height: 100%; border-radius: 6px; }
+.tt-latest > i { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+.tt-avg > i { background: rgba(120,130,150,.55); }
+/* v18 未结项②：单样本时平均列不画条形，改纯色文字明示样本不足（不加透明度、不误导） */
+.tt-cell em.tt-single { font-size: 11px; font-weight: 600; color: var(--muted); }
+
+/* 错题题号 */
+.trend-wrong { display: flex; flex-direction: column; gap: 6px; }
+.wrow { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.wname { font-size: 12px; color: var(--ink-2); font-weight: 600; min-width: 56px; }
+.wnums { display: flex; flex-wrap: wrap; gap: 6px; }
+.wnum {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 26px; height: 24px; padding: 0 6px; border-radius: 7px;
+  font-size: 12px; font-weight: 700; color: var(--bad);
+  background: color-mix(in srgb, var(--bad) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bad) 34%, transparent);
+}
+.wnum.is-loc { cursor: pointer; }
+.wnum.is-loc:hover { background: color-mix(in srgb, var(--bad) 26%, transparent); }
+
+/* 交卷记录列表 */
+.trend-hist { display: flex; flex-direction: column; gap: 4px; }
+.hl-row {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center;
+  padding: 6px 10px; border-radius: 9px; font-size: 12px;
+  background: rgba(120,130,150,.08);
+}
+.hl-date { color: var(--muted); }
+.hl-score { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.hl-band { color: var(--ok); font-weight: 700; }
+
+/* 交卷结果页内嵌紧凑趋势 */
+.rpt-trend { margin: 12px 0; padding: 12px; border-radius: 12px;
+  background: rgba(120,130,150,.08); }
+.rpt-trend .trend-chart { height: 120px; }
+
+[data-theme="dark"] .trend-empty { border-color: rgba(255,255,255,.22); }
+[data-theme="dark"] .tt-bar { background: rgba(255,255,255,.12); }
+[data-theme="dark"] .hl-row { background: rgba(255,255,255,.06); }
+
+/* ============================================================
+ * 25. 起始页（v15 0.1 简约 / 0.2 主题同色）
+ * ------------------------------------------------------------
+ *  · 只保留：主标题 + 开始/继续练习 + 5 个模块入口，无堆叠卡片
+ *  · 玻璃卡片直接复用 --lg-glass 系 token，随主题开关实时同步
+ * ============================================================ */
+.home-hero {
+  text-align: center;
+  padding: clamp(26px, 6vh, 54px) 16px 4px;
+}
+/* v15：标题/模块名不用 var(--ink)——essays.css 的 :root{--ink:#1b2436}
+ * 晚于 styles.css 加载会覆盖全局 token，导致起始页标题色与内页不一致；
+ * 这里按 styles.css 的 token 值（浅 #161c2e / 深 #e9eefb）写固定色。 */
+.home-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(26px, 4.6vw, 38px);
+  font-weight: 700;
+  color: #161c2e;
+  letter-spacing: .5px;
+}
+.home-sub {
+  margin: 9px 0 0;
+  font-size: 12.5px;
+  letter-spacing: 1.6px;
+  color: var(--muted);
+}
+.home-acts {
+  margin-top: clamp(18px, 3.4vh, 30px);
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn-lg {
+  padding: 12px 26px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: var(--r-pill);
+}
+.home-hint {
+  margin: 12px 0 0;
+  min-height: 16px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.home-grid {
+  margin: clamp(20px, 4vh, 34px) auto 10px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 1080px;
+}
+.home-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 18px 16px 16px;
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: transform var(--lg-dur) var(--lg-ease),
+              box-shadow var(--lg-dur) var(--lg-ease);
+}
+.home-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--lg-highlight), 0 14px 34px rgba(0, 0, 0, .16);
+}
+.home-tile:active { transform: scale(.98); }
+.home-tile .icon { color: var(--lg-gold); }
+.home-tile .icon svg { width: 24px; height: 24px; }
+.ht-name { font-size: 16.5px; font-weight: 700; color: #161c2e; }
+.ht-desc { font-size: 12px; line-height: 1.55; color: var(--muted); }
+@media (max-width: 900px) {
+  .home-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-hero { padding-top: 20px; }
+}
+
+/* ============================================================
+ * 26.（v18 0.2 移除）Splash 主题同色规则已删除——开屏启动页整体移除，
+ *     打开页面直接进入首页仪表盘。下方「起始页固定色的深色版」保留。
+ * ============================================================ */
+/* 起始页固定色的深色版（与 styles.css 深色 --ink:#e9eefb 一致） */
+[data-theme="dark"] .home-title { color: #e9eefb; }
+[data-theme="dark"] .ht-name { color: #e9eefb; }
+
+/* ---------- 27. 听力播放器（v15 0.6 失败出路 / 旧账4 暂停与重播） ---------- */
+/* 独立暂停按钮：播放时才出现（.btn 是 inline-flex，会盖掉 UA 的 [hidden]，需显式隐藏） */
+#lBtnPause[hidden] { display: none !important; }
+/* 失败提示可点 = 一键重试 */
+#lNow.is-fail { cursor: pointer; }
+#lNow.is-fail:hover { text-decoration: underline; }
+
+/* ---------- 28. 手机横屏矮屏适配（v15.5 0.2） ----------
+ * 触发条件：orientation:landscape 且高度 ≤500px（手机横屏；平板横屏与竖屏均不触发）。
+ * 目标：单词模块（词库/练习/复习）在横屏下不溢出、不遮挡、按钮可点、流程完整；
+ *       顶栏/tabbar 压缩高度让位内容区，内容区可滚动；竖屏零影响。 */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* ① 顶栏压缩：ios.css 900px 断点是 height:auto!important;min-height:52px，
+     这里必须同样 !important 且改 min-height（52 → 40），否则横屏仍是 52px */
+  .topbar { padding: 4px 10px 2px; }
+  .topbar-in { height: auto !important; min-height: 40px; padding: 4px 12px; gap: 10px; border-radius: 16px; }
+  .brand-mark { width: 30px; height: 30px; border-radius: 9px; }
+  .brand { gap: 8px; }
+  .data-top-btn { width: 30px; height: 30px; }
+  .topbar-right { gap: 6px; }
+  .topbar-right .icon-btn { width: 30px; height: 30px; }
+  /* ios.css 900px 断点 + liquid-glass 1136 行全局规则给这三个按钮设了 44px !important，
+     横屏必须同样 !important 且更靠后（28 节在 1136 行之后，同 !important 时后加载赢）。
+     v16：字号按钮 #btnFont 已移除，三胶囊 = 清空(#btnWipe) / 复习(#btnReviewTop) / 主题(#btnTheme) */
+  .topbar-right .wipe-btn,
+  .topbar-right .review-top-btn,
+  .topbar-right .theme-toggle { width: 32px !important; height: 32px !important; min-height: 32px !important; max-height: 32px !important; padding: 0 !important; border-radius: 10px; }
+  .topbar-right .lbl { display: none; }   /* 横屏只留图标，省宽度（覆盖全部带 lbl 的顶栏按钮） */
+  .topbar-right .glass-op-ctl .lbl { display: none; }
+  .topbar-right .chip { font-size: 11px; padding: 4px 9px; }
+
+  /* ② 底部 tabbar 压缩：54px → 42px（--tabbar-h 被 .tabbar-inner 与 .wrap 引用，一并生效） */
+  :root { --tabbar-h: 42px; }
+  .tabbar-btn { padding: 1px 4px; gap: 1px; font-size: 10.5px; }
+  .tabbar-btn .icon svg { width: 16px; height: 16px; }
+
+  /* ③ 页面留白压缩 */
+  .wrap { padding: 8px 12px calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 10px); }
+
+  /* ④ 单词视图：v-top 恢复两列并排（横屏宽度足够），各卡片纵向压扁 */
+  #view-vocab .v-top { grid-template-columns: minmax(0, .9fr) minmax(0, 1.4fr); gap: 10px; margin-bottom: 10px; }
+  #view-vocab .review-card, #view-vocab .v-stats { padding: 7px 12px; border-radius: var(--r-md); }
+  #view-vocab .rv-info b { font-size: 22px; }
+  #view-vocab .rv-info span { font-size: 11px; }
+  #view-vocab .vs-item b { font-size: 16px; }
+  #view-vocab .vs-item span { font-size: 10px; }
+  #view-vocab .vs-legend { font-size: 9.5px; margin-top: 3px; }
+  #view-vocab .vs-bar { height: 6px; }
+
+  /* ⑤ 单词视图：pane 头/体 padding 与间距压缩，最小高度下调（900px 断点的 420px 在横屏太奢侈） */
+  #view-vocab .pane { min-height: 0; }
+  #view-vocab .pane-head { padding: 7px 14px 6px; }
+  #view-vocab .pane-body { padding: 9px 14px; }
+  #view-vocab .v-grid { gap: 10px; }
+  #view-vocab .v-col { gap: 10px; }
+  #view-vocab .card-wrap { padding: 12px 14px; }
+  #view-vocab .deck-list { max-height: 26vh; }
+  #view-vocab .q-word { font-size: var(--fs-xl); }
+  #view-vocab .q-word.small { font-size: var(--fs-lg); }
+  #view-vocab .mode-cfg { gap: 6px 10px; }
+  #view-vocab .v-setup textarea { min-height: 84px; }
+  #view-vocab .stat-grid .v { font-size: var(--fs-lg); }
+
+  /* ⑥ 词库列表与设置区可独立滚动，长内容不撑破页面 */
+  #view-vocab .pane-body { -webkit-overflow-scrolling: touch; }
+}
+
+/* ---------- 29. 「我的」抽屉（v16：挂在 logo 上，不独立成页） ----------
+ * 复用历史抽屉的右侧滑出模式（.drawer 同款几何：top/right/bottom 14px、
+ * width min(520px,92vw)），z-index 70 高于 .drawer(60) 与 .dp/wb 层。
+ * 趋势子 DOM（.trend-sec/.tcol/.tt-row/.wnum/.hl-row 等）沿用上方既有全局样式，
+ * 这里只画抽屉骨架与「我的」私有组件。 */
+.me-drawer { position: fixed; inset: 0; z-index: 70; pointer-events: none; }
+.me-drawer.is-open { pointer-events: auto; }
+.me-mask {
+  position: absolute; inset: 0; background: rgba(12, 16, 24, .34);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  opacity: 0; transition: opacity .34s var(--ease);
+}
+.me-drawer.is-open .me-mask { opacity: 1; }
+.me-panel {
+  position: absolute; top: 14px; right: 14px; bottom: 14px; width: min(520px, 92vw);
+  display: flex; flex-direction: column; overflow: hidden;
+  transform: translateX(calc(100% + 20px)); transition: transform .42s var(--ease);
+  box-shadow: var(--sh-lg);
+}
+.me-drawer.is-open .me-panel { transform: none; }
+body.me-lock { overflow: hidden; }
+
+/* logo 可点（入口）：指针 + 键盘焦点环 */
+#brandLogo { cursor: pointer; border-radius: 12px; }
+#brandLogo:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
+
+/* 头部：logo + 品牌 + 一句话 + 关闭 */
+.me-head {
+  flex: none; display: flex; align-items: center; gap: 12px;
+  padding: 16px 18px 12px; border-bottom: 1px solid var(--stroke-soft);
+}
+.me-logo {
+  width: 44px; height: 44px; flex: none; border-radius: 12px;
+  display: grid; place-items: center; background: #fff;
+  border: 1px solid var(--stroke); box-shadow: 0 4px 12px rgba(18, 22, 29, .12);
+}
+.me-logo img { width: 32px; height: 32px; display: block; }
+[data-theme="dark"] .me-logo { background: #10141d; }
+[data-theme="dark"] .me-logo img { filter: invert(.92); }
+.me-head-t { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
+.me-head-t strong { font-size: var(--fs-md); color: var(--ink); }
+.me-head-t span { font-size: 11.5px; color: var(--muted); }
+.me-head .icon-btn { margin-left: auto; }
+
+/* 主体：七区纵向流 */
+.me-body {
+  flex: 1; overflow: auto; -webkit-overflow-scrolling: touch;
+  padding: 14px 18px 28px; display: flex; flex-direction: column; gap: 20px;
+}
+.me-sec { display: flex; flex-direction: column; gap: 10px; }
+.me-sec-t { font-size: 13px; font-weight: 700; color: var(--ink); }
+
+/* 统计卡：5 项总览 auto-fit（≥360px 视口一行 5 卡，更窄自动收列），3 项词库固定三列 */
+.me-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); gap: 8px; }
+.me-stat-grid.me-stat-3 { grid-template-columns: repeat(3, 1fr); }
+.me-stat {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 4px; border-radius: 12px;
+  background: rgba(120, 130, 150, .08); border: 1px solid var(--stroke-soft);
+}
+.me-stat b { font-size: 17px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.me-stat span { font-size: 10.5px; color: var(--muted); }
+
+/* 成绩趋势容器（内部图表样式复用全局 .trend-* 类） */
+.me-trend { display: flex; flex-direction: column; gap: 14px; }
+
+/* 动作按钮组 */
+.me-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.me-note { font-size: 11.5px; color: var(--muted); line-height: 1.6; }
+.me-about-p { font-size: 12.5px; color: var(--ink-2); line-height: 1.75; }
+.me-about-p b { color: var(--ink); }
+.me-about-p code {
+  font-family: var(--font-num, monospace); font-size: 11.5px;
+  padding: 1px 5px; border-radius: 5px; background: rgba(120, 130, 150, .14);
+}
+
+/* 字号四联按钮 */
+.me-font-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.me-font-btns button {
+  padding: 9px 0; border-radius: 10px; border: 1px solid var(--stroke);
+  background: var(--glass-2); color: var(--ink-2);
+  font-size: 12.5px; font-weight: 600; cursor: pointer;
+  transition: background .2s var(--ease), color .2s var(--ease);
+}
+.me-font-btns button:hover { background: var(--glass-3); }
+.me-font-btns button.is-active {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-color: transparent; color: #fff;
+}
+
+/* 深色：统计卡底与趋势空态已由全局深色规则覆盖，这里只补抽屉私有面 */
+[data-theme="dark"] .me-stat { background: rgba(255, 255, 255, .06); }
+[data-theme="dark"] .me-font-btns button:hover { background: rgba(255, 255, 255, .1); }
+
+/* =============================================================
+ * 第 30 节：首页独立界面（v16新版 0.1）
+ * 启动落地页 view-home 是「独立界面」：顶栏只保留品牌头（Y-IELTS + logo，
+ * logo 点击仍进「我的」），模块导航 #navSeg、顶栏控件 .topbar-right
+ * （清空/复习/主题/玻璃滑杆/计时交卷 hud）与底部标签栏 #tabbar 全部隐藏；
+ * 首页内容为通往五个学习模块的入口（玻璃卡片）。
+ * 模块页（阅读/听力/写作/单词/范文）底部导航条保持不变（含「首页」入口），
+ * 从模块页点底栏「首页」即回本界面。
+ * ============================================================= */
+body[data-view="home"] #navSeg,
+body[data-view="home"] .topbar-right,
+body[data-view="home"] #examHud { display: none !important; }
+body[data-view="home"] #tabbar { display: none !important; }
+/* 首页无底部栏：撤掉 ios.css ≤900px 给 tabbar 让位的底部内边距 */
+body[data-view="home"] .wrap { padding-bottom: 28px; }
+
+/* =============================================================
+ * 第 31 节：顶栏对齐修复（v16新版 0.3）
+ * 根因：上面 min-width:431px 块的 .topbar-right{display:flex!important}
+ * 覆盖了 ios.css ≤900px 的 display:contents，使 431–900px 区间
+ * （平板竖屏 / 手机横屏）按钮组作为 flex 盒以默认 order:0 排到
+ * 品牌（order:1）左侧——三按钮挤在左上角（真机 844×390 实测
+ * wipe x=23 / review x=61 / theme x=99，全在品牌 x=141 左侧）。
+ * 修复：431–900px 恢复 contents 两行布局（按钮组 order:2 紧跟品牌右侧，
+ * exam-hud 独占第二行），且品牌不吃富余（flex:0 0 auto）、整行居中，
+ * 三按钮组在顶栏内居中分布，左右留白对称。
+ * 第二处覆盖：同区间 liquid-glass 早先的 flex-wrap:nowrap!important 会压掉
+ * ios.css 的两行布局，导致 hud 不换行、flex-grow 吃光空间后整行溢出，
+ * 品牌被推出屏幕左缘（844×390 实测 brand x=-91.4）——这里一并恢复
+ * wrap + exam-hud{flex:1 0 100%}。
+ * ≤430px 早已是 contents + wrap（1321 行），不受影响；桌面 >900px 布局不变。
+ * ============================================================= */
+@media (min-width: 431px) and (max-width: 900px) {
+  .topbar-right { display: contents !important; }
+  .topbar-in { flex-wrap: wrap !important; justify-content: center; }
+  .exam-hud { flex: 1 0 100% !important; }
+  .brand { flex: 0 0 auto !important; }
+}
+
+/* =============================================================
+ * 第 32 节：v17 十二件事（首页品牌居中 / 宽屏顶栏收拢 / 题号格放大 /
+ *           按钮内容居中兜底），全部只加新规则、不改旧档位行为
+ * ---------------------------------------------------------------
+ * 0.1 首页品牌居中：home 视图顶栏只剩品牌头（导航/三按钮/HUD/底栏均
+ *     由第 30 节隐藏），但 .topbar-in 仍是 flex 左对齐 → 品牌贴左。
+ *     这里对 home 恢复 flex + justify-content:center，并强制显示
+ *     品牌文字（styles.css 1387 行 901–1180px 的 display:none 会让
+ *     iPad 横屏只剩 logo；副标题 span 仍收起，避免与首页 hero 重复）。
+ *     模块页（≥901px 网格布局见 0.8）品牌仍列首列，位置不动。
+ * ============================================================= */
+body[data-view="home"] .topbar-in { display: flex !important; justify-content: center; }
+body[data-view="home"] .brand { flex: 0 0 auto; }
+body[data-view="home"] .brand-text { display: flex !important; }
+body[data-view="home"] .brand-text span { display: none !important; }
+
+/* =============================================================
+ * 0.8 宽屏顶栏收拢（iPad 横屏 901–1400px）
+ * 用户真机反馈：顶栏内容拉满贴边、三按钮（清空/复习/主题）偏右、
+ *   桌面三按钮仍偏右、范文按钮被挤得重叠/截断（v16新版 0.3 未落地）。
+ * 改法（仅 901–1400px；≤900 两行布局与 >1400 大屏桌面不动）：
+ *   ① 限宽：.topbar-in 上限 1180px 并居中，宽屏不再左右拉满；
+ *   ② 三按钮组（.topbar-mid）绝对居中于顶栏——position:absolute 铺满
+ *      .topbar-in（position:relative），flex 居中；pointer-events:none
+ *      让空白处点击穿透，子元素恢复 auto。实测三按钮组中心与栏心
+ *      偏差 0.0px（901/1024/1180/1280/1366/1400 六档一致）；
+ *   ③ 顶导航收进底栏：本档位隐藏 #navSeg——实测绝对居中的三按钮
+ *      （宽 223px）与流内导航（iPad 横屏实测宽 460–590px）必然重叠
+ *      184–277px，「压缩导航 padding + 藏英文副标题」省不出 200px，
+ *      且品牌居左 + 导航居中 + 操作组居右的经典三栏在数学上要求
+ *      品牌宽=操作组宽才能让中间项居栏心，不满足。故导航整体让位：
+ *      与 ≤900px 行为对齐（ios.css 92 行移动端即 nav 折叠进 tabbar），
+ *      模块导航由底部 tabbar 承担；
+ *   ④ 底部 tabbar 本档位启用（原仅 ≤900px 显示）——同时兑现
+ *      v16新版 0.10「模块页底部导航条全无」与 v17 0.6「模块页保留
+ *      底部导航条含首页入口」：tabbar 6 项 = 首页/阅读/听力/写作/
+ *      单词/范文，含「首页」入口；home 视图仍由第 30 节隐藏底栏；
+ *      practice-open 全屏练习由既有 !important 规则隐藏，不受影响；
+ *   ⑤ 收起玻璃滑杆（≤1279 既有规则的自然延伸）；
+ *   ⑥ 考试 HUD 仍在 .topbar-right 内靠右（margin-left:auto），机考元素不动。
+ *  >1400px 大屏：保持原有「品牌左 / 导航中 / 操作组右」布局，无回归。
+ * ============================================================= */
+.topbar-mid { display: contents; }
+@media (min-width: 901px) and (max-width: 1400px) {
+  /* ① 限宽居中 */
+  .topbar-in { max-width: 1180px; position: relative; }
+  /* ② 三按钮组绝对居中于栏心 */
+  .topbar-mid {
+    display: flex; align-items: center; justify-content: center;
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    gap: 8px; pointer-events: none;
+  }
+  .topbar-mid > * { pointer-events: auto; }
+  .topbar-right { margin-left: auto; }
+  /* ③ 顶导航收进底栏（与 ≤900px 移动端行为一致） */
+  #navSeg { display: none !important; }
+  /* ⑤ 玻璃滑杆本档位收起（防与三按钮/导航争位） */
+  .glass-op-ctl { display: none !important; }
+  /* ④ 底部 tabbar 启用；.wrap 让位；home 仍无底栏（第 30 节 + 兜底） */
+  .tabbar { display: block; }
+  .wrap { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 12px); }
+  body[data-view="home"] .wrap { padding-bottom: 28px; }
+}
+
+/* =============================================================
+ * 0.7 阅读题号格放大（iPad 横屏 901–1400px）
+ * 真机反馈：题号格数字与小旗标偏小、待检查图例看不清。本档位放大：
+ *   题号格 36×36 → 46×42、数字 11px → 13.5px、旗标 13px → 18px、
+ *   图例方块 9px → 12px、图例文字 11px → 12px；间隙 6 → 8px。
+ *   桌面 >1400px 与手机 ≤900px 维持原规格（手机 44pt 触达不受影响）。
+ * ============================================================= */
+@media (min-width: 901px) and (max-width: 1400px) {
+  .q-nav { gap: 8px; padding: 14px 16px; }
+  .q-nav button,
+  .q-nav button.qnav-cell { width: 46px; height: 42px; min-width: 46px; font-size: 13.5px; }
+  .q-nav button .qnav-f { width: 18px; height: 18px; font-size: 11px; }
+  .q-nav-legend { font-size: 12px; gap: 16px; }
+  .q-nav-legend .lg { width: 12px; height: 12px; border-radius: 4px; }
+}
+
+/* =============================================================
+ * 0.4 重播居中兜底：.btn 内容（图标 + 文字）显式水平居中。
+ * 根因是图标库缺 replay 键导致空 SVG 占位（已在 icons.js 补）；
+ * justify-content:center 作为通用兜底，防止任何不对称内边距/子元素
+ * 造成文字偏右。对全部视图的所有按钮生效（原本就是对称 padding，
+ * 视觉无变化，仅防御未来回归）。
+ * ============================================================= */
+.btn { justify-content: center; }
+
+/* =============================================================
+ * 0.9 写作控制行合并——901–1100px 精细档（iPad 横屏 1024 收尾）
+ * 上一档（styles.css #view-writing 全局压缩）在 1180px+ 实测单行
+ * 69.1px，但 1024px（顶栏内容宽 972px）下 tb-left(545)+tb-right(421)
+ * +gap 共 976px，超出 4px 触发换行 → 实测 123.1px 两行。
+ * 本档位再收一档：分段钮/按钮 padding 与字号、题源·套题下拉宽度、
+ * 计时器 min-width 全量微缩，预算节省 ~60px，1024 实测单行。
+ * 功能一项不砍：套题选择、计时、开始计时、重置、历史记录全保留。
+ * ============================================================= */
+@media (min-width: 901px) and (max-width: 1100px) {
+  #view-writing .w-toolbar { gap: 8px; padding: 9px 12px; }
+  #view-writing .w-toolbar .seg-btn { padding: 5px 8px; font-size: 12px; }
+  #view-writing .w-toolbar .btn { padding: 6px 10px; font-size: 12px; }
+  #view-writing .w-toolbar .field label { font-size: 11px; }
+  #view-writing .w-toolbar .field select { max-width: 58px; }
+  #view-writing .w-toolbar .timer { min-width: 92px; }
+  #view-writing .w-toolbar .timer-num { font-size: 19px; }
+}
+/* 901–1009px 极限档（iPad 横屏最小擦边宽度 + 桌面小窗，非 iPad 真实
+ * 横屏宽度）：901 实测内容宽 831px、961–1009 实测 889–926px，常规
+ * 压缩后仍触发换行（Chrome 断行阈值比内容宽和还高 ~25px）。
+ * 本档位隐藏「题源/套题」文字标签（select 自身保留，label[for] 关联
+ * 不依赖 display，无障碍名不丢），再收一档 padding/字号/宽度。
+ * 真实 iPad 横屏（≥1024）走上一档，label 正常显示，不受影响。 */
+@media (min-width: 901px) and (max-width: 1009px) {
+  #view-writing .w-toolbar { gap: 6px; padding: 8px 10px; }
+  #view-writing .w-toolbar .tb-left,
+  #view-writing .w-toolbar .tb-right { gap: 6px; }
+  #view-writing .w-toolbar .field label { display: none; }
+  #view-writing .w-toolbar .seg-btn { padding: 4px 6px; font-size: 11.5px; }
+  #view-writing .w-toolbar .btn { padding: 5px 8px; font-size: 11.5px; }
+  #view-writing .w-toolbar .field select { max-width: 50px; }
+  #view-writing .w-toolbar .timer { min-width: 80px; }
+  #view-writing .w-toolbar .timer-num { font-size: 17px; }
+}
+
+/* =============================================================
+ * 0.10/0.6 底栏让位兜底（≤900px，兑现「模块页底部导航条」的可用性）
+ * 根因：liquid-glass 1051 行（v10「B-1 阅读接近全屏」）的
+ *   .wrap { padding: 12px 16px 8px }
+ * 与 ios.css 142 行 ≤900 的 tabbar 让位
+ *   .wrap { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px) }
+ * 特异性相同、后者被先加载的……不，liquid-glass 后加载 → 1051 行赢，
+ * ≤900 全档底部 padding 实际仅 8px，tabbar（实测 62px）盖住滚动
+ * 内容尾部（390/900 实测 padB=8px）。这里恢复让位；
+ * 横屏矮屏档（v15.5 0.2，1841 行）的压缩值原样重述压阵，防止
+ * 本兜底把 42+10 顶成 54+16；home 视图仍 28px（第 30 节特异性更高）。
+ * ============================================================= */
+@media (max-width: 900px) {
+  .wrap { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 16px); }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .wrap { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 10px); }
+}
+
+/* =============================================================
+ * 第 33 节：v18 0.1 顶栏重构（瘦身分层）
+ * ---------------------------------------------------------------
+ * 三层顶栏规则：
+ *   ① 首页（home）：只留品牌居中（第 30/32 节既有，不动）；
+ *   ② 模块页（writing/vocab/essays）：左品牌 + 中导航（>1400）+
+ *      右三个入口（复习/主题/我的）；901–1400 三按钮绝对居中（v17 0.8 保留），
+ *      ≤900 两行布局（ios.css 既有）；
+ *   ③ 考试页（reading/listening）：顶栏只留 题号导航胶囊 + 计时 + 交卷，
+ *      品牌/导航/三操作全部隐藏（数据与入口不丢：三操作在模块页，
+ *      「我的」还可点页脚关于/logo；交卷与题号在顶栏常驻）。
+ * 玻璃滑杆/字号/数据管理不回顶栏（0.1 要求）——滑杆在「我的」·设置。
+ * ============================================================= */
+/* ③ 考试页：隐藏品牌 / 导航 / 三操作 */
+body[data-view="reading"] .topbar-in > .brand,
+body[data-view="reading"] #navSeg,
+body[data-view="reading"] .topbar-mid,
+body[data-view="listening"] .topbar-in > .brand,
+body[data-view="listening"] #navSeg,
+body[data-view="listening"] .topbar-mid { display: none !important; }
+/* 考试页：HUD 显示并铺满顶栏（题号胶囊居左、计时+交卷居右） */
+body[data-view="reading"] #examHud,
+body[data-view="listening"] #examHud { display: inline-flex; }
+body[data-view="reading"] .topbar-right,
+body[data-view="listening"] .topbar-right {
+  flex: 1 1 auto; margin-left: 0; min-width: 0;
+}
+body[data-view="reading"] #examHud,
+body[data-view="listening"] #examHud {
+  flex: 1; justify-content: space-between; min-width: 0;
+}
+/* 听力无倒计时：隐藏阅读计时与阅读交卷，只留题号胶囊 + 听力交卷 */
+body[data-view="listening"] #rTimer,
+body[data-view="listening"] #rBtnSubmit { display: none !important; }
+body[data-view="reading"] #lBtnSubmitTop { display: none !important; }
+
+/* 题号导航胶囊（顶栏常驻；点击平滑滚动到题目栏 .q-nav，40 格完整导航不动） */
+.qnav-pill {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px;
+  height: 34px; padding: 0 14px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--lg-border); background: var(--lg-glass-soft);
+  color: var(--ink-2); font-size: 12.5px; font-weight: 600;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+  transition: background .2s var(--ease), color .2s var(--ease);
+}
+.qnav-pill:hover { background: var(--brand-soft); color: var(--brand-700); }
+.qnav-pill::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--lg-gold); box-shadow: 0 0 0 3px rgba(232, 200, 106, .22);
+}
+/* 语义兜底：.btn/.qnav-pill 的 class display 会压过 UA [hidden]（等同特异性作者赢），
+   这里显式恢复 hidden 语义；可见性由父级 #examHud（默认 display:none）控制，
+   JS 在 init 时移除 hidden（reading.js / listening.js） */
+#qnavPill[hidden], #lBtnSubmitTop[hidden] { display: none; }
+
+/* =============================================================
+ * 第 34 节：v18 0.2 首页真仪表盘（五卡进度行）
+ * 每张模块卡底部一行实时进度（JS：app.js refreshHomeStats()，
+ * 口径与 me.js renderStats 一致）；卡片保持玻璃壳。
+ * ============================================================= */
+.ht-prog {
+  margin-top: auto; padding-top: 4px;
+  font-size: 12px; font-weight: 600; color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  display: flex; align-items: center; gap: 6px;
+}
+.ht-prog::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--lg-gold); flex: none;
+}
+[data-theme="dark"] .ht-prog { color: #c7d0e4; }
+/* 五张大卡：桌面 5 列等高；≤900 三列；≤560 两列（既有断点不动） */
+.home-tile { min-height: 132px; }
+@media (max-width: 900px) { .home-tile { min-height: 118px; } }
+
+/* =============================================================
+ * 第 35 节：v18 0.3 液态玻璃（壳）定标 + 内容区素面
+ * ---------------------------------------------------------------
+ * 设计标尺（一次定标，全站只此一套）：
+ *   · 模糊：壳 blur(26–30px)；次级控件 blur(14px)；无第三层模糊
+ *   · 饱和度：saturate(160%–180%)（区间 1.4–1.8 内）
+ *   · 铬层（顶栏/底栏/工具条/计时器）：--g-chrome，默认 0.55
+ *   · 容器层（模块卡/面板/弹窗）：--g-container，默认 0.75
+ *   · 长文层（阅读文章/写作编辑区/听力字幕/范文正文）：--g-long，默认 0.78 近实色
+ *   · 描边：1px 细边框（--lg-border）+ 顶部 1px 高光边（--lg-highlight）
+ *   · 圆角：壳 28px（--r-xl）/ 卡 20px（--r-lg）/ 内 14px（--r-md）；胶囊 999px
+ *   · 触达：所有可点元素 ≥44px（ios.css 44 行既有）
+ *   · 文字：永远纯色，不加透明度（.l-seg 旧 opacity 已改纯色，见下）
+ *   · 叠加：同一区域最多两层半透明（壳一层 + 壳内控件一层），
+ *     壳内不再叠第二层 backdrop blur（nav-seg/q-nav 同法处理，防发雾）
+ *   · 弹窗：出现时下方加极淡遮罩 + blur(6px)（drawer/me/wb/确认层）
+ *   · 玻璃滑杆：默认 50，0–100 实时生效，localStorage 持久化（glass.js 不变）
+ * ============================================================= */
+/* 35.1 饱和度收敛到 1.4–1.8 区间（原 190% 超标 → 180%）。
+   注意特异性：22.1 的 `:root, html[data-theme="light"]` 中
+   html[data-theme="light"] 为 (0,1,1)，压过裸 :root (0,1,0)，
+   故这里用同等特异性 + 后加载赢，保证定标值真正生效（深浅两主题一致） */
+html, :root, html[data-theme="light"], html[data-theme="dark"] {
+  --lg-blur: blur(26px) saturate(180%);
+}
+
+/* 35.2 内容区素面（高对比）：听力当前句 + 句子列表改近实色、去掉玻璃感 */
+.l-now {
+  background: var(--lg-longtext);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  border: 1px solid var(--lg-border);
+}
+.l-now.is-live { background: var(--lg-longtext); box-shadow: inset 3px 0 0 var(--lg-gold); }
+[data-theme="dark"] .l-now { background: var(--lg-longtext); }
+[data-theme="dark"] .l-now.is-live { background: var(--lg-longtext); }.l-transcript {
+  background: var(--lg-longtext);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  border: 1px solid var(--lg-border);
+}
+[data-theme="dark"] .l-transcript { background: var(--lg-longtext); }
+/* 35.2b 长文容器素面：阅读文章/题目栏、写作编辑区同样去掉 backdrop blur
+   （22.4 的 blur(10px) saturate(150%) 含 dark 版 html[data-theme="dark"] X
+   特异性 (0,2,1)；这里用同等特异性 + 后加载赢，背景仍为 --lg-longtext 近实色） */
+html .apane, html .qpane, html .ed-pane, html #editor, html .ans-body,
+html[data-theme] .apane, html[data-theme] .qpane, html[data-theme] .ed-pane,
+html[data-theme] #editor, html[data-theme] .ans-body {
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+/* 35.3 文字纯色：未播放句子由 opacity .58 改为纯色（muted），播放句纯色 ink */
+.l-seg { opacity: 1; color: var(--muted); }
+.l-seg.active { color: var(--ink); }
+.l-seg-text { color: inherit; }
+[data-theme="dark"] .l-seg { color: #9aa6c0; }
+[data-theme="dark"] .l-seg.active { color: var(--ink); }
+/* 35.4 题号导航不再叠第二层模糊（qpane 已近实色；与 nav-seg 同法，只留描边） */
+.q-nav {
+  background: var(--lg-longtext);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  border-bottom: 1px solid var(--lg-border);
+}
+[data-theme="dark"] .q-nav { background: var(--lg-longtext); }
+
+/* 35.5 弹窗遮罩统一「极淡遮罩 + blur(6px)」 */
+.drawer-mask, .me-mask, .wb-mask {
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
+.wb-mask { background: rgba(12, 16, 24, .34); }
+
+/* =============================================================
+ * 第 36 节：v18 0.4–0.8 各页布局
+ * ============================================================= */
+/* ---------- 0.4 阅读：空白卷标注 + 直接开始 ---------- */
+.r-start {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 12px; padding: 12px 14px;
+  border-radius: var(--r-lg);
+}
+/* .r-start 的 display:flex 会压过 UA [hidden]（等同特异性作者赢），显式恢复语义 */
+.r-start[hidden] { display: none; }
+.r-start .rs-t { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.r-start .rs-t b { font-size: 14px; color: var(--ink); letter-spacing: .5px; }
+.r-start .rs-t span { font-size: 12.5px; line-height: 1.6; color: var(--ink-3); }
+.r-start .btn { flex: none; }
+.r-start .rs-close { flex: none; width: 36px; height: 36px; }
+@media (max-width: 560px) {
+  .r-start { flex-wrap: wrap; }
+  .r-start .rs-t { flex: 1 1 100%; }
+}
+
+/* ---------- 0.5 听力：播放条固定 + 大按钮 + 句子列表可读 ---------- */
+.l-player {
+  position: sticky; top: 0; z-index: 4;
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 14px 16px 12px;
+  background: var(--lg-chrome);
+  -webkit-backdrop-filter: var(--lg-chrome-blur); backdrop-filter: var(--lg-chrome-blur);
+  border-bottom: 1px solid var(--lg-border);
+}
+.l-transport { display: flex; gap: 10px; }
+.l-tbtn {
+  flex: 1; min-height: 48px; font-size: 14.5px; font-weight: 600;
+  border-radius: var(--r-md);
+}
+.l-tbtn .icon svg { width: 18px; height: 18px; }
+.l-scroll { display: flex; flex-direction: column; gap: 10px; }
+/* 句子列表行高字号可读 */
+.l-seg { padding: 9px 12px; font-size: 13.5px; line-height: 1.65; }
+/* ≤900：单栏堆叠、整页滚动——pane 取消 overflow:hidden 让 sticky 生效，
+   播放条固定到顶栏下方（顶栏 sticky 高约 76–80px） */
+@media (max-width: 900px) {
+  .l-pane { overflow: visible; }
+  .l-player { top: 82px; }
+}
+
+/* ---------- 0.6 写作：字数统计常驻悬浮条 ---------- */
+.wc-dock {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;
+  margin: 0; padding: 10px 16px 12px;
+  background: var(--lg-chrome);
+  -webkit-backdrop-filter: var(--lg-chrome-blur); backdrop-filter: var(--lg-chrome-blur);
+  border-top: 1px solid var(--lg-border);
+  border-radius: 0;
+}
+/* 编辑区给悬浮条让位：底部内边距加高，文字不被压住 */
+#editor { padding-bottom: 84px; }
+@media (max-width: 900px) { #editor { padding-bottom: 78px; } }
+
+/* ---------- 0.7 单词：全屏练习页内选模式 ---------- */
+.pf-mode { padding: 26px 20px 10px; }
+.pf-mode-t {
+  margin: 0 0 16px; text-align: center;
+  font-size: 15px; font-weight: 700; color: var(--ink);
+}
+.pf-mode-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px; max-width: 560px; margin: 0 auto;
+}
+.pf-mode-btn {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  min-height: 92px; padding: 16px; cursor: pointer; text-align: left;
+  border: 1px solid var(--lg-border); border-radius: var(--r-lg);
+  background: var(--lg-glass);
+  -webkit-backdrop-filter: var(--lg-blur-soft); backdrop-filter: var(--lg-blur-soft);
+  box-shadow: var(--lg-highlight), var(--lg-shadow);
+  transition: transform var(--lg-dur) var(--lg-ease), border-color .2s var(--ease);
+  font-family: inherit;
+}
+.pf-mode-btn:hover { transform: translateY(-2px); border-color: var(--lg-gold); }
+.pf-mode-btn:active { transform: scale(.98); }
+.pf-mode-btn .icon { color: var(--lg-gold); }
+.pf-mode-btn .icon svg { width: 22px; height: 22px; }
+.pf-mode-btn b { font-size: 16px; font-weight: 700; color: var(--ink); }
+.pf-mode-btn span { font-size: 12px; line-height: 1.55; color: var(--muted); }
+.pf-mode-btn.is-review { border-color: rgba(232, 200, 106, .55); }
+.pf-mode-note {
+  margin: 16px 0 0; text-align: center;
+  font-size: 12px; color: var(--muted);
+}
+.pf-mode-lbl {
+  flex: none; font-size: 12px; font-weight: 600;
+  padding: 4px 10px; border-radius: 999px;
+  background: var(--brand-soft); color: var(--brand-700);
+}
+@media (max-width: 560px) {
+  .pf-mode-grid { grid-template-columns: 1fr; }
+  .pf-mode-btn { min-height: 72px; }
+}
+
+/* ---------- 0.8 范文：每篇朗读按钮明显可点 ---------- */
+.es-spk {
+  width: 36px; height: 36px;
+  border: 1px solid var(--lg-border);
+  background: var(--lg-glass-soft);
+  color: var(--ink-2);
+}
+.es-spk:hover { transform: scale(1.06); }
+.es-spk .icon svg { width: 16px; height: 16px; }
+.es-spk.is-playing { background: var(--brand); border-color: transparent; color: #fff; }
+/* 触屏 ≥44px 触达 */
+@media (max-width: 900px) {
+  .es-spk { width: 44px; height: 44px; }
+  .es-spk .icon svg { width: 17px; height: 17px; }
+}
+
+/* =============================================================
+ * 第 37 节：v17 补丁（A3 桌面底栏 / C1 深色专项 / C2 三按钮字体 /
+ *           C3 首页填满）——只加新规则，不动浅色既有行为
+ * ============================================================= */
+
+/* ---------------------------------------------------------------
+ * A3 桌面端模块页底部导航条补齐（真机实测 1600px 桌面无底栏）
+ * 改前：tabbar 仅在 ≤900px（ios.css 142 行）与 901–1400px
+ *   （第 32 节 0.8）显示；>1400px 桌面模块页底部无导航条，
+ *   只能靠顶栏 #navSeg 导航，与移动端不一致。
+ * 改法（以移动端为准统一到桌面端）：>1400px 同样启用 tabbar
+ *   （6 项含「首页」入口），.wrap 让位；顶导航 #navSeg 本档位
+ *   一并收起（与 ≤900 / 901–1400 行为一致，导航统一由底栏承担，
+ *   避免顶/底两套导航并存）；home 视图仍由第 30 节隐藏底栏；
+ *   考试页 navSeg 本就隐藏（第 33 节），不受影响。
+ * --------------------------------------------------------------- */
+@media (min-width: 1401px) {
+  .tabbar { display: block; }
+  .wrap { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 12px); }
+  body[data-view="home"] .wrap { padding-bottom: 28px; }
+  #navSeg { display: none !important; }
+  /* 顶导航收起后补偿：三按钮（复习/主题/我的）靠右——
+     原布局是「品牌左 / 导航中」把操作组推到最右，导航隐藏后
+     .topbar-right 会紧跟品牌（实测 1600px 按钮停在 x≈270，
+     右侧大片空白），这里用 margin-left:auto 恢复「操作组居右」；
+     考试页 (reading/listening) 的 .topbar-right 由第 33 节
+     margin-left:0 + flex:1 覆盖，HUD 仍铺满顶栏，不受影响。 */
+  .topbar-right { margin-left: auto; }
+}
+
+/* ---------------------------------------------------------------
+ * C1 深色模式专项（只动深色，浅色不动）
+ * 背景：用户 iPad 真机深色下听力/阅读显示异常；沙箱全页对比度
+ *   审计 0 处低于标准，真机照片级异常无法本地复现，故对 v18 0.3
+ *   液态玻璃在深色下最可能放大问题的两点做防御性收紧：
+ *   ① 深色铬层饱和度 175% → 140%（落在 1.4–1.8 定标区间下沿），
+ *      减少深色多色光斑经 backdrop-filter 放大后的彩色边纹；
+ *   ② 深色长文层改近实色：--g-long 下限由 .78 提到 .92
+ *      （glass.js applyVars 深色分支 + Theme.onChange 重算，
+ *      阅读文章/题目栏、听力当前句/字幕、写作编辑区恢复 v18 0.3
+ *      之前的实底显示，压住背景光斑透出）。
+ * 浅色两条路径均不经过这些规则：浅色铬层 blur 仍 180%、
+ *   浅色长文下限仍 .78（玻璃滑杆行为不变）。
+ * --------------------------------------------------------------- */
+html[data-theme="dark"] {
+  --lg-chrome-blur: blur(30px) saturate(140%);
+}
+
+/* ---------------------------------------------------------------
+ * C2 顶部三按钮（复习/主题/我的）字体统一
+ * 改前：.review-top-btn .lbl 与 .theme-toggle .lbl 在 5 处
+ *   响应式规则里被显式设字号（12/11.5/11/10.5px），而
+ *   .me-top-btn .lbl 不在任何列表里、继承按钮默认字号
+ *   （实测 14.5px），三按钮字号明显不一致。
+ * 改法：把 .me-top-btn .lbl 并入下方 5 处既有响应式选择器列表
+ *   （1124 / 1183 / 1302 / 1340 / 1355 行，就地修改、与另两个
+ *    按钮在每一档断点同字族/同字号/同字重；字重三者本就同为
+ *    按钮继承值，无单独规则，故只差字号）。
+ * --------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------
+ * C3 首页填满（iPad 横屏下半大片留白）
+ * 实测 1194×834：hero 高 242.3px、五卡高 156.9px、卡底
+ *   y=524.5、下方留白 309.5px（占视口 37%）；1920×1080
+ *   留白更达 549.2px。
+ * 改法（仅 ≥901px；竖屏 ≤900 三列布局不挤不动）：
+ *   ① 首页 section 改 flex 纵向布局，最小高度补满视口
+ *      （扣除顶栏 80 + wrap 上下内边距 12+28 + 页脚 64 ≈ 184px，
+ *       取 186px 留 2px 余量防滚动条）；
+ *   ② 五卡 grid 吃满剩余高度（flex:1 + align-content:stretch），
+ *      卡片 min-height 132 → 220px「适度放大」，max-height
+ *      clamp(300px, 40vh, 460px) 防止超高屏拉出超长卡，
+ *      align-self:center 让卡片在撑开的行内居中——剩余空白上下
+ *      均分，不再堆在下半屏；
+ *   ③ 卡内进度行仍贴卡底（.ht-prog margin-top:auto 既有）。
+ * --------------------------------------------------------------- */
+@media (min-width: 901px) {
+  #view-home.is-active {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 186px);
+    min-height: calc(100dvh - 186px);
+  }
+  .home-grid { flex: 1 1 auto; align-content: stretch; }
+  .home-tile { min-height: 220px; max-height: clamp(300px, 40vh, 460px); height: 100%; align-self: center; padding: 22px 18px 18px; gap: 10px; }
+  /* 卡片放大后内容同步放大一档，避免「高卡空壳」 */
+  .home-tile .icon svg { width: 28px; height: 28px; }
+  .home-tile .ht-name { font-size: 18px; }
+  .home-tile .ht-desc { font-size: 12.5px; }
+  .home-tile .ht-prog { font-size: 12.5px; }
+}
+
+/* =============================================================
+ * 第 38 节：v17 补丁第二轮（P2-2 题号格 / P2-6 汇总区单层 /
+ *           P2-7 宽屏三按钮组居中）
+ * 只加新规则，不动题库与既有浅色/深色基线
+ * ============================================================= */
+
+/* ---------------------------------------------------------------
+ * P2-2 阅读题号格放大 + 旗标醒目
+ * 改前实测（iPad 横屏 1194）：格子 46×42、数字 13.5px；
+ *   桌面 >1400 仅 30×28、数字 11px；旗标 18×18 且 opacity:0
+ *   （桌面必须 hover 才现形，深色/低对比下几乎看不见）。
+ * 改后：≥901 统一 54×48、数字 17px、圆角 12px；旗标 20×20、
+ *   常显 opacity .55（未标记也能一眼看到有旗标位）；已标记
+ *   订单=金色实心 + 外发光环，一眼可辨。>1401 桌面 48×44/16px
+ *   （格子数多，略收一档防换行过多）；≤900 手机维持 40px 触达，
+ *   仅数字提到 14px。
+ * --------------------------------------------------------------- */
+@media (min-width: 901px) {
+  .q-nav { gap: 9px; padding: 14px 16px; }
+  .q-nav button.qnav-cell {
+    width: 54px; height: 48px; min-width: 54px;
+    border-radius: 12px;
+    font-size: 17px; font-weight: 700;
+  }
+  .q-nav button.qnav-cell .qnav-n { font-size: 17px; font-weight: 700; letter-spacing: 0; }
+  .q-nav button.qnav-cell .qnav-f {
+    width: 20px; height: 20px; font-size: 12px;
+    top: -6px; right: -6px;
+    opacity: .55; border-width: 1.5px;
+  }
+  .q-nav button.qnav-cell:hover .qnav-f { opacity: .85; }
+  .q-nav button.qnav-cell.mark .qnav-f {
+    opacity: 1; background: var(--warn); color: #fff; border-color: transparent;
+    box-shadow: 0 0 0 3px rgba(217, 131, 36, .22);
+  }
+  .q-nav-legend { font-size: 12.5px; gap: 18px; }
+  .q-nav-legend .lg { width: 13px; height: 13px; border-radius: 4px; }
+}
+@media (min-width: 1401px) {
+  .q-nav button.qnav-cell { width: 48px; height: 44px; min-width: 48px; font-size: 16px; }
+  .q-nav button.qnav-cell .qnav-n { font-size: 16px; }
+  .q-nav button.qnav-cell .qnav-f { width: 19px; height: 19px; font-size: 11.5px; }
+}
+@media (max-width: 900px) {
+  .q-nav button.qnav-cell .qnav-n { font-size: 14px; font-weight: 700; }
+}
+
+/* ---------------------------------------------------------------
+ * P2-6 各模式左上角汇总区「减为单层」
+ * 改前：外卡（圆角 20 玻璃卡）内再套 select 白框（圆角 10）、
+ *   题数药丸（999px）、待检查药丸（999px）、Task 分段药丸、
+ *   范文搜索框/筛选药丸——外环套内环，像水波纹。
+ * 改法：左上角汇总区只保留最外层这一张卡；卡内所有次级控件
+ *   去掉「背景 + 边框 + 圆角」，改为纯文字 / 下划线 / 短下划线
+ *   指示当前项，视觉上只剩一层。功能（下拉、切换、筛选）不变。
+ * --------------------------------------------------------------- */
+/* ① 阅读 / 听力 / 写作工具栏 */
+.r-toolbar .field select,
+.l-toolbar .field select,
+.w-toolbar .field select {
+  background: transparent; border-color: transparent;
+  border-radius: 0; box-shadow: none;
+  padding-left: 0; font-weight: 700;
+}
+.r-toolbar .chip,
+.l-toolbar .chip {
+  background: transparent; border-radius: 0;
+  padding: 0 2px; color: var(--brand-700); font-weight: 700;
+}
+.r-toolbar .mchip,
+.l-toolbar .mchip {
+  background: transparent; border-color: transparent;
+  border-radius: 0; padding: 0 2px;
+}
+.r-toolbar .mchip.is-off { color: var(--muted); }
+
+/* ② 写作：Task 分段改文字页签（选中项一条下划线） */
+.w-toolbar .seg {
+  background: transparent; border-color: transparent;
+  border-radius: 0; padding: 0;
+}
+.w-toolbar .seg .seg-thumb { display: none; }
+.w-toolbar .seg .seg-btn {
+  background: transparent; border-radius: 0;
+  padding: 6px 10px;
+}
+.w-toolbar .seg .seg-btn.is-active {
+  background: transparent; color: var(--brand-700);
+  box-shadow: inset 0 -2px 0 var(--brand);
+}
+.w-toolbar .btn-ghost { background: transparent; border-color: transparent; }
+
+/* ③ 单词：今日复习卡 + 统计条合成一张卡（内部只留一条竖分隔线） */
+#view-vocab .v-top {
+  background: var(--lg-glass);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1px solid var(--lg-border);
+  border-radius: 20px;
+  box-shadow: var(--lg-highlight), var(--lg-shadow);
+  padding: 8px 16px;
+}
+#view-vocab .v-top .review-card,
+#view-vocab .v-top .v-stats {
+  background: transparent;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  border: 0; box-shadow: none; border-radius: 0;
+  padding: 0;
+}
+#view-vocab .v-top .v-stats { border-left: 1px solid var(--stroke-soft); padding-left: 14px; }
+#view-vocab .v-top .review-card:hover { transform: none; box-shadow: none; }
+
+/* ④ 范文侧栏：搜索/题型/细分/话题/难度/操作按钮去环，只留一张侧栏卡 */
+.es-side .es-search {
+  background: transparent; border: 0;
+  border-bottom: 1px solid var(--stroke); border-radius: 0;
+  padding: 0 0 6px; box-shadow: none;
+}
+.es-side .es-search input { background: transparent; border: 0; }
+.es-side .es-seg {
+  background: transparent; border: 0; border-radius: 0;
+  padding: 0; gap: 16px;
+}
+.es-side .es-seg button { background: transparent; border-radius: 0; padding: 5px 0; }
+.es-side .es-seg button.is-active {
+  background: transparent; color: var(--brand-700);
+  box-shadow: inset 0 -2px 0 var(--brand);
+}
+.es-side .es-select {
+  background: transparent; border: 0;
+  border-bottom: 1px solid var(--stroke); border-radius: 0;
+}
+.es-side .es-chips button {
+  background: transparent; border-color: transparent;
+  border-radius: 0; padding: 2px 3px;
+}
+.es-side .es-chips button.is-on { background: transparent; color: var(--brand-700); box-shadow: inset 0 -2px 0 var(--brand); }
+.es-side .es-act {
+  background: transparent; border-color: transparent;
+  border-radius: 0; padding: 6px 2px;
+}
+.es-side .es-act:hover, .es-side .es-act.is-on { background: transparent; }
+
+/* ⑤ 阅读交卷报告：已交卷药丸 / 预估 Band 内层卡去环（只留外卡 .rpt） */
+.rpt .rpt-badge {
+  background: transparent; border-radius: 0; padding: 0;
+  color: var(--muted); letter-spacing: .4px;
+}
+.rpt .rpt-band {
+  background: transparent; border-color: transparent;
+  border-radius: 0; box-shadow: none; padding: 0;
+}
+
+/* ---------------------------------------------------------------
+ * P2-7 宽屏（>1400）顶栏内三按钮组作为一组居中
+ * 改前：>1400 顶导航收进底栏后，.topbar-right 用 margin-left:auto
+ *   贴右（实测 1600px 三按钮组中心 x≈1440，栏心 800，偏差 640px）。
+ * 改法：>1400 复用 901–1400 的绝对居中方案——.topbar-in 相对定位，
+ *   .topbar-mid 铺满栏体、flex 居中、空白处点击穿透；考试页
+ *   （reading/listening）的 .topbar-mid 仍为 display:none，不受影响。
+ * --------------------------------------------------------------- */
+@media (min-width: 1401px) {
+  .topbar-in { position: relative; }
+  .topbar-mid {
+    display: flex; align-items: center; justify-content: center;
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    gap: 8px; pointer-events: none;
+  }
+  .topbar-mid > * { pointer-events: auto; }
+}
+
+/* P2-3 单词页「播放中」状态条 = 可见停止控制（点一下即停） */
+.spk-status.is-playing { cursor: pointer; }
+.spk-status.is-playing b {
+  font-weight: 700; text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* P2-6 续：工具栏内的操作钮 / 计时器 / 徽标同样去环——
+   用户口径「题数、计时、交卷直接排在里面，不再套环」，
+   静态态一律无背景无边框无圆角，仅保留文字主色与 hover 文字变化。 */
+.r-toolbar .btn,
+.l-toolbar .btn,
+.w-toolbar .btn {
+  background: transparent; border-color: transparent;
+  border-radius: 0; box-shadow: none;
+  padding: 6px 8px;
+}
+.r-toolbar .btn.btn-primary,
+.l-toolbar .btn.btn-primary,
+.w-toolbar .btn.btn-primary {
+  background: transparent; border-color: transparent;
+  color: var(--brand-700); font-weight: 700;
+}
+.r-toolbar .btn:hover,
+.l-toolbar .btn:hover,
+.w-toolbar .btn:hover {
+  background: transparent; color: var(--brand-700);
+  transform: none;
+}
+.w-toolbar .timer {
+  background: transparent; border-color: transparent;
+  box-shadow: none; border-radius: 0; padding: 0 4px;
+}
+.w-toolbar .badge,
+.w-toolbar .timer { -webkit-backdrop-filter: none; backdrop-filter: none; }
+.w-toolbar .badge {
+  background: transparent; border-radius: 0; padding: 0 2px;
+  color: var(--brand-700); font-weight: 700;
+}
+.es-side .es-stat {
+  background: transparent; border-color: transparent;
+  border-radius: 0; padding-left: 0;
+}
+
+/* P2-6 收尾：select 原生控件在 Chrome 仍会自绘边框/内底，需关掉 appearance
+   后才真正只剩一层（自绘一个细 chevron 保留下拉可识别性）。 */
+.r-toolbar .field select,
+.l-toolbar .field select,
+.w-toolbar .field select,
+.es-side .es-select {
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235b6478' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right center;
+  padding-right: 16px;
+}
+.es-side .es-select { border-bottom: 1px solid var(--stroke); }
+
+/* P2-2 收尾：未标记的旗标去掉灰圆底，只留淡灰旗形（不喧宾夺主，
+   但与「已标记」的金色实心徽章形成强对比，一眼能分辨） */
+@media (min-width: 901px) {
+  .q-nav button.qnav-cell .qnav-f {
+    background: transparent; border-color: transparent;
+    opacity: .70; color: var(--ink-3);
+  }
+  .q-nav button.qnav-cell:hover .qnav-f { opacity: 1; }
+}
+
+/* P2-6 收尾：去环元素同步去掉 backdrop-filter——玻璃按钮即使背景透明，
+   blur 仍会在卡内留下一块雾状矩形，视觉上又是一层「环」。 */
+.r-toolbar .btn, .l-toolbar .btn, .w-toolbar .btn,
+.r-toolbar .field select, .l-toolbar .field select, .w-toolbar .field select,
+.r-toolbar .chip, .l-toolbar .chip, .r-toolbar .mchip, .l-toolbar .mchip,
+.w-toolbar .seg, .w-toolbar .seg .seg-btn, .w-toolbar .timer,
+.es-side .es-search, .es-side .es-seg, .es-side .es-select,
+.es-side .es-chips button, .es-side .es-act,
+.rpt .rpt-badge, .rpt .rpt-band {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* P2-6 收尾：移动端范文侧栏的「筛选条件」折叠钮同样去环 */
+.es-side .es-fold {
+  background: transparent; border-color: transparent;
+  border-radius: 0; padding: 6px 2px;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+
+/* =============================================================
+ * 第 39 节：v17 补丁第二轮 v7（P2-2 紧凑导航 / P2-6 报告单层 /
+ *           P2-8 首页卡介绍）
+ * ============================================================= */
+
+/* ---------------------------------------------------------------
+ * P2-2 题号导航改「紧凑密排 + 不挡视野」（取代上一版的放大方向）
+ * 真机反馈：1–40 格占近半屏，题目被挤到下面，翻动时像盖住题目。
+ * 改法：格子 54×48/17px → 30×26/12px（桌面 32×28、手机 34×32），
+ *   间距 9 → 4px，40 格在题目栏内由 5 行 ≈305px 缩到 3 行 ≈102px；
+ *   取消 sticky（改为流内固定占位，永不以浮层盖住题目）；
+ *   旗标 20×20 → 11×11，靠颜色/位置辨认，不靠放大；
+ *   新增「收起题号」：收起后网格整块隐藏，只留图例一行，
+ *   题目区即刻多出 100px 视野，随时可展开。
+ * --------------------------------------------------------------- */
+.q-nav { position: static; gap: 4px; padding: 8px 12px; }
+.q-nav button.qnav-cell {
+  width: 30px; height: 26px; min-width: 30px; min-height: 26px;
+  border-radius: 6px; font-size: 12px; font-weight: 700;
+}
+.q-nav button.qnav-cell .qnav-n { font-size: 12px; font-weight: 700; }
+.q-nav button.qnav-cell .qnav-f {
+  width: 11px; height: 11px; font-size: 8px;
+  top: -3px; right: -3px; border-width: 1px;
+}
+.q-nav button.qnav-cell.mark .qnav-f { box-shadow: 0 0 0 2px rgba(217, 131, 36, .20); }
+.q-nav-legend { font-size: 11.5px; gap: 12px; padding: 0 12px 8px; align-items: center; }
+.q-nav-legend .lg { width: 10px; height: 10px; border-radius: 3px; }
+@media (min-width: 1401px) {
+  .q-nav button.qnav-cell { width: 32px; height: 28px; min-width: 32px; min-height: 28px; font-size: 12.5px; }
+  .q-nav button.qnav-cell .qnav-n { font-size: 12.5px; }
+}
+@media (max-width: 900px) {
+  .q-nav { gap: 5px; padding: 8px 10px; }
+  .q-nav button.qnav-cell { width: 34px; height: 32px; min-width: 34px; min-height: 32px; font-size: 13px; }
+  .q-nav button.qnav-cell .qnav-n { font-size: 13px; }
+  .q-nav button.qnav-cell .qnav-f { width: 13px; height: 13px; font-size: 9px; }
+}
+
+/* 收起 / 展开 */
+.qnav-fold {
+  margin-left: auto; padding: 2px 6px; border: 0; background: transparent;
+  color: var(--brand-700); font: inherit; font-size: 11.5px; font-weight: 700;
+  cursor: pointer; border-radius: 4px;
+}
+.qnav-fold:hover { text-decoration: underline; text-underline-offset: 2px; }
+.q-nav-wrap.is-fold .q-nav { display: none; }
+.q-nav-wrap.is-fold .q-nav-legend { padding-top: 8px; }
+
+/* 听力题号导航：10 格一行，密排；与阅读同一套视觉 */
+#lNav { border-bottom: 0; }
+#view-listening .q-nav-wrap { border-bottom: 1px solid var(--stroke-soft); }
+
+/* ---------------------------------------------------------------
+ * P2-6 续：阅读/听力交卷报告本体（.rpt）也去环
+ * 复查口径「外卡 + 已交卷药丸 + 内层预估 Band 卡」——上一版只去了
+ *   药丸与 Band 卡，报告卡 .rpt 本身仍是题目卡内的一层白底圆角框
+ *   （实测 .qpane .78 底/20px + .rpt .75 底/14px = 两层卡）。
+ * 改法：.rpt 背景/边框/阴影/圆角全部取消，报告直接排在题目卡内；
+ *   Band 数字与分数保留字号强调，靠字重与颜色区分，不靠外框。
+ * --------------------------------------------------------------- */
+.rpt {
+  background: transparent; border: 0; border-radius: 0; box-shadow: none;
+  padding: 4px 0 8px; margin-bottom: 14px;
+}
+.rpt::after { display: none; }
+.rpt-head { gap: 8px 12px; }
+.rpt .rpt-score { font-size: 24px; }
+.rpt .rpt-scroll, .rpt .rpt-table { background: transparent; }
+.rpt .rpt-table th { background: transparent; }
+
+/* ---------------------------------------------------------------
+ * P2-8 首页五卡中间介绍（商业化准备）
+ * 卡片变高后只有「图标+标题+副标题」与底部状态行，中间大片空。
+ * 改法：每卡在副标题下加 1 行介绍（.ht-intro），占住中部；
+ *   不改变卡片尺寸、不挤走底部状态行（.ht-prog 仍 margin-top:auto）。
+ * --------------------------------------------------------------- */
+.home-tile .ht-intro {
+  display: flex; align-items: center;
+  flex: 1 1 auto;
+  margin: 6px 0;
+  font-size: 13px; line-height: 1.6;
+  color: var(--ink-2);
+  text-align: left;
+  overflow: hidden;
+}
+@media (max-width: 900px) {
+  /* 手机竖屏：介绍限 3 行，避免 5 张卡被文字撑得过高（大屏仍居中占满） */
+  .home-tile .ht-intro {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    flex: 0 0 auto; margin: 3px 0 1px;
+    font-size: 11.5px; line-height: 1.45;
+    color: var(--ink-3);
+  }
+}
+
+/* P2-9 听力独立倒计时：仅听力视图显示（阅读仍用 #rTimer） */
+#lTimer { display: none; }
+body[data-view="listening"] #lTimer {
+  display: flex; flex: 0 0 auto;
+}
+
+/* P2-9 续：考试页 HUD 铺满顶栏（此前被 !important 的 flex:0 0 auto 压成
+   内容宽，题号/计时/交卷挤在左侧，右侧大片空） */
+body[data-view="reading"] .topbar-right,
+body[data-view="listening"] .topbar-right {
+  flex: 1 1 auto !important; width: 100%; min-width: 0;
+}
+
+/* P2-9 续：听力开考后隐藏练习态 chrome（题源选择/提示/重置），
+   只留顶栏的 计时 + 交卷 + 题号导航，以及播放器与题目——考试态即考试态。 */
+body[data-view="listening"][data-exam="1"] .l-toolbar { display: none; }
+body[data-view="listening"][data-exam="1"] .l-split { padding-top: 10px; }
+
+/* P2-2 续：旗标默认更低调、已标记更醒目（13/14px，靠颜色而非尺寸区分） */
+.q-nav button.qnav-cell .qnav-f { width: 13px; height: 13px; font-size: 9px; opacity: .34; }
+.q-nav button.qnav-cell:hover .qnav-f { opacity: .9; }
+.q-nav button.qnav-cell.mark .qnav-f {
+  width: 14px; height: 14px; font-size: 10px; opacity: 1;
+  background: var(--warn); color: #fff; border-color: transparent;
+  box-shadow: 0 0 0 2px rgba(217, 131, 36, .25);
+}
+
+/* =============================================================
+ * 第 40 节：v17 补丁第 3 轮（B1-6 特大字号词性 pill 不重叠）
+ * ============================================================= */
+/* 词性 pill 实际嵌在 .q-word 内部（不是 flex 兄弟）：特大字号下长词
+   （controversial）会把行宽占满，pill 紧贴词尾甚至压住最后一个字母。
+   做法：pill 改为 inline-block + 左外边距兜底，并给 .q-word 允许在
+   词内断行，确保 pill 永远排在字母之后，不与字形相交。 */
+.practice-full .q-word {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.practice-full .q-word .q-pos {
+  display: inline-block;
+  margin-left: .22em;
+  vertical-align: middle;
+  transform: translateY(-.06em);
+  max-width: 100%;
+}
+/* 特大两档再收一档 pill 尺寸，避免它自己把行撑爆 */
+html.fs-3 .practice-full .q-word .q-pos,
+html.fs-4 .practice-full .q-word .q-pos {
+  font-size: .38em;
+  padding: 3px 9px;
+  letter-spacing: .2px;
+}
+@media (max-width: 900px) {
+  html.fs-3 .practice-full .q-word,
+  html.fs-4 .practice-full .q-word { font-size: clamp(34px, 10vw, 56px); }
+}
+
+/* B3-1 听力原文遮罩：播放前只显示占位，不泄露原文 */
+.l-seg.is-masked .l-seg-who { opacity: .6; }
+.l-seg-text.is-masked {
+  color: var(--muted); font-style: italic; font-weight: 500;
+  letter-spacing: .5px; opacity: .8;
+}
+
+/* =============================================================
+ * 第 41 节：v17 补丁第 3 轮（B6-1 首页三入口 / B4 底栏留白）
+ * ============================================================= */
+/* B6-1：首页此前把整个 .topbar-right 隐藏，只剩品牌，主题/复习无处可点。
+   改为：品牌仍居中，三按钮组绝对靠右（不与品牌争位）；≤430 小屏放不下，
+   仍隐藏（首页有底栏入口时可从底部进入）。 */
+body[data-view="home"] .topbar-in { position: relative; }
+body[data-view="home"] .topbar-right {
+  display: flex !important;
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  margin: 0;
+}
+body[data-view="home"] .topbar-mid {
+  position: static !important;
+  display: contents !important;
+}
+@media (max-width: 430px) {
+  body[data-view="home"] .topbar-right { display: none !important; }
+}
+
+/* B4：底部导航不从 padding 里"让位"，说明有容器把内容顶出了可视区。
+   统一给主内容区补足导航高度的底部留白（含安全区 + 12px 呼吸）。 */
+@media (min-width: 901px) {
+  .wrap > .view.is-active { padding-bottom: 4px; }
+  #view-vocab .v-grid,
+  #view-essays .es-shell,
+  #view-writing .w-split,
+  #view-reading .r-split,
+  #view-listening .l-split { margin-bottom: 8px; }
+}
+
+/* B4 续：底部导航留白再放宽 20px（导航高 62 + 安全区 + 26 呼吸） */
+@media (min-width: 901px) {
+  .wrap { padding-bottom: calc(var(--tabbar-h, 62px) + env(safe-area-inset-bottom, 0px) + 26px); }
+  body[data-view="home"] .wrap { padding-bottom: 28px; }
+}
+
+/* B6-1 续：首页三按钮组在 display:contents 下需恢复可点（父级曾有
+   pointer-events:none，继承下去会让点击穿透，看起来"按钮点不动"） */
+body[data-view="home"] .topbar-mid { pointer-events: auto !important; }
+body[data-view="home"] .topbar-mid > * { pointer-events: auto !important; }
+
+/* B3-1 续：未开播时的整块提示（避免 23 行占位） */
+.l-seg-mask-tip {
+  padding: 28px 8px; text-align: center;
+  color: var(--muted); font-size: 13px; font-style: italic;
+}
+
+/* =============================================================
+ * 第 42 节：v18 换代（0.1 顶栏瘦身 / 0.3 玻璃强化 / 0.10 光影）
+ * 只改壳层（顶栏、卡片、栏体），答题内容区保持素面
+ * ============================================================= */
+
+/* ---------- 0.3 玻璃参数升级（强档） ---------- */
+:root {
+  --lg-blur: blur(28px) saturate(190%);
+  --lg-chrome-blur: blur(32px) saturate(190%);
+  --lg-blur-soft: blur(16px) saturate(175%);
+  --lg-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+}
+html[data-theme="dark"] {
+  --lg-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
+}
+
+/* ---------- 0.1 顶栏瘦身：64 → 56，胶囊更圆、投影更深 ---------- */
+.topbar { padding: 10px 12px 4px; }
+.topbar-in {
+  height: 56px;
+  border-radius: 22px;
+  background-image: var(--lg-noise);
+  background-color: var(--lg-glass);
+  box-shadow:
+    0 10px 30px -12px rgba(16, 24, 40, .28),
+    0 2px 6px rgba(16, 24, 40, .06),
+    inset 0 1px 0 rgba(255, 255, 255, .72),
+    inset 0 -1px 0 rgba(255, 255, 255, .18);
+}
+html[data-theme="dark"] .topbar-in {
+  box-shadow:
+    0 12px 34px -12px rgba(0, 0, 0, .65),
+    inset 0 1px 0 rgba(255, 255, 255, .16),
+    inset 0 -1px 0 rgba(255, 255, 255, .04);
+}
+
+/* ---------- 0.3 卡片/栏体：噪点 + 双层高光 ---------- */
+.r-toolbar, .w-toolbar, .pane, .home-tile, .es-card, .es-side, .stat-box, .review-card, .v-stats, .rpt {
+  background-image: var(--lg-noise);
+}
+.pane, .home-tile, .es-card, .es-side {
+  box-shadow:
+    0 12px 32px -18px rgba(16, 24, 40, .35),
+    0 1px 2px rgba(16, 24, 40, .05),
+    inset 0 1px 0 rgba(255, 255, 255, .62);
+}
+html[data-theme="dark"] .pane,
+html[data-theme="dark"] .home-tile,
+html[data-theme="dark"] .es-card,
+html[data-theme="dark"] .es-side {
+  box-shadow:
+    0 14px 36px -18px rgba(0, 0, 0, .7),
+    inset 0 1px 0 rgba(255, 255, 255, .12);
+}
+
+/* ---------- 0.10 图标统一加粗（1.6 → 1.85，端点更圆） ---------- */
+.icon svg, .es-spk svg, .qnav-f svg { stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; }
+.icon-btn .icon svg, .btn .icon svg { width: 19px; height: 19px; }
+
+/* ---------- 0.2 首页：日期 kicker + 今日概览条 ---------- */
+.home-kicker {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12.5px; font-weight: 700; letter-spacing: .3px;
+  color: var(--brand-700);
+  background: var(--brand-soft);
+  border: 1px solid var(--brand-line);
+  padding: 5px 12px; border-radius: 999px;
+}
+.home-overview {
+  display: flex; align-items: stretch; justify-content: center;
+  gap: 10px; flex-wrap: wrap;
+  margin: 16px auto 4px; max-width: 1080px;
+}
+.home-ov-item {
+  flex: 1 1 150px; min-width: 132px;
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 12px 16px; border-radius: 18px;
+  background: var(--lg-glass);
+  border: 1px solid var(--lg-border);
+  -webkit-backdrop-filter: var(--lg-blur-soft); backdrop-filter: var(--lg-blur-soft);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), 0 8px 20px -16px rgba(16, 24, 40, .4);
+  text-align: left;
+}
+.home-ov-item b {
+  font-family: var(--font-num); font-size: 24px; font-weight: 800; letter-spacing: -.5px;
+  color: var(--ink); line-height: 1.1;
+}
+.home-ov-item span { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.home-ov-item .ov-hint { font-size: 11px; color: var(--brand-700); }
+
+/* 0.5：听力工具栏那个隐藏的交卷钮——.btn 的 display 会压过 UA [hidden]，
+   与顶栏 HUD 的交卷并存会出现两个交卷入口（用户手机截图已见） */
+#lBtnSubmit[hidden] { display: none !important; }
+
+/* 更新日志 */
+.me-log { list-style: none; margin: 6px 0 0; padding: 0; }
+.me-log li {
+  position: relative; padding: 0 0 12px 16px;
+  border-left: 2px solid var(--stroke-soft);
+}
+.me-log li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.me-log li::before {
+  content: ''; position: absolute; left: -5px; top: 6px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft);
+}
+.me-log b { font-size: 13px; color: var(--ink); margin-right: 8px; }
+.me-log span { font-size: 11.5px; color: var(--muted); }
+.me-log p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-2); }
+
+/* v18 0.2 收：概览条占高后压缩 hero，保证首页仍一屏无滚动 */
+@media (min-width: 901px) {
+  .home-hero { padding: 8px 16px 0; }
+  .home-hero .home-sub { margin: 4px 0 0; }
+  .home-overview { margin: 10px auto 2px; }
+  .home-ov-item { padding: 9px 14px; }
+  .home-ov-item b { font-size: 20px; }
+  .home-acts { margin-top: 10px; }
+  .home-grid { margin: clamp(10px, 2vh, 18px) auto 8px; }
+}
+@media (max-width: 900px) {
+  .home-overview { gap: 8px; margin: 10px auto 2px; }
+  .home-ov-item { flex: 1 1 30%; min-width: 0; padding: 9px 10px; }
+  .home-ov-item b { font-size: 18px; }
+  .home-ov-item span { font-size: 10.5px; }
+  .home-ov-item .ov-hint { display: none; }
+}
+
+/* 矮屏（1024×768 一类）：概览条再压一档，首页仍一屏 */
+@media (min-width: 901px) and (max-height: 800px) {
+  .home-overview { margin: 6px auto 0; gap: 8px; }
+  .home-ov-item { padding: 6px 12px; border-radius: 15px; }
+  .home-ov-item b { font-size: 18px; }
+  .home-ov-item span { font-size: 11px; }
+  .home-ov-item .ov-hint { display: none; }
+  .home-acts { margin-top: 6px; }
+  .home-hero { padding-top: 2px; }
+}
+
+/* 留白微调：grid 下边距压到 2，卡片随之下移，底部留白回到 120 内 */
+@media (min-width: 901px) { .home-grid { margin-bottom: 2px; } }
+
+/* 0.3 收：用与 §35.1 同等特异性覆盖（此前被 html[data-theme="light"] 压住） */
+html,
+:root,
+html[data-theme="light"] {
+  --lg-blur: blur(28px) saturate(190%);
+  --lg-chrome-blur: blur(32px) saturate(190%);
+  --lg-blur-soft: blur(16px) saturate(175%);
+}
+/* 深色铬层保留 C1 专项的 140% 饱和（压深色光斑），只加深模糊 */
+html[data-theme="dark"] {
+  --lg-blur: blur(28px) saturate(190%);
+  --lg-chrome-blur: blur(32px) saturate(140%);
+}
+
+/* super P0-5：开始键改为唯一入口（设置正下方整行宽），旧的隐藏规则作废 */
+
+/* =============================================================
+ * 第 43 节：v18+skills（0.10 图形强档：图标双色 + 加粗）
+ * ============================================================= */
+/* 图标从纯描边升级为「描边 + 8% 同色填充」：视觉重量更足、边缘更实，
+   但仍保持线性识别度；颜色跟随 currentColor，不引入第二套色。 */
+.icon svg,
+.empty-art svg {
+  fill: currentColor;
+  fill-opacity: .08;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* 深色下填充略提，避免整体发灰 */
+html[data-theme="dark"] .icon svg { fill-opacity: .12; }
+/* 描边图标里带闭合形的，填充不压边：靠 stroke 在上层保证轮廓清晰 */
+
+/* A4 无障碍：触屏下所有可点控件不小于 44px（桌面保持紧凑，不撑坏布局）。
+   题号格与字母槽除外——它们是高密度网格，40px 已有专门规则。 */
+@media (hover: none), (pointer: coarse) {
+  .foot-about,
+  .me-close,
+  .icon-btn,
+  .theme-toggle,
+  .btn-sm,
+  .qnav-fold,
+  .es-act,
+  .es-chip {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .nav-seg .seg-btn { min-height: 44px; }
+  .es-act { justify-content: center; }
+}
+
+/* A4 续：品牌链接、抽屉关闭、底部导航项在触屏下同样 ≥44 */
+@media (hover: none), (pointer: coarse) {
+  .brand, #brandLogo { min-height: 44px; }
+  #btnCloseDrawer, #btnMeClose, .drawer-close, .me-close { min-width: 44px; min-height: 44px; }
+  .tabbar a, .tabbar button { min-height: 44px; }
+}
+
+/* A4 续 2：触屏下顶栏按钮 34 → 44（顶栏同步 56 高），词库搜索/筛选 40 → 44 */
+@media (hover: none), (pointer: coarse) {
+  body:not([data-view="home"]) .topbar-in { height: 56px; }
+  .topbar-mid .icon-btn,
+  .topbar-mid .theme-toggle { min-height: 44px; }
+  .deck-search, #deckSearch, #deckFilter,
+  #view-vocab .v-head input, #view-vocab .v-head select { min-height: 44px; }
+}
+
+/* =============================================================
+ * 第 44 节：super —— 首页卡片（P0-2）+ 单词开始键（P0-5）
+ * ============================================================= */
+
+/* P0-2：描述紧跟副标题，只让状态行贴底；中间不再留三分之一空白 */
+.home-tile {
+  justify-content: flex-start;
+  gap: 0;
+}
+.home-tile .ht-intro {
+  flex: 0 0 auto;                 /* 取消「吃掉剩余高度再居中」，空白不再堆在中间 */
+  margin: 6px 0 0;
+  line-height: 1.55;
+}
+.home-tile .ht-bar {
+  margin-top: auto;               /* 进度条 + 状态行一起贴底 */
+  display: block; width: 100%; height: 4px; border-radius: 2px;
+  background: var(--stroke-soft);
+  overflow: hidden;
+}
+.home-tile .ht-bar i {
+  display: block; height: 100%; width: 2%;
+  background: linear-gradient(90deg, var(--brand), var(--brand-700));
+  border-radius: 2px;
+  transition: width .45s cubic-bezier(.22, 1, .36, 1);
+}
+.home-tile .ht-prog { margin-top: 8px; }
+
+/* 五卡一眼可区分：各给一个色相（图标 + 左侧细条），不再是同一张金边卡 */
+/* super 补丁：图标收敛到「一主色」——不再五卡五色，靠形状区分，
+   左侧竖条也统一主色；链接色 / 破坏色各自只用在对应语义上。 */
+.home-tile { --tile-hue: var(--brand); }
+.home-tile[data-view="reading"],
+.home-tile[data-view="listening"],
+.home-tile[data-view="writing"],
+.home-tile[data-view="vocab"],
+.home-tile[data-view="essays"] { --tile-hue: var(--brand); }
+.home-tile::before {
+  content: ''; position: absolute; left: 0; top: 18px; bottom: 18px;
+  width: 3px; border-radius: 0 3px 3px 0; background: var(--tile-hue, transparent);
+  opacity: .85;
+}
+.home-tile .icon { color: var(--tile-hue, currentColor); }
+.home-tile .ht-name { color: var(--ink); }
+
+/* P0-5：开始键整行宽、在设置正下方；两组设置之间一条细分隔 */
+#view-vocab .cfg-group { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; }
+#view-vocab .cfg-group + .cfg-group {
+  margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--stroke-soft);
+}
+#view-vocab .v-start {
+  width: 100%; margin-top: 12px; height: 46px;
+  font-size: 15px; font-weight: 700; justify-content: center;
+}
+
+/* P0-2 续：卡片中段的时长/题数/难度标签（填掉标题与底栏之间的空档，
+   同时满足「模块卡加时长/题数/难度」的要求） */
+.home-tile .ht-meta {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin: 10px 0 0;
+}
+.home-tile .ht-meta i {
+  font-style: normal; font-size: 11px; font-weight: 600; line-height: 1;
+  padding: 5px 8px; border-radius: 7px;
+  color: var(--ink-3); background: var(--stroke-soft);
+}
+.home-tile .ht-prog { font-size: 11.5px; line-height: 1.5; }
+
+/* super P0-6：编辑器说明挪到下方一行；清空（破坏性）降权，保存（建设性）保留主色 */
+.ed-note {
+  margin: 6px 2px 0; font-size: 11.5px; line-height: 1.5;
+  color: var(--ink-3);
+}
+#editor::placeholder { color: var(--ink-3); opacity: 1; }
+#btnClear {
+  color: var(--danger, #c0392b);
+  border-color: transparent;
+  background: transparent;
+  font-weight: 600;
+}
+#btnClear:hover { background: rgba(192, 57, 43, .08); }
+#btnSave { min-width: 132px; }
+
+/* =============================================================
+ * 第 45 节：super P0-1 阅读交卷着陆卡
+ * ============================================================= */
+.r-landing { padding: 4px 2px 14px; }
+.r-landing-h {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 14px;
+}
+.r-landing-tag {
+  font-size: 11.5px; font-weight: 700; letter-spacing: .3px;
+  color: var(--brand-700); background: var(--brand-soft);
+  border: 1px solid var(--brand-line); border-radius: 999px;
+  padding: 4px 10px;
+}
+.r-landing-score {
+  font-family: var(--font-num); font-size: 32px; font-weight: 800;
+  letter-spacing: -.6px; color: var(--ink); line-height: 1;
+}
+.r-landing-score i { font-style: normal; font-size: 15px; font-weight: 600; color: var(--muted); }
+.r-landing-band { font-size: 13px; color: var(--ink-2); font-weight: 600; }
+.r-landing-band b { font-family: var(--font-num); font-size: 17px; color: var(--brand-700); }
+.r-landing-at { font-size: 11.5px; color: var(--muted); margin-left: auto; }
+
+.r-landing-p {
+  margin: 10px 0 12px; font-size: 12.5px; line-height: 1.65; color: var(--ink-2);
+}
+.r-landing-acts { display: flex; gap: 10px; }
+.r-landing-acts .btn { min-height: 40px; padding: 0 18px; }
+
+/* 折叠回顾：一条可点的标题，展开后才是 40 题表格 */
+.rpt-fold { margin-top: 6px; border-top: 1px dashed var(--stroke-soft); padding-top: 10px; }
+.rpt-fold > summary {
+  cursor: pointer; list-style: none;
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding: 6px 2px; font-size: 13px; color: var(--ink-2);
+}
+.rpt-fold > summary::-webkit-details-marker { display: none; }
+.rpt-fold > summary b { color: var(--brand-700); font-weight: 700; }
+.rpt-fold > summary span { font-size: 11.5px; color: var(--muted); }
+.rpt-fold > summary::before {
+  content: '▸'; color: var(--muted); font-size: 11px; transition: transform .2s ease;
+}
+.rpt-fold[open] > summary::before { content: '▾'; }
+.rpt-fold .rpt { margin-top: 10px; }
+.rpt-types-t { margin: 14px 0 6px; font-size: 12px; font-weight: 700; color: var(--ink-3); letter-spacing: .2px; }
+
+/* =============================================================
+ * 第 46 节：super P0-3 考试页顶栏两行
+ * 真实结构：.topbar-in > 品牌 + #navSeg + .topbar-right，
+ *           而 .topbar-right 里又装着 #examHud 与 .topbar-mid（三按钮）。
+ * 做法：让 .topbar-right 自己换行 —— 第一行把三按钮推到最右（与品牌同排），
+ *       第二行让考试条（题号胶囊 + 计时 + 交卷）独占整宽。
+ * ============================================================= */
+@media (min-width: 901px) {
+  body[data-view="reading"] .topbar-in,
+  body[data-view="listening"] .topbar-in {
+    position: relative;
+    height: auto;
+    padding: 10px 14px;
+    flex-wrap: wrap !important;
+    align-items: flex-start;
+    row-gap: 6px;
+  }
+  body[data-view="reading"] .topbar-in > .brand,
+  body[data-view="listening"] .topbar-in > .brand {
+    display: flex !important;
+    min-height: 44px;
+    align-self: flex-start;
+  }
+  /* 三按钮浮在第一行右侧（不占布局，避免把考试条挤窄） */
+  body[data-view="reading"] .topbar-mid,
+  body[data-view="listening"] .topbar-mid {
+    display: flex !important;
+    position: absolute !important;
+    top: 10px; right: 14px; left: auto !important; bottom: auto !important;
+    transform: none !important;
+    margin: 0;
+    gap: 8px;
+    pointer-events: auto;
+  }
+  /* 考试条独占第二行、整宽 */
+  body[data-view="reading"] .topbar-right,
+  body[data-view="listening"] .topbar-right {
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    min-width: 0;
+    margin: 0 !important;
+    display: block;
+  }
+  body[data-view="reading"] #examHud,
+  body[data-view="listening"] #examHud {
+    width: 100%;
+    margin-top: 6px;
+  }
+}
+
+/* =============================================================
+ * 第 47 节：super P0-4 听力播放前骨架 / P0-6 写作提纲与字数条
+ * ============================================================= */
+.l-skel-box { margin-top: 10px; display: flex; flex-direction: column; gap: 9px; }
+.l-skel {
+  height: 9px; width: var(--w, 80%); border-radius: 5px;
+  background: linear-gradient(90deg, var(--stroke-soft), transparent);
+  opacity: .85;
+}
+.l-skel:nth-child(even) { opacity: .6; }
+
+/* 写作：Task 2 四段提纲 */
+.w-outline {
+  margin: 12px 0 4px; padding: 10px 12px;
+  border: 1px dashed var(--stroke-soft); border-radius: 12px;
+  background: transparent;
+}
+.w-outline > summary {
+  cursor: pointer; font-size: 12.5px; font-weight: 700; color: var(--brand-700);
+  list-style: none;
+}
+.w-outline > summary::-webkit-details-marker { display: none; }
+.w-outline > summary::before { content: '▸ '; }
+.w-outline[open] > summary::before { content: '▾ '; }
+.w-outline ol { margin: 8px 0 0; padding-left: 18px; }
+.w-outline li { font-size: 12.5px; line-height: 1.75; color: var(--ink-2); }
+.w-outline li b { color: var(--ink); }
+
+/* 字数条固定在编辑器底部，滚动时不跑 */
+.wc-dock {
+  position: sticky; bottom: 0; z-index: 3;
+  background: var(--lg-glass);
+  -webkit-backdrop-filter: var(--lg-blur-soft);
+  backdrop-filter: var(--lg-blur-soft);
+  border-top: 1px solid var(--stroke-soft);
+}
+
+/* P1：弹窗背景「变暗不糊」——保留上下文可读 */
+.cf-mask, .dp-mask {
+  background: rgba(6, 10, 22, .62);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+/* P1：次要文字提一档对比（hint / 说明 / 状态行） */
+.tb-hint, .hint, .field-note, .ht-prog, .home-hint, .l-seg-mask-tip,
+.es-meta, .q-inst, .w-outline li, .r-landing-p {
+  color: var(--ink-2);
+}
+
+/* super P0-4：空闲态收起空的「当前句」区，让骨架把左栏填满 */
+.l-player.is-idle .l-now { display: none; }
+.l-player.is-idle { padding-bottom: 10px; }
+.l-skel-box { margin: 4px 2px 2px; }
+
+/* =============================================================
+ * 第 48 节：super 小补丁（范文筛选列 / 题号触靶与角标）
+ * ============================================================= */
+
+/* 1) 范文筛选列：244px（21.9%）→ 300px（约 27%），内部小字 11 → 12.5px */
+@media (min-width: 901px) {
+  .es-side { flex: 0 0 300px; width: 300px; }
+  .es-side .es-search input,
+  .es-side .es-select,
+  .es-side .es-seg button,
+  .es-side .es-chips button,
+  .es-side .es-act,
+  .es-side .es-stat { font-size: 12.5px; }
+  .es-side .es-side-t,
+  .es-side .es-group-t { font-size: 12px; }
+}
+
+/* 4) 题号格：视觉保持 30×26（不挤题目区），触靶用伪元素外扩到 44×44；
+      角标旗子 13 → 16px。 */
+.q-nav button.qnav-cell { position: relative; }
+.q-nav button.qnav-cell::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 44px; height: 44px;
+  transform: translate(-50%, -50%);
+  border-radius: 12px;
+  /* 透明命中层：不改变视觉尺寸，只把可点区域做成 44×44 */
+  background: transparent;
+}
+.q-nav button.qnav-cell .qnav-f {
+  width: 16px; height: 16px; font-size: 10px;
+  top: -5px; right: -5px;
+}
+@media (max-width: 900px) {
+  .q-nav button.qnav-cell::after { width: 46px; height: 46px; }
+}
+
+/* P0-3 补：手机档（≤900）考试页同样保留品牌与三入口，
+   考试条整宽换到第二行——与桌面同一套规则，只是间距收紧。 */
+@media (max-width: 900px) {
+  body[data-view="reading"] .topbar-in,
+  body[data-view="listening"] .topbar-in {
+    position: relative;
+    height: auto;
+    padding: 8px 10px;
+    flex-wrap: wrap !important;
+    align-items: flex-start;
+    row-gap: 6px;
+  }
+  body[data-view="reading"] .topbar-in > .brand,
+  body[data-view="listening"] .topbar-in > .brand {
+    display: flex !important;
+    min-height: 40px;
+  }
+  body[data-view="reading"] .topbar-mid,
+  body[data-view="listening"] .topbar-mid {
+    display: flex !important;
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    order: 1;
+    margin-left: auto;
+    gap: 6px;
+  }
+  body[data-view="reading"] .topbar-right,
+  body[data-view="listening"] .topbar-right {
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    display: block;
+    margin: 0 !important;
+  }
+  body[data-view="reading"] #examHud,
+  body[data-view="listening"] #examHud {
+    order: 2;
+    flex: 0 0 100%;
+    width: 100%;
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px solid var(--stroke-soft);
+  }
+}
+
+/* =============================================================
+ * 第 49 节：结构手术 ① — 首页从「高空卡」改为「紧凑模块行」
+ * 旧结构：5 张 300+ 高的卡片（图标/标题/介绍/进度散落，中间大片空）
+ * 新结构：5 行 76px 高（图标 + 主线 + 右侧进度 + 箭头），一屏放得下
+ * ============================================================= */
+.home-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px auto 8px;
+  max-width: 1120px;
+  align-content: initial;
+}
+.home-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  max-height: none;
+  align-self: stretch;
+  padding: 12px 16px;
+  border-radius: 16px;
+  text-align: left;
+  gap: 14px;
+  flex-direction: row;        /* 旧规则是 column，必须显式改回 */
+  align-items: center;
+  justify-content: flex-start;
+}
+.home-tile::before { display: none; }   /* 旧卡片的左侧色条不再需要 */
+
+.home-tile .ht-ic {
+  flex: 0 0 auto;
+  width: 40px; height: 40px; border-radius: 12px;
+  display: grid; place-items: center;
+  background: var(--brand-soft);
+  color: var(--brand-700);
+}
+.home-tile .ht-ic .icon { width: 20px; height: 20px; }
+.home-tile .ht-ic svg { width: 20px; height: 20px; }
+
+.home-tile .ht-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.home-tile .ht-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.home-tile .ht-name { font-size: 15px; font-weight: 700; color: var(--ink); }
+.home-tile .ht-meta { font-style: normal; font-size: 11px; color: var(--ink-3); font-weight: 600; }
+.home-tile .ht-intro {
+  display: block; flex: 0 0 auto; margin: 0;
+  font-size: 12px; line-height: 1.5; color: var(--ink-2);
+  text-align: left; overflow: hidden;
+}
+
+.home-tile .ht-side {
+  flex: 0 0 214px;
+  display: flex; flex-direction: column; gap: 6px; align-items: flex-end;
+  min-width: 0;
+}
+.home-tile .ht-bar {
+  width: 100%; height: 4px; margin: 0;
+  border-radius: 2px; background: var(--stroke-soft); overflow: hidden;
+}
+.home-tile .ht-prog {
+  margin: 0; font-size: 11px; color: var(--ink-3);
+  text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+.home-tile .ht-go { flex: 0 0 auto; color: var(--ink-3); font-size: 20px; line-height: 1; }
+
+.home-tile:hover { transform: translateY(-1px); }
+.home-tile:hover .ht-go { color: var(--brand-700); transform: translateX(2px); }
+
+@media (max-width: 900px) {
+  .home-tile { padding: 11px 13px; gap: 11px; }
+  .home-tile .ht-ic { width: 34px; height: 34px; border-radius: 10px; }
+  .home-tile .ht-side { flex: 0 0 108px; }
+  .home-tile .ht-intro { font-size: 11.5px; }
+  .home-tile .ht-meta { display: none; }
+}
+
+/* 结构手术① 收尾：进度列放宽到 268px，两行截断；图标框内 SVG 尺寸 */
+.home-tile .ht-side { flex: 0 0 268px; }
+.home-tile .ht-prog {
+  white-space: normal;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  line-height: 1.45;
+}
+.home-tile .ht-ic svg { width: 20px; height: 20px; stroke-width: 2; }
+.home-tile .ht-ic { color: var(--brand-700); }
+
+/* 结构手术① 图标位：decorateIcons 会把 <span class="icon"><svg/></span>
+   插成按钮首个子元素，直接把它做成 40×40 图标框（无需再搬 DOM）。 */
+.home-tile > .icon {
+  flex: 0 0 auto;
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  background: var(--brand-soft);
+  color: var(--brand-700);
+}
+.home-tile > .icon svg { width: 20px; height: 20px; stroke-width: 2; }
+.home-tile .ht-ic { display: none; }
+@media (max-width: 900px) {
+  .home-tile > .icon { width: 34px; height: 34px; border-radius: 10px; }
+}
+
+/* 首页一屏装下：行高 79 → 66，间距收紧（1194×834 不滚动） */
+@media (min-width: 901px) {
+  .home-grid { gap: 8px; margin: 10px auto 6px; }
+  .home-tile { padding: 9px 14px; gap: 12px; }
+  .home-tile .ht-name { font-size: 14.5px; }
+  .home-tile .ht-intro { font-size: 11.5px; line-height: 1.45; }
+  .home-ov-item { padding: 8px 14px; }
+  .home-overview { margin: 8px auto 0; }
+  .home-acts { margin-top: 8px; }
+  .home-hint { margin-top: 4px; }
+}
+
+/* 手机：行内只留标题 + 进度（描述隐藏），行高回到 ~60px */
+@media (max-width: 900px) {
+  .home-tile .ht-intro { display: none; }
+  .home-tile .ht-side { flex: 0 0 96px; }
+  .home-tile { padding: 10px 12px; }
+  .home-tile .ht-name { font-size: 14px; }
+  .home-grid { gap: 8px; margin: 10px auto 6px; }
+}
+/* 桌面：再挤 35px，保证 1194×834 一屏不滚 */
+@media (min-width: 901px) {
+  .home-hero { padding-top: 0; }
+  .home-title { margin-top: 2px; }
+  .home-sub { margin-bottom: 0; }
+  .home-ov-item { padding: 7px 13px; }
+  .home-acts { margin-top: 6px; }
+  .home-grid { margin-bottom: 0; }
+}
+
+/* 收尾：行内边距再收 1px/行 + 间距 6px，1194×834 回到一屏内 */
+@media (min-width: 901px) {
+  .home-tile { padding: 8px 14px; }
+  .home-grid { gap: 6px; }
+}
+
+/* =============================================================
+ * 第 50 节：首页 / 学习区 / 留言区（结构分离）
+ * ============================================================= */
+.learn-grid { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 8px; }
+
+.learn-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  padding: 4px 2px 12px;
+}
+.learn-t h2 { margin: 0; font-size: 22px; letter-spacing: -.3px; color: var(--ink); }
+.learn-t p { margin: 4px 0 0; font-size: 12.5px; color: var(--ink-2); }
+.learn-meta { font-size: 12px; color: var(--ink-3); }
+
+.home-jump { display: flex; justify-content: center; margin: 10px 0 2px; }
+.home-jump-btn { min-height: 42px; padding: 0 18px; font-size: 13.5px; }
+
+/* 留言区 */
+.cm-form {
+  background: var(--lg-glass);
+  -webkit-backdrop-filter: var(--lg-blur-soft);
+  backdrop-filter: var(--lg-blur-soft);
+  border: 1px solid var(--lg-border);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  max-width: 900px;
+}
+.cm-name { max-width: 220px; min-height: 40px; }
+.cm-text {
+  width: 100%; min-height: 78px; resize: vertical;
+  border-radius: 12px; padding: 10px 12px;
+  border: 1px solid var(--stroke); background: var(--field);
+  color: var(--ink); font: inherit; font-size: 13.5px; line-height: 1.6;
+}
+.cm-text:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+.cm-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cm-hint { font-size: 11.5px; color: var(--ink-3); }
+
+.cm-list { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; max-width: 900px; }
+.cm-item {
+  border: 1px solid var(--stroke-soft); border-radius: 14px;
+  padding: 12px 14px; background: var(--lg-glass);
+}
+.cm-item.is-demo { border-style: dashed; opacity: .92; }
+.cm-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.cm-who { font-size: 13px; color: var(--ink); }
+.cm-time { font-size: 11px; color: var(--ink-3); }
+.cm-badge {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .3px;
+  color: var(--warn); background: var(--warn-soft);
+  border-radius: 6px; padding: 2px 6px;
+}
+.cm-del {
+  margin-left: auto; border: 0; background: transparent; cursor: pointer;
+  color: var(--ink-3); font-size: 13px; min-width: 32px; min-height: 32px;
+}
+.cm-del:hover { color: var(--bad); }
+.cm-body { margin: 6px 0 0; font-size: 13px; line-height: 1.7; color: var(--ink-2); }
+.cm-empty { margin: 14px 0 0; font-size: 12.5px; color: var(--ink-3); }
+.cm-demo-note { margin: 18px 0 0; font-size: 11.5px; color: var(--ink-3); }
+
+/* 学习区：行高 84、间距 12，列表在小屏也撑得起来，不显得空 */
+.learn-grid { gap: 12px; }
+@media (min-width: 901px) {
+  .learn-grid .home-tile { min-height: 84px; }
+}
+
+/* 首页只剩概览 + 继续练习 + 进学习区：改为垂直居中，避免下半屏一片空 */
+@media (min-width: 901px) {
+  #view-home.is-active {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - 210px);
+    padding-bottom: 40px;
+  }
+  #view-home .home-hero { padding-top: 0; }
+  #view-home .home-overview { margin: 18px auto 0; }
+  #view-home .home-acts { margin-top: 16px; }
+}
