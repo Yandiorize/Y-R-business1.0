@@ -122,71 +122,31 @@
   <span class="blob b3"></span><span class="blob b4"></span>
 </div>
 
-<!-- ============ 顶栏 ============ -->
-<header class="topbar">
-  <div class="topbar-in glass">
-    <!-- v16 0.1：logo 可点击，展开「我的」抽屉（不独立成页；键盘 Enter/Space 同样可触发） -->
-    <div class="brand" id="brandLogo" role="button" tabindex="0"
-         aria-haspopup="dialog" title="我的" aria-label="打开「我的」">
-      <!-- Logo：炎帝 Yan-di 风格图标（512 透明底版，深浅模式由 CSS 换底色/反色） -->
-      <span class="brand-mark">
-        <img src="assets/yandi-ventures-icon.png" alt="Yan-di 标志" width="40" height="40">
-      </span>
-      <div class="brand-text">
-        <strong>Y-IELTS</strong>
-        <span>ACADEMIC · CBT SIMULATOR</span>
-      </div>
-    </div>
-
-    <nav class="nav-seg" id="navSeg">
-      <span class="seg-thumb" id="navThumb"></span>
-      <button class="seg-btn is-active" data-view="home"     data-icon="home">首页 <i class="nav-en">Home</i></button>
-      <button class="seg-btn"           data-view="reading"  data-icon="book">阅读 <i class="nav-en">Reading</i></button>
-      <button class="seg-btn"           data-view="listening" data-icon="volume">听力 <i class="nav-en">Listening</i></button>
-      <button class="seg-btn"           data-view="writing"  data-icon="pen">写作 <i class="nav-en">Writing</i></button>
-      <button class="seg-btn"           data-view="vocab"    data-icon="cards">单词 <i class="nav-en">Vocabulary</i></button>
-      <button class="seg-btn"           data-view="essays"   data-icon="edit">范文 <i class="nav-en">Essays</i></button>
-    </nav>
-
-    <div class="topbar-right">
-      <!-- 考试 HUD（v18 0.1 瘦身）：考试页（阅读/听力）顶栏只留三样——
-           题号导航胶囊 + 计时器 + 交卷；品牌/导航/三操作在考试页全部隐藏。
-           题号胶囊点击平滑滚动到题目栏的题号格（.q-nav），40 格完整导航仍在题目栏。 -->
-      <div class="exam-hud" id="examHud">
-        <button class="qnav-pill" id="qnavPill" type="button" hidden
-                title="题号导航：点击跳到题目栏题号格">题 — / —</button>
-        <div class="timer" id="rTimer" role="timer" aria-label="考试剩余时间">
-          <div class="timer-num mono" id="rTimerNum">60:00</div>
-          <div class="bar"><i id="rTimerFill"></i></div>
-        </div>
-        <button class="btn btn-primary btn-sm" id="rBtnSubmit" data-icon="check">交卷</button>
-        <!-- 听力交卷（与工具栏 #lBtnSubmit 同一 submit；顶栏常驻可达） -->
-        <!-- P2-9：听力独立倒计时（30 分钟，首次播放即开始；到点自动交卷） -->
-        <div class="timer" id="lTimer" role="timer" aria-label="听力考试剩余时间">
-          <div class="timer-num mono" id="lTimerNum">30:00</div>
-          <div class="bar"><i id="lTimerFill"></i></div>
-        </div>
-        <button class="btn btn-primary btn-sm" id="lBtnSubmitTop" data-icon="check" hidden>交卷</button>
-      </div>
-
-      <!-- v18 0.1：模块页右区只留三个入口——复习 / 主题 / 我的。
-           · 清空与数据管理（导出/导入/分享）在「我的」抽屉，不回顶栏；
-           · 玻璃透明度滑杆移入「我的」·设置（v18 0.3），不回顶栏；
-           · 字号 4 档也已在「我的」·设置。
-           v17 0.8 的两档行为保留：≤900px 为 display:contents 摊平两行布局；
-           901–1400px 绝对居中于顶栏（三按钮栏内居中）；>1400px 靠右。 -->
-      <div class="topbar-mid">
-        <button class="icon-btn review-top-btn" id="btnReviewTop" type="button" data-icon="target"
-                title="复习：今日待复习 / 错词本" aria-label="复习：今日待复习 / 错词本"><span class="lbl">复习</span></button>
-        <button class="theme-toggle" id="btnTheme" type="button" title="主题：跟随系统（点击切换）"><span class="lbl">主题</span></button>
-        <button class="icon-btn me-top-btn" id="btnMeTop" type="button" data-icon="user"
-                title="我的：学习总览 / 趋势 / 设置 / 数据" aria-label="打开「我的」"><span class="lbl">我的</span></button>
-      </div>
-    </div>
-  </div>
-</header>
-
+<!-- v11：站点顶栏已取消（与底栏重复，底栏 4 项为唯一导航）。
+     顶栏原有功能去向：考试 HUD（计时 + 交卷）是考试壳自己的控制，原样
+     移到 main 顶部独立成条（只在阅读/听力视图显示）；主题按钮迁入
+     「我的」整页设置；复习入口由「我的」复习队列 / 错词本承接；
+     「我的」入口由底栏承接；品牌 logo 入口由底栏「我的」与各页品牌行承接。 -->
 <main class="wrap">
+  <!-- 考试 HUD（原顶栏 #examHud，原样迁移：题号胶囊 + 计时器 + 交卷；
+       新增 #examExit：作答态退出按钮，只在作答态可见，退出不交卷） -->
+  <div class="exam-hud" id="examHud">
+    <button class="qnav-pill" id="qnavPill" type="button" hidden
+            title="题号导航：点击跳到题目栏题号格">题 — / —</button>
+    <div class="timer" id="rTimer" role="timer" aria-label="考试剩余时间">
+      <div class="timer-num mono" id="rTimerNum">60:00</div>
+      <div class="bar"><i id="rTimerFill"></i></div>
+    </div>
+    <button class="btn btn-primary btn-sm" id="rBtnSubmit" data-icon="check">交卷</button>
+    <!-- 听力交卷（与工具栏 #lBtnSubmit 同一 submit） -->
+    <!-- P2-9：听力独立倒计时（30 分钟，首次播放即开始；到点自动交卷） -->
+    <div class="timer" id="lTimer" role="timer" aria-label="听力考试剩余时间">
+      <div class="timer-num mono" id="lTimerNum">30:00</div>
+      <div class="bar"><i id="lTimerFill"></i></div>
+    </div>
+    <button class="btn btn-primary btn-sm" id="lBtnSubmitTop" data-icon="check" hidden>交卷</button>
+    <button class="btn exam-exit" id="examExit" type="button">退出</button>
+  </div>
 
   <!-- =========================================================
        VIEW 0 · 首页仪表盘（v18 0.2 真仪表盘）
@@ -243,6 +203,7 @@
        VIEW 0.5 · LEARN（学习区：五个模块收进独立页，不在首页里）
        ========================================================= -->
   <section class="view" id="view-learn">
+    <p class="page-brand">Y-IELTS</p>
     <header class="learn-head">
       <div class="learn-t">
         <h2>学习区</h2>
@@ -331,6 +292,7 @@
        VIEW 0.6 · COMMENTS（留言区：独立页，本地留言，无需登录）
        ========================================================= -->
   <section class="view" id="view-comments">
+    <p class="page-brand">Y-IELTS</p>
     <header class="learn-head">
       <div class="learn-t">
         <h2>留言区</h2>
@@ -398,6 +360,128 @@
       <span>留言只在这台设备的浏览器里，换设备看不到。</span>
       <button class="cm-clear" id="cmClear" type="button" hidden>清空全部</button>
     </p>
+  </section>
+
+
+  <!-- =========================================================
+       VIEW · 我的（v11：由半屏抽屉改为独立整页，与其他主页面同级；
+       内容与 id 原样迁移：总览 / 趋势 / 词库 / 设置 / 数据管理 / 关于 /
+       更新日志；主题按钮由原顶栏迁入设置区；不再套抽屉面板玻璃）
+       ========================================================= -->
+  <section class="view" id="view-me">
+    <p class="page-brand">Y-IELTS</p>
+    <header class="learn-head">
+      <div class="learn-t">
+        <h2>我的</h2>
+      </div>
+    </header>
+    <div class="me-body">
+
+      <!-- ② 个人学习总览 -->
+      <section class="me-sec">
+        <h4 class="me-sec-t">学习总览</h4>
+        <div class="me-stat-grid">
+          <div class="me-stat"><b id="meSubmits">0</b><span>交卷次数</span></div>
+          <div class="me-stat"><b id="meBand">—</b><span>最新 Band</span></div>
+          <div class="me-stat"><b id="meWords">0</b><span>词库词数</span></div>
+          <div class="me-stat"><b id="meMaster">0%</b><span>掌握进度</span></div>
+          <div class="me-stat"><b id="meDue">0</b><span>今日待复习</span></div>
+        </div>
+      </section>
+
+      <!-- ③ 成绩趋势（Band 趋势图 + 近期交卷记录 + 按题型正确率；复用阅读模块同一渲染） -->
+      <section class="me-sec">
+        <h4 class="me-sec-t">成绩趋势</h4>
+        <div class="me-trend" id="meTrendBody"></div>
+      </section>
+
+      <!-- ④ 我的词库 -->
+      <section class="me-sec">
+        <h4 class="me-sec-t">我的词库</h4>
+        <div class="me-stat-grid me-stat-3">
+          <div class="me-stat"><b id="meDeckAll">0</b><span>词库总数</span></div>
+          <div class="me-stat"><b id="meDeckWrong">0</b><span>错词本</span></div>
+          <div class="me-stat"><b id="meDeckDue">0</b><span>待复习</span></div>
+        </div>
+        <div class="me-acts">
+          <button class="btn btn-sm" id="meBtnWrong" type="button" data-icon="cards">错词本</button>
+          <button class="btn btn-sm" id="meBtnDue" type="button" data-icon="target">复习队列</button>
+        </div>
+      </section>
+
+      <!-- ⑤a 设置：主题（v11：由原顶栏迁入；三态循环，机制与数据不变） -->
+      <section class="me-sec">
+        <h4 class="me-sec-t">设置 · 主题</h4>
+        <div class="me-acts">
+          <button class="theme-toggle" id="btnTheme" type="button" title="主题：跟随系统（点击切换）"><span class="lbl">主题</span></button>
+        </div>
+        <p class="me-note">浅色 / 深色 / 跟随系统，点击循环切换，刷新后保持。</p>
+      </section>
+
+      <!-- ⑤ 设置：正文字号（4 档，与顶栏旧字号按钮同机制） -->
+      <section class="me-sec">
+        <h4 class="me-sec-t">设置 · 正文字号</h4>
+        <div class="me-font-btns" id="meFontBtns" role="group" aria-label="正文字号">
+          <button type="button" data-lv="0">较小</button>
+          <button type="button" data-lv="1">标准</button>
+          <button type="button" data-lv="2">较大</button>
+          <button type="button" data-lv="3">特大</button>
+        </div>
+      </section>
+
+      <!-- ⑤b 设置：玻璃透明度（v18 0.1/0.3 从顶栏移入「我的」） -->
+      <section class="me-sec">
+        <h4 class="me-sec-t">设置 · 玻璃透明度</h4>
+        <div class="me-glass-row">
+          <span class="mgr-lbl">玻璃</span>
+          <input type="range" class="glass-op-range" id="glassOp" min="0" max="100" value="50" aria-label="玻璃透明度">
+          <span class="glass-op-val">50%</span>
+        </div>
+        <div class="mgr-scale" aria-hidden="true">
+          <span>0 清晰</span><span>25</span><span class="is-mid">50</span><span>75</span><span>100 通透</span>
+        </div>
+        <p class="me-note">左 = 清晰（接近实色），右 = 通透（玻璃感明显）；拖动实时生效，刷新与切换主题后保持，默认 50%。</p>
+      </section>
+
+      <!-- ⑥ 数据管理（从顶栏移入；清空仍走二次确认） -->
+      <section class="me-sec">
+        <h4 class="me-sec-t">数据管理</h4>
+        <div class="me-acts">
+          <button class="btn btn-sm" id="meBtnExport" type="button" data-icon="download">导出全部数据</button>
+          <button class="btn btn-sm" id="meBtnImport" type="button" data-icon="doc">导入数据</button>
+          <button class="btn btn-sm" id="meBtnShare" type="button" data-icon="copy">复制分享链接</button>
+          <button class="btn btn-sm btn-danger" id="meBtnClear" type="button" data-icon="trash">清空所有数据</button>
+        </div>
+        <p class="me-note">所有数据只保存在本机浏览器；换设备、清理缓存前，建议先导出备份。</p>
+      </section>
+
+      <!-- ⑦ 关于（页脚「关于」入口指向同一区域，不另做第二套） -->
+      <section class="me-sec" id="meAbout">
+        <h4 class="me-sec-t">关于</h4>
+        <p class="me-about-p"><b>Y-IELTS</b> 是 Yan-di 出品的雅思机考备考工具，覆盖阅读、听力、写作、单词、范文五大模块；所有练习记录与设置只保存在本机浏览器，无需登录，可离线使用。</p>
+        <p class="me-about-p"><b>版本</b>：v18 · 2026-10-24 · 本地存储键 <code>ielts.cbt.v1</code></p>
+        <p class="me-about-p"><b>题源说明</b>：当前内置《剑桥雅思 17》Test 1 一套完整题目（阅读 / 听力 / 写作 Task 1&2）；剑 18、剑 19 为扫描版、无文字层，暂无法自动抽题入库，后续获取文字版后补充。</p>
+        <p class="me-about-p"><b>本地存储</b>：练习记录、词库、主题、字号等均保存在浏览器 localStorage；清空浏览器数据前请先在此导出备份。</p>
+      </section>
+
+      <!-- ⑧ 更新日志（v18 商业化：买家能看到产品在持续更新） -->
+      <section class="me-sec" id="meChangelog">
+        <h4 class="me-sec-t">更新日志</h4>
+        <ul class="me-log">
+          <li><b>super.5</b><span>2026-10-24</span><p>学习区改为翻转行：左边两行（模块名 + 题数时长 / 下一步整句，手机上也不再隐藏），右边只留一个状态 chip 和箭头；没开始的模块不再画空进度条；留言区补齐表单标签、空内容提示、提交中与写入失败可重试、删除与清空的二次确认，没有留言时给空态和「写第一条」，示例内容单独标注且不计入条数。</p></li>
+          <li><b>super.4</b><span>2026-10-24</span><p>首页与学习区分开：首页只留概览、继续练习与「进入学习区」，五个模块收进独立学习区页；新增独立留言区（本地保存、无需登录，示例内容明确标注）；底栏改为 首页 / 学习 / 留言 / 我的；首页日期药丸从源码删除。</p></li>
+          <li><b>super.3</b><span>2026-10-24</span><p>首页结构重做：五张高卡改为五行紧凑模块行（图标 / 名称 + 时长题数难度 / 一句介绍 / 进度条 + 下一步 / 箭头），概览、继续练习、五模块一屏纵深排列；1194×834 下整页 835px，不再有大片空白。</p></li>
+          <li><b>super.2</b><span>2026-10-24</span><p>范文筛选列 244→300px、内部字号 11→12.5px；题号格触靶外扩到 44×44、旗标 13→16px；全站图标收敛到一个主色（不再五卡五色，靠形状区分）；写作默认进 Task 2，左栏「四段提纲」直链可见；题源选择器标出每本题量，缺题目的套置灰并给提示。</p></li>
+          <li><b>super</b><span>2026-10-24</span><p>阅读着陆页重做（先给成绩卡与「重做本套」，逐题回顾收进折叠）；单词开始键全站唯一并放到设置正下方；首页五卡加颜色区分、时长/题数/难度标签与进度条，状态行写明下一步；「继续练习」改跟最近交卷与未完成进度，不再跟上次浏览；「我的」打开时数字实时刷新；退出练习文案改成与实际行为一致；写作编辑器说明移到下方一行，清空按钮降权。</p></li>
+          <li><b>v18.2</b><span>2026-10-24</span><p>修玻璃透明度滑杆：拖到任意档位后刷新、切主题都保持，不再弹回 50%（根因是滑杆与数据层两个写者互相覆盖）。</p></li>
+          <li><b>v18.1</b><span>2026-10-24</span><p>图标升级为双色描边（2px 线宽 + 8% 同色填充，五模块图标补内部细节）；触屏可点控件统一 ≥44px；玻璃升到 28px / 190% 饱和。</p></li>
+          <li><b>v18</b><span>2026-10-24</span><p>界面换代：顶栏瘦身至 56px、首页新增「今日概览」与五卡进度、玻璃壳体统一（噪点 + 双层高光 + 更深投影）、图标统一加粗；阅读时间到自动交卷。</p></li>
+          <li><b>v17.3</b><span>2026-10-24</span><p>修单词学习循环（每词计数、轮次、翻卡背面、特大字号重叠）、阅读计分分类 11/11/9/9、听力原文播放前隐藏、底栏不再遮挡、范文来源去重。</p></li>
+          <li><b>v17.2</b><span>2026-10-23</span><p>题号导航改紧凑可收起、左上角汇总区减为单层、首页五卡加介绍、宽屏三按钮组居中、单词连点加闸门（真机复测中）。</p></li>
+          <li><b>v17.0</b><span>2026-10-22</span><p>阅读空白卷标注与直接开始、听力考试条与 30 分钟计时、范文朗读、主题三态、玻璃透明度滑杆。</p></li>
+        </ul>
+      </section>
+    </div>
   </section>
 
 
@@ -562,6 +646,7 @@
         </div>
       </div>
       <div class="tb-right">
+        <button class="btn exam-exit" id="wBtnExit" type="button">退出</button>
         <div class="timer" id="timer">
           <div class="timer-num mono" id="timerNum">20:00</div>
           <div class="bar"><i id="timerFill"></i></div>
@@ -647,6 +732,7 @@
        VIEW 3 · VOCABULARY
        ========================================================= -->
   <section class="view" id="view-vocab">
+    <p class="page-brand">Y-IELTS</p>
     <!-- 今日复习 + 学习小统计 -->
     <div class="v-top">
       <section class="review-card glass" id="reviewCard">
@@ -841,6 +927,7 @@
        VIEW 4 · 写作范文与详解
        ========================================================= -->
   <section class="view" id="view-essays">
+    <p class="page-brand">Y-IELTS</p>
     <div class="es-shell">
 
       <!-- 侧栏：搜索 + 题型 + 话题 + 难度 + 收藏 / 生词本 -->
@@ -1022,125 +1109,11 @@
     <button class="tabbar-btn is-active" data-view="home" data-icon="home"><span>首页</span></button>
     <button class="tabbar-btn" data-view="learn" data-icon="cards"><span>学习</span></button>
     <button class="tabbar-btn" data-view="comments" data-icon="edit"><span>留言</span></button>
-    <button class="tabbar-btn" data-me-open data-icon="user"><span>我的</span></button>
+    <button class="tabbar-btn" data-view="me" data-icon="user"><span>我的</span></button>
   </div>
 </nav>
 
-<!-- ============ 「我的」抽屉（v16：挂在 logo 上，不独立成页/不加路由） ============
-     内容自上而下：头部（logo + 品牌 + 一句话）→ 学习总览 → 成绩趋势 →
-     我的词库 → 设置（字号）→ 数据管理 → 关于；页脚「关于」指向同一关于区 -->
-<div class="me-drawer" id="meDrawer" role="dialog" aria-modal="true"
-     aria-labelledby="meTitle" aria-hidden="true">
-  <div class="me-mask" data-me-close></div>
-  <aside class="me-panel glass">
-    <div class="me-head">
-      <span class="me-logo"><img src="assets/yandi-ventures-icon.png" alt="Yan-di 标志" width="32" height="32"></span>
-      <div class="me-head-t">
-        <strong id="meTitle">Y-IELTS</strong>
-      </div>
-      <button class="icon-btn" id="btnMeClose" type="button" data-me-close aria-label="关闭「我的」">✕</button>
-    </div>
-    <div class="me-body">
 
-      <!-- ② 个人学习总览 -->
-      <section class="me-sec">
-        <h4 class="me-sec-t">学习总览</h4>
-        <div class="me-stat-grid">
-          <div class="me-stat"><b id="meSubmits">0</b><span>交卷次数</span></div>
-          <div class="me-stat"><b id="meBand">—</b><span>最新 Band</span></div>
-          <div class="me-stat"><b id="meWords">0</b><span>词库词数</span></div>
-          <div class="me-stat"><b id="meMaster">0%</b><span>掌握进度</span></div>
-          <div class="me-stat"><b id="meDue">0</b><span>今日待复习</span></div>
-        </div>
-      </section>
-
-      <!-- ③ 成绩趋势（Band 趋势图 + 近期交卷记录 + 按题型正确率；复用阅读模块同一渲染） -->
-      <section class="me-sec">
-        <h4 class="me-sec-t">成绩趋势</h4>
-        <div class="me-trend" id="meTrendBody"></div>
-      </section>
-
-      <!-- ④ 我的词库 -->
-      <section class="me-sec">
-        <h4 class="me-sec-t">我的词库</h4>
-        <div class="me-stat-grid me-stat-3">
-          <div class="me-stat"><b id="meDeckAll">0</b><span>词库总数</span></div>
-          <div class="me-stat"><b id="meDeckWrong">0</b><span>错词本</span></div>
-          <div class="me-stat"><b id="meDeckDue">0</b><span>待复习</span></div>
-        </div>
-        <div class="me-acts">
-          <button class="btn btn-sm" id="meBtnWrong" type="button" data-icon="cards">错词本</button>
-          <button class="btn btn-sm" id="meBtnDue" type="button" data-icon="target">复习队列</button>
-        </div>
-      </section>
-
-      <!-- ⑤ 设置：正文字号（4 档，与顶栏旧字号按钮同机制） -->
-      <section class="me-sec">
-        <h4 class="me-sec-t">设置 · 正文字号</h4>
-        <div class="me-font-btns" id="meFontBtns" role="group" aria-label="正文字号">
-          <button type="button" data-lv="0">较小</button>
-          <button type="button" data-lv="1">标准</button>
-          <button type="button" data-lv="2">较大</button>
-          <button type="button" data-lv="3">特大</button>
-        </div>
-      </section>
-
-      <!-- ⑤b 设置：玻璃透明度（v18 0.1/0.3 从顶栏移入「我的」） -->
-      <section class="me-sec">
-        <h4 class="me-sec-t">设置 · 玻璃透明度</h4>
-        <div class="me-glass-row">
-          <span class="mgr-lbl">玻璃</span>
-          <input type="range" class="glass-op-range" id="glassOp" min="0" max="100" value="50" aria-label="玻璃透明度">
-          <span class="glass-op-val">50%</span>
-        </div>
-        <div class="mgr-scale" aria-hidden="true">
-          <span>0 清晰</span><span>25</span><span class="is-mid">50</span><span>75</span><span>100 通透</span>
-        </div>
-        <p class="me-note">左 = 清晰（接近实色），右 = 通透（玻璃感明显）；拖动实时生效，刷新与切换主题后保持，默认 50%。</p>
-      </section>
-
-      <!-- ⑥ 数据管理（从顶栏移入；清空仍走二次确认） -->
-      <section class="me-sec">
-        <h4 class="me-sec-t">数据管理</h4>
-        <div class="me-acts">
-          <button class="btn btn-sm" id="meBtnExport" type="button" data-icon="download">导出全部数据</button>
-          <button class="btn btn-sm" id="meBtnImport" type="button" data-icon="doc">导入数据</button>
-          <button class="btn btn-sm" id="meBtnShare" type="button" data-icon="copy">复制分享链接</button>
-          <button class="btn btn-sm btn-danger" id="meBtnClear" type="button" data-icon="trash">清空所有数据</button>
-        </div>
-        <p class="me-note">所有数据只保存在本机浏览器；换设备、清理缓存前，建议先导出备份。</p>
-      </section>
-
-      <!-- ⑦ 关于（页脚「关于」入口指向同一区域，不另做第二套） -->
-      <section class="me-sec" id="meAbout">
-        <h4 class="me-sec-t">关于</h4>
-        <p class="me-about-p"><b>Y-IELTS</b> 是 Yan-di 出品的雅思机考备考工具，覆盖阅读、听力、写作、单词、范文五大模块；所有练习记录与设置只保存在本机浏览器，无需登录，可离线使用。</p>
-        <p class="me-about-p"><b>版本</b>：v18 · 2026-10-24 · 本地存储键 <code>ielts.cbt.v1</code></p>
-        <p class="me-about-p"><b>题源说明</b>：当前内置《剑桥雅思 17》Test 1 一套完整题目（阅读 / 听力 / 写作 Task 1&2）；剑 18、剑 19 为扫描版、无文字层，暂无法自动抽题入库，后续获取文字版后补充。</p>
-        <p class="me-about-p"><b>本地存储</b>：练习记录、词库、主题、字号等均保存在浏览器 localStorage；清空浏览器数据前请先在此导出备份。</p>
-      </section>
-
-      <!-- ⑧ 更新日志（v18 商业化：买家能看到产品在持续更新） -->
-      <section class="me-sec" id="meChangelog">
-        <h4 class="me-sec-t">更新日志</h4>
-        <ul class="me-log">
-          <li><b>super.5</b><span>2026-10-24</span><p>学习区改为翻转行：左边两行（模块名 + 题数时长 / 下一步整句，手机上也不再隐藏），右边只留一个状态 chip 和箭头；没开始的模块不再画空进度条；留言区补齐表单标签、空内容提示、提交中与写入失败可重试、删除与清空的二次确认，没有留言时给空态和「写第一条」，示例内容单独标注且不计入条数。</p></li>
-          <li><b>super.4</b><span>2026-10-24</span><p>首页与学习区分开：首页只留概览、继续练习与「进入学习区」，五个模块收进独立学习区页；新增独立留言区（本地保存、无需登录，示例内容明确标注）；底栏改为 首页 / 学习 / 留言 / 我的；首页日期药丸从源码删除。</p></li>
-          <li><b>super.3</b><span>2026-10-24</span><p>首页结构重做：五张高卡改为五行紧凑模块行（图标 / 名称 + 时长题数难度 / 一句介绍 / 进度条 + 下一步 / 箭头），概览、继续练习、五模块一屏纵深排列；1194×834 下整页 835px，不再有大片空白。</p></li>
-          <li><b>super.2</b><span>2026-10-24</span><p>范文筛选列 244→300px、内部字号 11→12.5px；题号格触靶外扩到 44×44、旗标 13→16px；全站图标收敛到一个主色（不再五卡五色，靠形状区分）；写作默认进 Task 2，左栏「四段提纲」直链可见；题源选择器标出每本题量，缺题目的套置灰并给提示。</p></li>
-          <li><b>super</b><span>2026-10-24</span><p>阅读着陆页重做（先给成绩卡与「重做本套」，逐题回顾收进折叠）；单词开始键全站唯一并放到设置正下方；首页五卡加颜色区分、时长/题数/难度标签与进度条，状态行写明下一步；「继续练习」改跟最近交卷与未完成进度，不再跟上次浏览；「我的」打开时数字实时刷新；退出练习文案改成与实际行为一致；写作编辑器说明移到下方一行，清空按钮降权。</p></li>
-          <li><b>v18.2</b><span>2026-10-24</span><p>修玻璃透明度滑杆：拖到任意档位后刷新、切主题都保持，不再弹回 50%（根因是滑杆与数据层两个写者互相覆盖）。</p></li>
-          <li><b>v18.1</b><span>2026-10-24</span><p>图标升级为双色描边（2px 线宽 + 8% 同色填充，五模块图标补内部细节）；触屏可点控件统一 ≥44px；玻璃升到 28px / 190% 饱和。</p></li>
-          <li><b>v18</b><span>2026-10-24</span><p>界面换代：顶栏瘦身至 56px、首页新增「今日概览」与五卡进度、玻璃壳体统一（噪点 + 双层高光 + 更深投影）、图标统一加粗；阅读时间到自动交卷。</p></li>
-          <li><b>v17.3</b><span>2026-10-24</span><p>修单词学习循环（每词计数、轮次、翻卡背面、特大字号重叠）、阅读计分分类 11/11/9/9、听力原文播放前隐藏、底栏不再遮挡、范文来源去重。</p></li>
-          <li><b>v17.2</b><span>2026-10-23</span><p>题号导航改紧凑可收起、左上角汇总区减为单层、首页五卡加介绍、宽屏三按钮组居中、单词连点加闸门（真机复测中）。</p></li>
-          <li><b>v17.0</b><span>2026-10-22</span><p>阅读空白卷标注与直接开始、听力考试条与 30 分钟计时、范文朗读、主题三态、玻璃透明度滑杆。</p></li>
-        </ul>
-      </section>
-
-    </div>
-  </aside>
-</div>
 <input type="file" id="dataImportFile" accept="application/json,.json" hidden>
 
 <!-- ============ 全屏练习页 ============ -->
@@ -1203,6 +1176,7 @@
 <script src="assets/js/listening-data.js"></script>
 <script src="assets/js/listening.js"></script>
 <script src="assets/js/glass-v33.js"></script>
+<script src="assets/js/exam-shell.js"></script>
 <script src="assets/js/app.js?v=51"></script>
 <!-- v16：「我的」抽屉（依赖 App/Vocab/Reading 导出面，必须放在 app.js 之后） -->
 <script src="assets/js/comments.js?v=51"></script>

@@ -581,3 +581,113 @@ html[data-theme="dark"] .me-font-btns button.is-active {
     background: transparent !important;
   }
 }
+
+/* ============================================================
+ *  ui-iter v11（用户 2026-10-25 14:12–14:14 六条指令）
+ *  ------------------------------------------------------------
+ *  A 作答全屏：body.exam-answering 时题目 + 答题区占满视口（CSS 视口
+ *    填充，不用 Fullscreen API）；站点 chrome（底栏、页脚）隐藏，
+ *    考试自身控制（工具栏、计时、交卷、题号、退出）全部保留在视口内；
+ *    退出 / 交卷 / 换视图即摘 class，chrome 恢复。
+ *  B 顶栏已删：考试 HUD 改为 main 顶部独立条（仅阅读 / 听力视图显示）；
+ *    .wrap 顶部留白沿用原值，不留空缺；底栏为唯一导航。
+ *  C 我的整页：不再套抽屉面板玻璃，用正常页面底色 + 复用 .me-body 节奏；
+ *    .me-stat 等第二层背景 v10 已透明，此处不再重复写。
+ *  D 颜色收敛：装饰色 → 中性（灰 / 蓝灰），激活态用 v9 蓝；
+ *    功能语义色（对 / 错、警告、划词高亮）不动；不新增任何颜色。
+ *    注：timer.is-low / wc.is-short 的珊瑚粉渐变是警告语义，刻意保留，
+ *    不是漏改（见 VERSIONS.md v11 装饰色清单）。
+ *  E 玻璃：v8 / v10 数值原样保留，本节不改任何 --lg-panel / blur / 遮罩值。
+ *  F 品牌行：.page-brand 只是小字品牌文字行，不是导航栏、不 sticky。
+ * ============================================================ */
+
+/* ---- A：作答全屏（仅 body.exam-answering 时生效） ---- */
+body.exam-answering { overflow: hidden; }
+body.exam-answering .wrap {
+  height: 100vh;
+  height: 100dvh;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+}
+body.exam-answering .site-foot { display: none; }
+body.exam-answering .view.is-active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+body.exam-answering .r-split,
+body.exam-answering .w-split,
+body.exam-answering .l-split {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+body.exam-answering .r-split .pane,
+body.exam-answering .w-split .pane,
+body.exam-answering .l-split .pane { min-height: 0; }
+body.exam-answering .r-toolbar,
+body.exam-answering .w-toolbar,
+body.exam-answering .l-toolbar,
+body.exam-answering .m-tabs { flex: none; }
+body.exam-answering #tabbar { display: none !important; }
+/* HUD 在全屏列里只占一行：order + flex 必须压过 v50 / ios 的
+   431–900px 与 ≤430px 媒体规则（否则 HUD 会吞掉整列）。 */
+body.exam-answering #examHud { order: 0; flex: none !important; }
+.exam-exit { display: none; }
+body.exam-answering .exam-exit { display: inline-flex; }
+
+/* ---- B：考试 HUD 为 main 顶部独立条（阅读 / 听力视图） ---- */
+body[data-view="reading"] #examHud,
+body[data-view="listening"] #examHud {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+#examHud { margin-bottom: 14px; }
+
+/* ---- D：装饰色收敛（全部复用已有值，不新增颜色） ---- */
+/* 五模块身份色 → 中性：浅色统一蓝灰底 + 深灰字，深色统一白透底 + 蓝灰字
+   （v52 变量；ui-iter 后加载，同特异度胜出；深色用 html[data-theme] 压过
+   v52 的 [data-theme] 块）。仅学习区行图标用这些变量，别处不受影响。 */
+:root {
+  --mod-reading-bg: rgba(120, 130, 150, .14);
+  --mod-reading-fg: #5b6577;
+  --mod-listening-bg: rgba(120, 130, 150, .14);
+  --mod-listening-fg: #5b6577;
+  --mod-writing-bg: rgba(120, 130, 150, .14);
+  --mod-writing-fg: #5b6577;
+  --mod-vocab-bg: rgba(120, 130, 150, .14);
+  --mod-vocab-fg: #5b6577;
+  --mod-essays-bg: rgba(120, 130, 150, .14);
+  --mod-essays-fg: #5b6577;
+}
+html[data-theme="dark"] {
+  --mod-reading-bg: rgba(255, 255, 255, .08);
+  --mod-reading-fg: #aab6cf;
+  --mod-listening-bg: rgba(255, 255, 255, .08);
+  --mod-listening-fg: #aab6cf;
+  --mod-writing-bg: rgba(255, 255, 255, .08);
+  --mod-writing-fg: #aab6cf;
+  --mod-vocab-bg: rgba(255, 255, 255, .08);
+  --mod-vocab-fg: #aab6cf;
+  --mod-essays-bg: rgba(255, 255, 255, .08);
+  --mod-essays-fg: #aab6cf;
+}
+/* 趋势条紫渐变 → 扁平 v9 蓝（数值由条长度本身表达，不靠颜色区分） */
+.tbar { background: var(--lg-accent); }
+.tt-latest > i { background: var(--lg-accent); }
+/* 浅色页面光斑：薰衣草紫 b3 / 青绿 b4 → 中性蓝灰洗（深色已有更高特异度
+   的蓝色规则，不受本条影响，仍为蓝色）。 */
+.bg .b3 { background: radial-gradient(circle at 50% 50%, #aab6cf 0%, transparent 70%); }
+.bg .b4 { background: radial-gradient(circle at 50% 50%, #aab6cf 0%, transparent 70%); }
+
+/* ---- F：各页顶部小字品牌行（仅文字，不导航、不 sticky） ---- */
+.page-brand {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}

@@ -99,6 +99,11 @@ window.Listening = (function () {
     el.now.textContent = '点击「播放」开始';
     el.now.classList.remove('is-live');
     setPlayLabel('播放');
+    /* v11：换题即新的一轮——进行中的卷子进全屏，未开始的不进 */
+    if (window.ExamShell) {
+      if (!isSubmitted() && ((ltimer && ltimer.started()) || answeredCount() > 0)) ExamShell.enter('listening', true);
+      else ExamShell.clear();
+    }
   }
 
   /* ---------------- P2-9 听力考试计时（30 分钟） ----------------
@@ -146,6 +151,11 @@ window.Listening = (function () {
   }
 
   function isSubmitted() { return !!subs[cur.id]; }
+
+  /* v11：切回进行中的卷子时恢复作答全屏（未开始 / 已交卷不进） */
+  function wantsFullscreen() {
+    return !isSubmitted() && ((ltimer && ltimer.started()) || answeredCount() > 0);
+  }
   function totalNos() {
     var n = 0;
     cur.groups.forEach(function (g) { n += (g.nos || []).length; });
@@ -188,6 +198,8 @@ window.Listening = (function () {
     $$('.gap-inp', el.qs).forEach(function (inp) {
       inp.addEventListener('input', function () {
         setAns(parseInt(inp.getAttribute('data-no'), 10), inp.value);
+        /* v11：填空作答即进入作答全屏（连续触发：退出后不再自动重进） */
+        if (window.ExamShell) ExamShell.enter('listening');
       });
     });
     if (isSubmitted()) {
@@ -316,6 +328,8 @@ window.Listening = (function () {
   /* resume=true 表示「继续」：文件音频不重置 currentTime，从暂停处接着播 */
   function startPlay(fromIdx, resume) {
     if (!cur) return;
+    /* v11：显式播放/重播 = 进入作答全屏（force；播放中连点已被忽略，不会重复进） */
+    if (window.ExamShell) ExamShell.enter('listening', true);
     /* P2-9：首次播放 = 开考（30 分钟倒计时；到点自动交卷） */
     if (ltimer && !ltimer.started() && !isSubmitted()) {
       ltimer.start(); persistLTimer(); renderLTimer();
@@ -684,6 +698,8 @@ window.Listening = (function () {
 
   /* ---------------- 交卷 / 重置 ---------------- */
   function submit(force) {
+    /* v11：交卷后不再是作答态，摘掉作答全屏（评分逻辑不动） */
+    if (window.ExamShell) ExamShell.clear();
     if (isSubmitted()) { toast('本套已交卷，可点「重新作答」再练一次'); return; }
     var t = totalNos(), a = answeredCount();
     var run = function () {
@@ -736,6 +752,8 @@ window.Listening = (function () {
       renderProg();
       el.now.textContent = '点击「播放」开始';
       setPlayLabel('播放');
+      /* v11：显式重新作答 = 重新进入作答全屏（force） */
+      if (window.ExamShell) ExamShell.enter('listening', true);
     });
   }
 
@@ -755,8 +773,10 @@ window.Listening = (function () {
       renderProg();
       el.now.textContent = '点击「播放」开始';
       setPlayLabel('播放');
+      /* v11：重置回空白卷——摘掉作答全屏 */
+      if (window.ExamShell) ExamShell.clear();
     });
   }
 
-  return { init: init, stopAudio: stopAudio, startPlay: startPlay, pause: pause, refreshHud: refreshHud };
+  return { init: init, stopAudio: stopAudio, startPlay: startPlay, pause: pause, refreshHud: refreshHud, wantsFullscreen: wantsFullscreen };
 })();

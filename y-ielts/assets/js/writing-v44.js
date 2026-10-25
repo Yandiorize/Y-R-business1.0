@@ -233,6 +233,12 @@ window.Writing = (function () {
 
     ensureTimer(p);
     renderTimer();
+    /* v11：换题即新的一轮——本任务计时进行中才进全屏，只写草稿不进 */
+    if (window.ExamShell) {
+      var _t = curTimer();
+      if (_t && _t.started() && _t.remaining() > 0) ExamShell.enter('writing', true);
+      else ExamShell.clear();
+    }
   }
 
   /* ---------------- 计时器（复用 UI.Timer 组件，每题一个实例） ---------------- */
@@ -266,6 +272,8 @@ window.Writing = (function () {
     var running = t.toggle();
     persistTimers();
     renderTimer();
+    /* v11：显式开始计时 = 进入作答全屏（force；暂停仍保持全屏，只退出/换题摘掉） */
+    if (window.ExamShell) ExamShell.enter('writing', true);
     toast(running ? '计时开始 · ' + cur.minutes + ' 分钟' : '已暂停');
   }
 
@@ -309,6 +317,8 @@ window.Writing = (function () {
     el.saveState.textContent = '保存中…';
     clearTimeout(saveTimer);
     saveTimer = setTimeout(function () { flushDraft(); }, 600);
+    /* v11：编辑器输入即进入作答全屏（连续触发：退出后不再自动重进） */
+    if (window.ExamShell) ExamShell.enter('writing');
   }
 
   function flushDraft(silent) {
@@ -567,5 +577,11 @@ window.Writing = (function () {
     setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
   }
 
-  return { init: init };
+  /* v11：切回计时进行中的写作题时恢复作答全屏（仅写草稿不进） */
+  function wantsFullscreen() {
+    var t = curTimer();
+    return !!(t && t.started() && t.remaining() > 0);
+  }
+
+  return { init: init, wantsFullscreen: wantsFullscreen };
 })();

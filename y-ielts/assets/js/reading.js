@@ -98,6 +98,8 @@ window.Reading = (function () {
     el.btnTimer.addEventListener('click', function () {
       var running = timer.toggle();
       persistTimer(); renderTimer();
+      /* v11：显式开始计时 = 进入作答全屏（force：退出后点计时可重进） */
+      if (window.ExamShell) ExamShell.enter('reading', true);
       toast(running ? '计时开始 · 60 分钟' : '已暂停');
     });
     el.btnReset.addEventListener('click', resetAll);
@@ -142,6 +144,8 @@ window.Reading = (function () {
     }
     if (el.btnGo) el.btnGo.addEventListener('click', function () {
       hideStartBanner();
+      /* v11：显式直接开始 = 进入作答全屏（force） */
+      if (window.ExamShell) ExamShell.enter('reading', true);
       toast('已直接开始 · 不计时，随时可点「开始计时」进入模考', 3200);
     });
     if (el.btnStartClose) el.btnStartClose.addEventListener('click', hideStartBanner);
@@ -283,9 +287,19 @@ window.Reading = (function () {
     renderTrend();   /* v14：载入题源时刷新趋势面板（含空状态） */
     /* v18 0.4：换题后回到空白卷提示态——已交卷或已有作答的不再显示 */
     if (el.startBanner) el.startBanner.hidden = isSubmitted() || answeredCount() > 0;
+    /* v11：换题即新的一轮——进行中的卷子进全屏，未开始的不进 */
+    if (window.ExamShell) {
+      if (!isSubmitted() && (answeredCount() > 0 || (timer && timer.started()))) ExamShell.enter('reading', true);
+      else ExamShell.clear();
+    }
   }
 
   function isSubmitted() { return !!subs[cur.id]; }
+
+  /* v11：切回进行中的卷子时恢复作答全屏（未开始 / 已交卷不进） */
+  function wantsFullscreen() {
+    return !isSubmitted() && (answeredCount() > 0 || (timer && timer.started()));
+  }
 
   function totalNos() {
     var n = 0;
@@ -306,6 +320,8 @@ window.Reading = (function () {
     renderNav();
     /* v18 0.4：一旦开始作答（非空输入）即收起空白卷提示条 */
     if (String(v).trim() && window.__readingHideStartBanner) window.__readingHideStartBanner();
+    /* v11：首次作答即进入作答全屏（连续触发：退出后不再自动重进） */
+    if (String(v).trim() && window.ExamShell) ExamShell.enter('reading');
     var item = $('#rq-' + no);
     if (item) item.classList.toggle('is-answered', String(v).trim() !== '');
   }
@@ -779,11 +795,16 @@ window.Reading = (function () {
       renderProgress();
       renderNav();
       renderTimer();
+      /* v11：重置回空白卷——摘全屏、空白卷提示条重新出现 */
+      if (window.ExamShell) ExamShell.clear();
+      if (el.startBanner) el.startBanner.hidden = false;
       toast('已重置计时与本套作答');
     });
   }
 
   function submit(force) {
+    /* v11：交卷后不再是作答态，摘掉作答全屏（评分逻辑不动） */
+    if (window.ExamShell) ExamShell.clear();
     if (isSubmitted()) { toast('本套已交卷，可点「重新作答」再练一次'); return; }
     var t = totalNos(), a = answeredCount();
     var run = function () {
@@ -865,6 +886,8 @@ window.Reading = (function () {
       renderProgress();
       renderNav();
       toast('已清空本套作答，可以重新作答');
+      /* v11：显式重新作答 = 重新进入作答全屏（force） */
+      if (window.ExamShell) ExamShell.enter('reading', true);
     });
   }
 
@@ -1388,5 +1411,5 @@ window.Reading = (function () {
   }
 
   /* v16：「我的」抽屉成绩趋势区复用（renderTrendInto）+ 错题题号定位（locate） */
-  return { init: init, renderTrendInto: renderTrendInto, locate: jumpLocate, refreshHud: refreshHud };
+  return { init: init, renderTrendInto: renderTrendInto, locate: jumpLocate, refreshHud: refreshHud, wantsFullscreen: wantsFullscreen };
 })();

@@ -1,12 +1,20 @@
 /* ============================================================
- *  「我的」抽屉（v16）
+ *  「我的」整页（v11：由半屏抽屉改为独立整页）
  *  ---------------------------------------------------------------
- *  · 入口：顶栏 logo（#brandLogo）点击 / 键盘 Enter·Space → 右侧抽屉滑出；
- *    页脚「关于」（#btnAbout）走同一入口并滚到关于区（#meAbout）
- *  · 不新增独立页面 / 标签页 / 路由：抽屉只是覆盖层，打开与关闭都
- *    不触碰当前视图，关闭后自动回到原模块、原状态
+ *  · 入口：底栏「我的」（data-view="me"，与其他主页面同级路由 #me）；
+ *    页脚「关于」（#btnAbout）走同一入口并滚到关于区（#meAbout）。
+ *    原顶栏 logo 入口随顶栏取消而退役，不再有抽屉形态。
  *  · 内容（自上而下）：学习总览 → 成绩趋势 → 我的词库 →
- *    设置（字号）→ 数据管理 → 关于
+ *    设置（主题 / 字号 / 玻璃透明度）→ 数据管理 → 关于 → 更新日志；
+ *    全部 id 与 v10 抽屉版一字不动，渲染函数原样复用。
+ *  · 实时刷新（v5 行为在整页上的实现，两路）：
+ *      (1) 页可见时刷新：本页处于 is-active 时，任何一处写数据
+ *          （同文档 ielts:store 事件）或另一标签页写 localStorage
+ *          （storage 事件）都就地重渲染，不用切走重进；
+ *      (2) 进入时刷新：每次进入「我的」页（Me.open）都先
+ *          syncFromStorage 再渲染，切回即最新。
+ *    退出整页不再有关闭语义：Esc 不导航；页内「错词本 / 复习队列」
+ *    照常切到单词页，趋势定位照常切到阅读页。
  *  · 数据只读 Store（rhist / deck），统计口径与各模块渲染函数一致；
  *    字号 / 数据 / 复习均调用既有导出面（App / Vocab / Reading），不重复实现
  * ============================================================ */
@@ -21,17 +29,15 @@
   }
 
   var FONT_NAMES = ['较小', '标准', '较大', '特大'];
-  var drawer = null;
-  var opened = false;
 
-  /* ---------------- 开 / 关（不切换视图，原模块原状态保持） ---------------- */
+  /* ---------------- 开 / 关（整页语义） ---------------- */
+  function isVisible() {
+    var v = document.getElementById('view-me');
+    return !!(v && v.classList.contains('is-active'));
+  }
+
   function open(about) {
-    if (!drawer) drawer = $('#meDrawer');
-    if (!drawer) return;
-    opened = true;
-    drawer.classList.add('is-open');
-    drawer.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('me-lock');
+    if (window.App && App.switchView) App.switchView('me');
     renderAll();
     if (about) {
       requestAnimationFrame(function () {
@@ -42,12 +48,8 @@
   }
 
   function close() {
-    if (!drawer) drawer = $('#meDrawer');
-    if (!drawer) return;
-    opened = false;
-    drawer.classList.remove('is-open');
-    drawer.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('me-lock');
+    /* 整页没有“关闭”动作；保留给旧调用点（趋势定位、词库入口在切视图
+       前都会调 close()），现在是空操作，切视图本身就是离开本页。 */
   }
 
   /* ---------------- ② 学习总览 + ④ 词库统计（口径与 vocab/reading 渲染一致） ---------------- */
@@ -150,31 +152,10 @@
     });
   }
 
-  /* ---------------- 入口绑定：logo / 页脚关于 / 关闭 / Esc ---------------- */
+  /* ---------------- 入口绑定：页脚关于（顶栏 logo 入口已随顶栏退役） ---------------- */
   function bindEntry() {
-    var logo = $('#brandLogo');
-    if (logo) {
-      logo.addEventListener('click', function () { open(false); });
-      logo.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
-          e.preventDefault();
-          open(false);
-        }
-      });
-    }
     var about = $('#btnAbout');
     if (about) about.addEventListener('click', function () { open(true); });
-  }
-
-  function bindClose() {
-    if (drawer) {
-      drawer.addEventListener('click', function (e) {
-        if (e.target.closest && e.target.closest('[data-me-close]')) close();
-      });
-    }
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && opened) close();
-    });
   }
 
   function renderAll() {
@@ -189,25 +170,23 @@
   }
 
   function init() {
-    drawer = $('#meDrawer');
-    /* super P0：抽屉开着时，任何一处写数据都就地刷新，不用关掉重开。
-       只在 opened 为真时重算，避免后台无谓渲染。 */
+    /* v11：实时刷新改按“本页可见”门控（原抽屉 opened 门控的整页版）。
+       只在 is-active 时重算，避免后台无谓渲染。 */
     window.addEventListener('ielts:store', function () {
-      if (opened) renderAll();
+      if (isVisible()) renderAll();
     });
-    /* ui-iter v5：跨标签页同步。另一标签页写 localStorage 时，
-       本页收不到同文档的 ielts:store 事件，只会收到 storage 事件；
-       且 renderAll 已先 syncFromStorage，所以这里直接重渲染即可。 */
+    /* 跨标签页同步：另一标签页写 localStorage 时，本页收不到同文档的
+       ielts:store 事件，只会收到 storage 事件；renderAll 已先
+       syncFromStorage，所以这里直接重渲染即可。 */
     window.addEventListener('storage', function (e) {
-      if (!opened) return;
+      if (!isVisible()) return;
       if (e && e.key && e.key !== 'ielts.cbt.v1') return;
       renderAll();
     });
     document.addEventListener('visibilitychange', function () {
-      if (opened && !document.hidden) renderAll();
+      if (isVisible() && !document.hidden) renderAll();
     });
     bindEntry();
-    bindClose();
     bindFont();
     bindVocab();
     bindData();

@@ -59,11 +59,8 @@
     });
   }
 
-  /* 同步顶部 nav 与底部 tabbar 的 is-active */
+  /* v11：同步底部 tabbar 的 is-active（顶栏已取消，底栏为唯一导航） */
   function syncActiveView(v) {
-    $$('#navSeg .seg-btn').forEach(function (b) {
-      b.classList.toggle('is-active', b.dataset.view === v);
-    });
     $$('#tabbar .tabbar-btn').forEach(function (b) {
       b.classList.toggle('is-active', b.dataset.view === v);
     });
@@ -74,8 +71,8 @@
   /* v17 0.6：模块入口即独立页面——每个模块一个 hash 路由（#reading 等），
      首页为 #home；范文详情 #essay/<id> 由 essays.js 自行管理，不进本表。
      pushState 不触发 hashchange，模块切换不会惊动范文子路由。 */
-  var VIEW_HASHES = { home: '#home', learn: '#learn', comments: '#comments', reading: '#reading', listening: '#listening', writing: '#writing', vocab: '#vocab', essays: '#essays' };
-  var MODULE_VIEWS = { home: 1, learn: 1, comments: 1, reading: 1, listening: 1, writing: 1, vocab: 1, essays: 1 };
+  var VIEW_HASHES = { home: '#home', learn: '#learn', comments: '#comments', me: '#me', reading: '#reading', listening: '#listening', writing: '#writing', vocab: '#vocab', essays: '#essays' };
+  var MODULE_VIEWS = { home: 1, learn: 1, comments: 1, me: 1, reading: 1, listening: 1, writing: 1, vocab: 1, essays: 1 };
 
   /* super P0：续练口径改为「最近交卷 > 未完成进度 > 通用」，不再跟访问记录。
      返回 { view, reason } —— reason 决定提示文案，避免用户以为在续上次浏览的页面。 */
@@ -364,8 +361,10 @@
       sec.classList.toggle('is-active', sec.id === 'view-' + target);
     });
     syncActiveView(v === 'essay-detail' ? 'essays' : v);
-    /* 顶栏考试 HUD（计时器 + 交卷）只在阅读视图出现 */
     document.body.setAttribute('data-view', target);
+    /* v11：视图切换即考试壳状态切换——摘掉作答全屏、清空退出抑制，
+       再按各模块 wantsFullscreen() 派生（进行中的卷子切回来恢复全屏）。 */
+    if (window.ExamShell && ExamShell.noteViewChange) ExamShell.noteViewChange();
     /* v17 0.6：同步地址栏 hash（pushState 不派发 hashchange）。
        essay-detail 的 hash 由 essays.js 管理，这里跳过；
        opts.silent 用于 popstate/启动等「URL 已是目标态」的场景，避免补推历史。 */
@@ -489,28 +488,10 @@
     reader.readAsText(file);
   }
 
-  /* v16 0.3：顶栏「复习」→ 直接进入单词复习流程（智能选轮：今日待复习优先，其次错词本） */
-  function bindReviewTop() {
-    var btn = $('#btnReviewTop');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-      switchView('vocab');
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-          if (window.Vocab && Vocab.startReview) Vocab.startReview();
-        });
-      });
-    });
-  }
-
-  /* v18 0.1：顶栏「我的」入口 → 打开「我的」抽屉（与点 logo 同行为） */
-  function bindMeTop() {
-    var btn = $('#btnMeTop');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-      if (window.Me && Me.open) Me.open(false);
-    });
-  }
+  /* v11：顶栏已取消，故顶栏「复习」「我的」入口随顶栏一并移除，不再绑定。
+     · 复习功能未删：同一流程由「我的」整页的「复习队列 / 错词本」
+      （Vocab.startReview / startWrong）承接；
+     · 「我的」入口由底栏 data-view="me" 承接（见 boot 的 tabbar 绑定）。 */
 
   /* 离线发音缓存：Service Worker 只在 https / localhost 注册（file:// 无法启用） */
   function registerSW() {
@@ -534,16 +515,10 @@
     Theme.init('#btnTheme');
     applyFontLevel(Store.get('fontScale', 1) | 0);
 
-    /* 顶部 nav：桌面端使用 */
-    bindSeg($('#navSeg'), $('#navThumb'), function (b) { switchView(b.dataset.view); });
-    /* 底部 tabbar：移动端使用（与顶部 nav 互为镜像） */
+    /* v11：底栏为唯一导航（顶栏已取消；「我的」现为 data-view="me" 整页，
+       不再走 data-me-open 抽屉入口）。注：旧 bindSeg($('#navSeg')…) 在此
+       必须删掉——navSeg 已不存在，bindSeg(null) 会误绑全站 .seg-btn。 */
     $$('#tabbar .tabbar-btn').forEach(function (b) {
-      if (b.hasAttribute('data-me-open')) {
-        b.addEventListener('click', function () {
-          if (window.Me && Me.open) Me.open(false);
-        });
-        return;
-      }
       b.addEventListener('click', function () { switchView(b.dataset.view); });
     });
     /* 首页「进入学习区」 */
@@ -556,8 +531,6 @@
     Listening.init();
     Essays.init();
     bindWipe();
-    bindReviewTop();
-    bindMeTop();
     registerSW();
 
     /* v13：独立的「提示音」开关（与「发音」开关分开；默认开，状态存 localStorage） */
@@ -595,7 +568,6 @@
       }
     } catch (e) { /* 忽略 */ }
     switchView(initial, { silent: true });
-    requestAnimationFrame(function () { syncSegThumb($('#navSeg'), $('#navThumb')); });
     /* v18 0.2：首屏即首页仪表盘——刷新五卡进度行 */
     refreshHomeStats();
 
