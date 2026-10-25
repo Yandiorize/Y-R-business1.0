@@ -27,6 +27,16 @@
   var index = 0;
   var startX = null;
 
+  /* v16：学习区下方小条改为介绍——模块名 + 1–2 行既定事实介绍，
+     事实表在本文件内，不新增数据文件；无新功能、无新承诺。 */
+  var INTRO = {
+    reading: '剑桥 17 Test 1–4，40 题，60 分钟，机考双栏练习。',
+    listening: '剑桥 17 Test 1 Section 1，10 题，30 分钟，听句填空。',
+    writing: 'Task 1 / Task 2，60 分钟计时练习，本地草稿，剑 17 / 18 / 19 Test 1–4，随机抽题。',
+    vocab: '50 词一轮示例词表，记忆练习，间隔重复，错词本。',
+    essays: '24 篇范文，Task 1 / Task 2 各 12 篇。'
+  };
+
   function slideWidth() {
     var vw = window.innerWidth || 0;
     /* v14：封面加宽（与 ui-iter.css v14 节 .lc-slide 的 min(86vw, 400px) 成对，
@@ -53,13 +63,16 @@
         dots[i].removeAttribute('aria-current');
       }
     }
-    /* v15：学习区下方小条跟随居中封面——直接读居中封面已有的
-       .lr-next 文案（app.js 会动态改它，小条每次 layout 都重读，
-       故数据与封面永远一致，不新增任何数据或入口）。 */
-    var stripNext = document.getElementById('learnStripNext');
-    if (stripNext && slides[index]) {
-      var nx = slides[index].querySelector('.lr-next');
-      if (nx) stripNext.textContent = nx.textContent;
+    /* v16：学习区下方小条改为介绍——跟随居中封面，模块名读该封面
+       已有的 .lr-name，介绍读上方 INTRO 事实表；v15 的下一步行与
+       用法提示行已移除，本处不再读取 .lr-next。 */
+    var stripName = document.getElementById('learnStripName');
+    var stripIntro = document.getElementById('learnStripIntro');
+    if (slides[index]) {
+      var nm = slides[index].querySelector('.lr-name');
+      if (stripName && nm) stripName.textContent = nm.textContent;
+      var key = slides[index].getAttribute('data-view');
+      if (stripIntro && INTRO[key]) stripIntro.textContent = INTRO[key];
     }
   }
 

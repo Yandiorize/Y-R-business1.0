@@ -31,6 +31,8 @@
  *  ui-iter v15：新增 tabbar-indicator.js 预缓存条目（新文件，必须进清单）+
  *             注释触发 SW 更新（其余 v15 改动均已在清单里；v15 改 index.html /
  *             theme.js / learn-carousel.js / vocab.js / ui-iter.css / sw.js）。
+ *  ui-iter v16：同 v15，仅加注释触发 SW 更新（v16 改 index.html /
+ *             learn-carousel.js / ui-iter.css，均已在预缓存清单里，无需新增条目）。
  * ============================================================ */
 'use strict';
 
