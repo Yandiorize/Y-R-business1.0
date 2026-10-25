@@ -9,6 +9,9 @@
  *  导航请求   ：优先返回缓存的 index.html，离线可直接进入主界面
  *  activate ：只清理旧的「页面」缓存（ielts-cbt-* / ielts-page-*），
  *             永远保留 ielts-audio
+ *  ui-iter v6：本文件仅加这一行注释（逻辑、PAGE_CACHE、VERSION 一字未动），
+ *             目的是让 SW 脚本字节变化、触发浏览器更新，以便新 ui-iter.css
+ *             从预缓存中刷新（否则 cache-first 会继续 served 旧版样式）。
  * ============================================================ */
 'use strict';
 

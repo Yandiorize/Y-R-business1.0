@@ -81,3 +81,64 @@
     padding-bottom: calc(var(--tabbar-h) + var(--safe-b) + var(--tabbar-margin) + var(--tabbar-gap));
   }
 }
+
+/* ---------- ui-iter v6：首页底栏恢复 + 弹窗/抽屉面板透光 ---------- */
+/* v6-1 首页底栏恢复（例外 A 查实结论见 VERSIONS.md v6 节）：
+   旧设计（v50 第 30 节“首页独立界面”）在全档位隐藏首页底栏
+   （v50:1983 !important），v56/v57 56.6 又在桌面档重申一次；
+   super.4 起底栏已是全站 4 项导航（首页/学习/留言/我的，首页为首项），
+   WB 线上版首页有底栏，且隐藏后首页无路可达留言页——旧规则已过期。
+   这里只恢复底栏本身（同一套 tabbar 组件、4 项/顺序/标签/图标/
+   胶囊形态/行为与其他页一致，app.js 的 is-active 联动不动）；
+   第 30 节其他首页规则（顶栏 nav/控件隐藏）不在本次范围，一律不动。
+   display 必须带 !important 才能压过 v50:1983 的 !important。 */
+body[data-view="home"] #tabbar { display: block !important; }
+/* v6-1b 抽屉/灯箱打开时，首页底栏与其他页一样让位（移动端旧逻辑
+   ios.css/v55 max-width:900px 块；桌面档旧逻辑本就不隐藏底栏，
+   这里不另加）。本规则选择器高于 v6-1、后出现，同为 !important，
+   抽屉/灯箱关闭后自动回到 v6-1 的显示。 */
+@media (max-width: 900px) {
+  body[data-view="home"] .drawer.is-open ~ #tabbar,
+  body[data-view="home"] .lightbox.is-open ~ #tabbar { display: none !important; }
+}
+/* v6-1a 首页内容留白跟其他页对齐（否则恢复的底栏会盖末行）：
+   移动端用 v4-3 同款公式（v50:1985 的 28px 例外会被本规则压过，
+   同选择器、后文件胜）；桌面端用 v50:2957 非首页同款公式；
+   页脚用 v56/v57 非首页同款 104px（压过 16px 例外）。 */
+@media (max-width: 900px) {
+  body[data-view="home"] .wrap {
+    padding-bottom: calc(var(--tabbar-h) + var(--safe-b) + var(--tabbar-margin) + var(--tabbar-gap));
+  }
+}
+@media (min-width: 901px) {
+  body[data-view="home"] .wrap {
+    padding-bottom: calc(var(--tabbar-h, 62px) + env(safe-area-inset-bottom, 0px) + 26px);
+  }
+  body[data-view="home"] .site-foot { padding-bottom: 104px; }
+}
+
+/* v6-2 弹窗/抽屉面板透光（例外 B）：
+   查实：抽屉 .drawer-panel/.me-panel 与弹窗 .cf-box/.dp-box 在 v57 56.3
+   用的是强容器层 --lg-glass-strong（50% 档浅色 .67、深色 .73，
+   深色弹窗另有 .78 定值），抽屉模糊又只有 12px——大面积面板 +
+   高 alpha + 小模糊，视觉上就是实色板，只有顶部高光可见；
+   卡片（容器层 .55 + 18px）与顶栏（铬层 .43 + 30px）反而透光。
+   修法：两类面板改走与卡片同一容器层 --lg-glass，
+   抽屉模糊提到卡片级 18px，弹窗保持 24px；边框/高光/圆角不动；
+   文字颜色一律不动（保持实色可读）；遮罩（v3：变暗 .55 + 2px 模糊）不动。
+   深色 .cf-box/.dp-box 在 v57 有 html[data-theme="dark"] 定值 .78 规则，
+   这里用同选择器（后文件胜）把它拉回变量层，滑杆继续生效。 */
+.drawer-panel,
+.me-panel {
+  background: var(--lg-glass);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+}
+.cf-box,
+.dp-box {
+  background: var(--lg-glass);
+}
+html[data-theme="dark"] .cf-box,
+html[data-theme="dark"] .dp-box {
+  background: var(--lg-glass);
+}
