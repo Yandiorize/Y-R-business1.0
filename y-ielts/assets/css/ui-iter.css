@@ -1,0 +1,83 @@
+/* =============================================================
+ *  Y-IELTS · ui-iter 迭代层（最后引入，覆盖历史层）
+ * ---------------------------------------------------------------
+ *  本文件只放 ui-iter 各版的改动，按版分节；历史文件
+ *  （styles/ios/essays/audio/v50/v52/v55/v56/v57）不再直接改，
+ *  避免多层同名规则互相覆盖。新规则一律走 tokens.css 的变量。
+ *  深色 palette 数值体系不在本次范围，不动。
+ * ============================================================= */
+
+/* ---------- ui-iter v2：玻璃材质一致性（壳） ---------- *//* v2-1 顶栏铬层：v50 给 .topbar-in 同时写了 background(var(--lg-chrome))
+   与 background-color(var(--lg-glass))，后者把铬层颜色压回容器层
+   （50% 档 .43 → .55，顶栏反而比卡片实）。这里恢复铬层取值。 */
+.topbar-in {
+  background: var(--lg-chrome);
+  background-color: var(--lg-chrome); /* 与简写同值，避免旧 background-color 残留 */
+}
+
+/* v2-2 模块卡高光一致性：.es-card/.es-side 在 v57 56.2 只进了模糊组、
+   没进描边 + 高光组；这里补齐与 .pane 组同一套高光阴影
+   （不改背景、模糊、圆角；内容区 .apane/.qpane/.ed-pane/#editor/
+   .ans-body 一律不动，仍走长文层近实色）。 */
+.es-card,
+.es-side {
+  border: 1px solid var(--lg-border);
+  box-shadow: var(--lg-highlight), 0 10px 30px -18px rgba(16, 24, 40, .38);
+}
+
+/* ---------- ui-iter v3：弹窗 / 抽屉背景 ---------- */
+/* v3-1 遮罩统一为“变暗为主、模糊为辅”：改前四类遮罩均为 6px 模糊
+   （14px 正文在 6px 高斯下已难读，正是线上“强模糊到看不清”的观感），
+   且变暗值不统一（抽屉 .52 / 弹窗 .58 / 写作板 .34）。
+   这里统一走 tokens.css：--mask-dim .55 变暗 + --mask-blur 2px 轻模糊，
+   背后文字可读；含第三个抽屉 .wb-mask，一并统一。 */
+.me-mask,
+.drawer-mask,
+.cf-mask,
+.dp-mask,
+.wb-mask {
+  background: var(--mask-dim);
+  -webkit-backdrop-filter: var(--mask-blur);
+  backdrop-filter: var(--mask-blur);
+}
+/* v3-2 抽屉面板：12px 模糊 + 强容器层玻璃已是 v57 现状，与卡片一致，
+   不动；弹窗 .cf-box/.dp-box 同样已是强容器层玻璃 + 24px 模糊，
+   不是纯白卡，不动。滑杆数字/档位标识已存在（.glass-op-val +
+   .mgr-scale“0 清晰/25/50/75/100 通透”，glass-v33.js 同步值），不动。 */
+
+/* ---------- ui-iter v4：底栏 ---------- */
+/* v4-1 4 项均分：v50 顶层规则把 .tabbar-inner 写成 6 列，v55 的 4 列只在
+   ≥901px 桌面档，移动端 4 个按钮至今挤在左 4/6、右边空两格；
+   这里无条件改回 4 列（桌面与 v55 一致，移动端修好）。 */
+.tabbar-inner {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* v4-2 移动端浮动胶囊：原移动端底栏是贴边通栏（left/right/bottom 均为 0），
+   本版改为四边留边距 + 圆角 + 阴影 + 与顶栏一致的铬层玻璃；
+   下边距另加安全区， capsule 整体浮在小横条之上（不是压在安全区里）。
+   项数/顺序/标签/图标/选中态（is-active 主色 + 图标放大）/栏高 54px 一律不动，
+   不加中间按钮；桌面档（v57 56.6 已浮动）不动。 */
+@media (max-width: 900px) {
+  .tabbar {
+    left: var(--tabbar-margin);
+    right: var(--tabbar-margin);
+    bottom: calc(var(--tabbar-margin) + var(--safe-b));
+    border-radius: var(--r-4xl);
+    border: 1px solid var(--lg-border);
+    background: var(--lg-chrome);
+    -webkit-backdrop-filter: var(--lg-chrome-blur);
+    backdrop-filter: var(--lg-chrome-blur);
+    box-shadow: var(--capsule-shadow), var(--lg-highlight);
+    padding-bottom: 0;
+  }
+  .tabbar::after {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, .40), rgba(255, 255, 255, 0) 58%);
+  }
+  /* v4-3 内容留白 = 栏高 + 下边距 + 安全区 + 呼吸间距，末行永不被盖。
+     原规则是 栏高 + 安全区 + 16px（按贴边栏算）；胶囊浮起后顶缘抬高了
+     一个下边距，留白跟着加一个 --tabbar-margin。 */
+  .wrap {
+    padding-bottom: calc(var(--tabbar-h) + var(--safe-b) + var(--tabbar-margin) + var(--tabbar-gap));
+  }
+}

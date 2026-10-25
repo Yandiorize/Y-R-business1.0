@@ -1,0 +1,55 @@
+/* =============================================================
+ *  Y-IELTS · 设计 token（ui-iter v1，单一来源）
+ * ---------------------------------------------------------------
+ *  全站 UI 数值的取值来源：间距、圆角、字阶、动效、玻璃参数、
+ *  安全区、底栏、遮罩。本文件在 index.html 里第一个引入，
+ *  后续各层只引用、不重复定义（v57 原 56.0 块已改为指向这里，
+ *  数值一字未动）。新增/改动的壳样式一律走这里的变量。
+ *  深色 palette 数值体系不在本次范围，不动。
+ * ============================================================= */
+
+/* ---------- 间距（4 的倍数为主，保留 6/10 两档给紧凑行） ---------- */
+:root {
+  --sp-1: 4px;  --sp-2: 6px;  --sp-3: 8px;  --sp-4: 10px;
+  --sp-5: 12px; --sp-6: 14px; --sp-7: 16px; --sp-8: 20px;
+  --sp-9: 24px; --sp-10: 28px; --sp-11: 32px;
+
+  /* 圆角 */
+  --r-xs: 6px;  --r-sm: 8px;  --r-md: 10px; --r-lg: 12px;
+  --r-xl: 14px; --r-2xl: 16px; --r-3xl: 18px; --r-4xl: 20px;
+  --r-pill: 999px;
+
+  /* 字阶：6 档（辅助 / 正文 / 强调 / 标题 / 大标题 / 页标题） */
+  --fs-xs: 11px;  --fs-sm: 12px;  --fs-md: 13px;
+  --fs-base: 14px; --fs-lg: 16px; --fs-2xl: 22px;
+
+  /* 动效 */
+  --dur-1: 200ms; --dur-2: 260ms;
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+
+  /* 玻璃参数（透明度由滑杆 --g-* 驱动，其余固定） */
+  --glass-blur-chrome: blur(32px) saturate(190%);
+  --glass-blur-card: blur(18px) saturate(165%);
+  --glass-blur-panel: blur(24px) saturate(180%);
+  --glass-blur-drawer: blur(12px) saturate(160%);
+  --glass-hairline: 1px;
+
+  /* 安全区（iPhone 小横条 / 刘海，全部走 env，不写死像素） */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+
+  /* 底栏（ui-iter v4 浮动胶囊用；高度本身仍由 ios.css 的 --tabbar-h 定义） */
+  --tabbar-margin: 12px;   /* 胶囊四边留边距（下边距另加安全区） */
+  --tabbar-gap: 16px;      /* 内容与胶囊顶缘的呼吸间距 */
+  --capsule-shadow: 0 12px 34px -10px rgba(16, 24, 40, .34);
+
+  /* 遮罩（ui-iter v3：变暗为主、模糊为辅，背后文字可读） */
+  --mask-dim: rgba(6, 10, 22, .55);
+  --mask-blur: blur(2px);
+}
+html[data-theme="dark"] {
+  --glass-blur-card: blur(18px) saturate(150%);
+  --capsule-shadow: 0 14px 36px -10px rgba(0, 0, 0, .66);
+}

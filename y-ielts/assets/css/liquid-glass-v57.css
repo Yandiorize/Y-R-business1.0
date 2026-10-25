@@ -5,36 +5,8 @@
  * 新增/本轮触及的样式一律走变量，不再写裸数字。
  * ============================================================= */
 
-/* ---------- 56.0 token 层 ---------- */
-:root {
-  /* 间距（4 的倍数为主，保留 6/10 两档给紧凑行） */
-  --sp-1: 4px;  --sp-2: 6px;  --sp-3: 8px;  --sp-4: 10px;
-  --sp-5: 12px; --sp-6: 14px; --sp-7: 16px; --sp-8: 20px;
-  --sp-9: 24px; --sp-10: 28px; --sp-11: 32px;
-
-  /* 圆角 */
-  --r-xs: 6px;  --r-sm: 8px;  --r-md: 10px; --r-lg: 12px;
-  --r-xl: 14px; --r-2xl: 16px; --r-3xl: 18px; --r-4xl: 20px;
-  --r-pill: 999px;
-
-  /* 字阶：6 档（辅助 / 正文 / 强调 / 标题 / 大标题 / 页标题） */
-  --fs-xs: 11px;  --fs-sm: 12px;  --fs-md: 13px;
-  --fs-base: 14px; --fs-lg: 16px; --fs-2xl: 22px;
-
-  /* 动效 */
-  --dur-1: 200ms; --dur-2: 260ms;
-  --ease-out: cubic-bezier(.22, 1, .36, 1);
-
-  /* 玻璃参数（透明度由滑杆 --g-* 驱动，其余固定） */
-  --glass-blur-chrome: blur(32px) saturate(190%);
-  --glass-blur-card: blur(18px) saturate(165%);
-  --glass-blur-panel: blur(24px) saturate(180%);
-  --glass-blur-drawer: blur(12px) saturate(160%);
-  --glass-hairline: 1px;
-}
-html[data-theme="dark"] {
-  --glass-blur-card: blur(18px) saturate(150%);
-}
+/* ---------- 56.0 token 层（ui-iter v1：已移入 tokens.css 单一来源，
+   这里只留指向，不再重复定义；数值与原块一字相同） ---------- */
 
 /* =============================================================
  * 第 56 节：玻璃材质系统（源码级）

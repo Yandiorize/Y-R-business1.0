@@ -51,6 +51,15 @@
         window.dispatchEvent(new CustomEvent('ielts:store', { detail: { key: k } }));
       } catch (e) {}
     },
+    /* 跨标签页同步（ui-iter v5）：本标签页的 data 是内存快照，
+       另一标签页写 localStorage 时本页快照不会自动变新；
+       调用方在重渲染前先调本函数从 localStorage 重读一次。
+       cleared 为真时跳过（清空后不得把已清数据复活）。 */
+    syncFromStorage: function () {
+      if (cleared) return data;
+      try { data = load(); } catch (e) {}
+      return data;
+    },
     /* 清空本项目全部本地数据（顶栏「清空所有本地数据」入口使用） */
     clearAll: function () {
       cleared = true;

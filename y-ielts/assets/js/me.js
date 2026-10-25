@@ -178,6 +178,11 @@
   }
 
   function renderAll() {
+    /* ui-iter v5：每次渲染先从 localStorage 重读（跨标签页同步），
+       否则本标签页内存快照是旧的，面板数字永远不刷新。 */
+    if (window.Store && window.Store.syncFromStorage) {
+      try { window.Store.syncFromStorage(); } catch (e) {}
+    }
     renderStats();
     renderTrend();
     renderFont();
@@ -189,6 +194,14 @@
        只在 opened 为真时重算，避免后台无谓渲染。 */
     window.addEventListener('ielts:store', function () {
       if (opened) renderAll();
+    });
+    /* ui-iter v5：跨标签页同步。另一标签页写 localStorage 时，
+       本页收不到同文档的 ielts:store 事件，只会收到 storage 事件；
+       且 renderAll 已先 syncFromStorage，所以这里直接重渲染即可。 */
+    window.addEventListener('storage', function (e) {
+      if (!opened) return;
+      if (e && e.key && e.key !== 'ielts.cbt.v1') return;
+      renderAll();
     });
     document.addEventListener('visibilitychange', function () {
       if (opened && !document.hidden) renderAll();
