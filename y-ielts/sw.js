@@ -26,6 +26,8 @@
  *             注释触发 SW 更新（其余 v12 改动均已在清单里）。
  *  ui-iter v13：同 v12，仅加注释触发 SW 更新（v13 改 index.html / me.js /
  *             ui-iter.css，均已在预缓存清单里，无需新增条目）。
+ *  ui-iter v14：同 v13，仅加注释触发 SW 更新（v14 改 index.html / theme.js /
+ *             learn-carousel.js / ui-iter.css，均已在预缓存清单里，无需新增条目）。
  * ============================================================ */
 'use strict';
 

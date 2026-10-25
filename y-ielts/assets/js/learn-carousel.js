@@ -29,7 +29,9 @@
 
   function slideWidth() {
     var vw = window.innerWidth || 0;
-    return Math.min(vw * 0.78, 340);
+    /* v14：封面加宽（与 ui-iter.css v14 节 .lc-slide 的 min(86vw, 400px) 成对，
+       两处常量必须同步改，否则居中偏移错位）。 */
+    return Math.min(vw * 0.86, 400);
   }
 
   function layout() {

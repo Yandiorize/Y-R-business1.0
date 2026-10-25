@@ -961,3 +961,65 @@ html[data-theme="dark"] {
 .me-dash-streak b { font-family: var(--font-num); font-size: 28px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1; }
 .me-dash-streak span { font-size: 13px; font-weight: 600; color: var(--ink-2); }
 .me-dash-hint { font-style: normal; font-size: 12px; color: var(--brand-700); }
+
+/* ---------- ui-iter v14：门户英文眉标 + 我的标题 + 轮播加宽 + 材质加深 + 主题三段选择 + 玻璃滑杆拉长 + 题号格当前态去填色 ---------- */
+/* A 门户英文眉标：纯装饰、无交互（aria-hidden；中文文案与按钮文案一字未动；不新增功能入口）。 */
+.home-en { display: block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; }
+#view-home .home-next-card .home-en { margin-bottom: -4px; }
+#view-home .home-ring-card .home-en { margin-top: 2px; }
+#view-home .home-overview .home-en { flex: 1 1 100%; text-align: left; }
+/* C 轮播加宽：与 learn-carousel.js slideWidth() 成对（min(86vw, 400px)；390px 与桌面下两侧仍露出）。 */
+.lc-slide { flex-basis: min(86vw, 400px); }
+/* D 材质加深（仅 chrome：底栏胶囊、模块/封面卡、首页卡、概览格、我的统计格、首页与我的按钮；
+   不透明度/模糊/滑杆映射一字未动；弹窗、遮罩、内容区一律不碰；阴影与渐变只复用库中已有的 rgba 与令牌值）。 */
+.tabbar-inner,
+.home-tile,
+#view-home .home-next-card,
+#view-home .home-ring-card,
+#view-home .home-ov-item,
+.me-stat {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, 0));
+  box-shadow: var(--lg-highlight), inset 0 0 28px rgba(255, 255, 255, .07), 0 24px 60px -12px rgba(6, 10, 22, .50);
+}
+html[data-theme="dark"] .tabbar-inner,
+html[data-theme="dark"] .home-tile,
+html[data-theme="dark"] #view-home .home-next-card,
+html[data-theme="dark"] #view-home .home-ring-card,
+html[data-theme="dark"] #view-home .home-ov-item,
+html[data-theme="dark"] .me-stat {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 28px rgba(255, 255, 255, .04), 0 24px 60px -12px rgba(0, 0, 0, .70);
+}
+#view-home .home-next-card .btn-primary,
+#view-home .home-jump-btn,
+.me-acts .btn {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, 0));
+  box-shadow: var(--lg-highlight), 0 8px 20px -16px rgba(16, 24, 40, .4);
+}
+html[data-theme="dark"] #view-home .home-next-card .btn-primary,
+html[data-theme="dark"] #view-home .home-jump-btn,
+html[data-theme="dark"] .me-acts .btn {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 8px 20px -16px rgba(0, 0, 0, .70);
+}
+/* E 主题三段选择：复用字号 .is-active 的蓝色选中态（浅/深同值：品牌蓝 + 白字，白字对品牌蓝达 AA 4.70:1）。 */
+.me-theme-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.me-theme-seg button { min-height: 44px; padding: 0 8px; border-radius: 12px; border: 1px solid var(--stroke-soft); background: var(--glass-2); color: var(--ink-2); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.me-theme-seg button:hover { background: var(--glass-3); }
+.me-theme-seg button.is-active { background: var(--lg-accent); border-color: transparent; color: #ffffff; }
+html[data-theme="dark"] .me-theme-seg button.is-active { background: var(--lg-accent); border-color: transparent; color: #ffffff; }
+.me-theme-seg button:focus-visible { outline: 2px solid var(--lg-accent); outline-offset: 2px; }
+/* F 玻璃滑杆拉长：只放宽我的设置行（弹窗 .dp-row 滑杆的 220px 上限不动）；拇指 14px 与行为不动。 */
+.me-glass-row { display: flex; align-items: center; gap: 10px; }
+.me-glass-row .mgr-lbl { flex: 0 0 auto; }
+.me-glass-row .glass-op-range { flex: 1 1 auto; width: 100%; max-width: none; min-width: 0; }
+.me-glass-row .glass-op-val { flex: 0 0 auto; }
+/* G 当前未答格只留描边环、不填色：根因是 styles.css:794 的老规则
+   `.q-nav button.cur { background: var(--brand); color: #fff; }`——v13 的 .cur 只补了
+   box-shadow 描边环，从未把填色中和掉，于是当前格一直是实心蓝底。
+   本规则以 (0,5,1) 压过老规则 (0,2,1)，且 :not(.done):not(.mark) 把已答/待检查排除在外：
+   已答仍实心蓝、已答 + 当前仍蓝底 + 白环 + 蓝环、待检查 + 当前仍警告底 + 蓝环，一字不动。 */
+.q-nav button.qnav-cell.cur:not(.done):not(.mark) {
+  background: transparent;
+  border-color: var(--lg-accent);
+  color: var(--ink);
+  box-shadow: 0 0 0 2px var(--lg-accent);
+}

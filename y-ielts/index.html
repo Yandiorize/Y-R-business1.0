@@ -164,6 +164,7 @@
       <!-- v7：下一步宽卡（主按钮 + 提示 + 有真实分母时才出现的细分进度条；
            细分条用 visibility 预留高度，不随显隐推动下方内容，避免位移） -->
       <div class="home-next-card">
+        <span class="home-en" aria-hidden="true">NEXT STEP</span>
         <div class="home-next-label">下一步</div>
         <button class="btn btn-primary btn-lg" id="homeContinue" type="button" data-icon="play">
           <span class="lbl">开始练习</span>
@@ -182,10 +183,12 @@
           <circle class="home-ring-fill" id="homeRingFill" cx="80" cy="80" r="64"></circle>
         </svg>
         <div class="home-ring-center"><b id="homeRingNum">0%</b><span>词库掌握进度</span></div>
+        <span class="home-en" aria-hidden="true">MASTERY</span>
         <p class="home-ring-togo" id="homeRingToGo">词库还是空的，载入示例词表开始</p>
       </div>
       <!-- v18 0.2：今日概览条（三项实时数据），与五卡进度同一数据源 -->
       <div class="home-overview" id="homeOverview">
+        <span class="home-en" aria-hidden="true">OVERVIEW</span>
         <div class="home-ov-item"><span class="ov-ico" data-icon="cards"></span><b id="ovDue">0</b><span>今日待复习</span><i class="ov-hint" id="ovDueHint">词库为空</i></div>
         <div class="home-ov-item"><span class="ov-ico" data-icon="target"></span><b id="ovBand">—</b><span>最近 Band</span><i class="ov-hint" id="ovBandHint">尚无交卷</i></div>
         <div class="home-ov-item"><span class="ov-ico" data-icon="clock"></span><b id="ovStreak">0</b><span>连续学习（天）</span><i class="ov-hint" id="ovStreakHint">今天还没开始</i><span class="ov-dots" id="homeStreakDots" aria-hidden="true"></span></div>
@@ -385,10 +388,9 @@
        更新日志；主题按钮由原顶栏迁入设置区；不再套抽屉面板玻璃）
        ========================================================= -->
   <section class="view" id="view-me">
-    <p class="page-brand">Y-IELTS</p>
     <header class="learn-head">
       <div class="learn-t">
-        <h2>我的</h2>
+        <h2>Y-IELTS</h2>
       </div>
     </header>
     <div class="me-body">
@@ -446,13 +448,15 @@
         </div>
       </section>
 
-      <!-- ⑤a 设置：主题（v11：由原顶栏迁入；三态循环，机制与数据不变） -->
+      <!-- ⑤a 设置：主题（v11：由原顶栏迁入；v14：单循环按钮改三段选择，机制与数据不变） -->
       <section class="me-sec">
         <h4 class="me-sec-t">设置 · 主题</h4>
-        <div class="me-acts">
-          <button class="theme-toggle" id="btnTheme" type="button" title="主题：跟随系统（点击切换）"><span class="lbl">主题</span></button>
+        <div class="me-theme-seg" id="btnTheme" role="group" aria-label="主题">
+          <button type="button" data-theme="light">浅色</button>
+          <button type="button" data-theme="dark">深色</button>
+          <button type="button" data-theme="system">跟随系统</button>
         </div>
-        <p class="me-note">浅色 / 深色 / 跟随系统，点击循环切换，刷新后保持。</p>
+        <p class="me-note">浅色 / 深色 / 跟随系统，点选即切换，刷新后保持。</p>
       </section>
 
       <!-- ⑤ 设置：正文字号（4 档，与顶栏旧字号按钮同机制） -->
