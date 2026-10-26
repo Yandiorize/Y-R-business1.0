@@ -57,6 +57,9 @@
  *  v26 首页全页对齐示范图 2：index.html / home-v23.css /
  *             icons.js / app.js 改动，均已在清单里（无新文件），
  *             仅加注释触发 SW 更新。
+ *  v27 学习区统一卡片列表：index.html / learn-v27.css（新文件，
+ *             已加入清单）/ app.js 改动；learn-carousel.js 休眠，
+ *             仍在清单里不删除。
  * ============================================================ */
 'use strict';
 
@@ -77,6 +80,7 @@ var CORE = [
   './assets/css/tokens.css',
   './assets/css/ui-iter.css',
   './assets/css/home-v23.css',
+  './assets/css/learn-v27.css',
   './assets/css/liquid-glass-v50.css',
   './assets/css/liquid-glass-v52.css',
   './assets/css/liquid-glass-v55.css',

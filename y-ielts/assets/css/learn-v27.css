@@ -1,0 +1,154 @@
+/* ============================================================
+   v27 · 学习区（统一卡片列表，按评审：入口区适合快速扫描，
+   不再每卡 3D 旋转；每卡只留名 + 图标、题数 / 时长、最近状态、
+   一个主动作、一个简明进度；状态与细条沿用既有真实记录）
+   ------------------------------------------------------------
+   · 配色与首页同系：品牌蓝 #1769E8；圆角 20px；触点 ≥44px
+   · 卡片为整块按钮（.hm-go 直连既有路由）；图标为淡蓝圆内
+     蓝色线性图标；右侧为状态 chip + 主动作 pill
+   · 细条轨道用 ::before 画，填充 <i> 宽 = meter() 写的 --pct；
+     meter() 在 0% / 100% 时置 hidden，[hidden] 规则保证不摆空轨
+   ============================================================ */
+#view-learn {
+  --ln-blue: #1769E8;
+  --ln-card: rgba(255, 255, 255, .66);
+  --ln-border: rgba(255, 255, 255, .85);
+  --ln-shadow: 0 10px 26px -14px rgba(23, 105, 232, .30);
+}
+.ln-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+.ln-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  text-align: left;
+  border-radius: 20px;
+  background: var(--ln-card);
+  border: 1px solid var(--ln-border);
+  -webkit-backdrop-filter: var(--glass-blur-card);
+  backdrop-filter: var(--glass-blur-card);
+  box-shadow: var(--ln-shadow);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 150ms var(--ease-out);
+}
+.ln-card:active { transform: scale(.99); }
+.ln-qi {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ln-blue);
+  background: rgba(23, 105, 232, .10);
+}
+.ln-qi .icon { display: inline-flex; }
+.ln-qi .icon svg { width: 24px; height: 24px; }
+.ln-qi .lbl:empty { display: none; }
+.ln-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ln-top {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+.ln-name { font-size: 16px; font-weight: 800; color: var(--ink); }
+.ln-meta { font-size: 13px; color: var(--muted); font-weight: 600; }
+.ln-next {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.ln-meter { display: block; margin-top: 2px; }
+.ln-meter[hidden] { display: none; }
+.ln-meter::before {
+  content: '';
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(23, 105, 232, .12);
+}
+.ln-meter i {
+  display: block;
+  height: 6px;
+  width: var(--pct, 4%);
+  margin-top: -6px;
+  border-radius: 999px;
+  background: var(--ln-blue);
+}
+.ln-meter em {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-style: normal;
+  color: var(--muted);
+  font-weight: 600;
+}
+.ln-side {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+.ln-chip {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(23, 105, 232, .10);
+  color: var(--ln-blue);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ln-chip.is-new {
+  background: rgba(0, 0, 0, .05);
+  color: var(--muted);
+}
+.ln-act {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--ln-blue);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ln-card:focus-visible {
+  outline: 2px solid var(--ln-blue);
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  .ln-list { gap: 10px; }
+  .ln-card { padding: 14px; gap: 10px; }
+  .ln-qi { width: 40px; height: 40px; }
+  .ln-name { font-size: 15px; }
+  .ln-act { padding: 5px 10px; font-size: 12px; }
+}
+html[data-theme="dark"] #view-learn {
+  --ln-card: rgba(28, 30, 36, .55);
+  --ln-border: rgba(255, 255, 255, .14);
+  --ln-shadow: 0 10px 26px -14px rgba(0, 0, 0, .70);
+}
+html[data-theme="dark"] .ln-chip.is-new {
+  background: rgba(255, 255, 255, .08);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ln-card { transition: none; }
+}

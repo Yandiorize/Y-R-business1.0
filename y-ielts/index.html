@@ -107,6 +107,7 @@
 <link rel="stylesheet" href="assets/css/liquid-glass-v57.css">
 <link rel="stylesheet" href="assets/css/ui-iter.css">
 <link rel="stylesheet" href="assets/css/home-v23.css">
+    <link rel="stylesheet" href="assets/css/learn-v27.css">
 </head>
 <body data-view="home">
 
@@ -312,103 +313,70 @@
       <div class="learn-meta" id="learnMeta" hidden></div>
     </header>
 
-    <!-- v12：学习区行列表改为旋转封面轮播（手动旋转，无自动轮播；点封面进模块与原来点行一致） -->
-    <nav class="learn-carousel" id="learnCarousel" aria-label="五个练习模块">
-      <div class="lc-viewport">
-        <div class="lc-track" id="learnTrack">
-          <button class="home-tile lc-slide" type="button" data-view="reading" data-icon="book">
-            <span class="lr-main">
-              <span class="lr-top">
-                <b class="lr-name">阅读</b>
-                <span class="lr-meta">40 题 · 60 分钟</span>
-              </span>
-              <span class="lr-next" id="lnReading">下一步：做 Test 1，限时 60 分钟</span>
-            </span>
-            <span class="lr-side">
-              <span class="lr-chip is-new" id="lcReading">未开始</span>
-              <span class="lr-meter" id="lmReading" hidden><i></i><em></em></span>
-            </span>
-            <span class="ht-go" aria-hidden="true">›</span>
-          </button>
-
-          <button class="home-tile lc-slide" type="button" data-view="listening" data-icon="volume">
-            <span class="lr-main">
-              <span class="lr-top">
-                <b class="lr-name">听力</b>
-                <span class="lr-meta">10 题 · 30 分钟</span>
-              </span>
-              <span class="lr-next" id="lnListening">下一步：听 Section 1，10 道填空</span>
-            </span>
-            <span class="lr-side">
-              <span class="lr-chip is-new" id="lcListening">未开始</span>
-              <span class="lr-meter" id="lmListening" hidden><i></i><em></em></span>
-            </span>
-            <span class="ht-go" aria-hidden="true">›</span>
-          </button>
-
-          <button class="home-tile lc-slide" type="button" data-view="writing" data-icon="pen">
-            <span class="lr-main">
-              <span class="lr-top">
-                <b class="lr-name">写作</b>
-                <span class="lr-meta">2 篇 · 60 分钟</span>
-              </span>
-              <span class="lr-next" id="lnWriting">下一步：写 Task 2，先列三段提纲</span>
-            </span>
-            <span class="lr-side">
-              <span class="lr-chip is-new" id="lcWriting">未开始</span>
-              <span class="lr-meter" id="lmWriting" hidden><i></i><em></em></span>
-            </span>
-            <span class="ht-go" aria-hidden="true">›</span>
-          </button>
-
-          <button class="home-tile lc-slide" type="button" data-view="vocab" data-icon="cards">
-            <span class="lr-main">
-              <span class="lr-top">
-                <b class="lr-name">单词</b>
-                <span class="lr-meta">50 词一轮 · 随到随练</span>
-              </span>
-              <span class="lr-next" id="lnVocab">下一步：载入示例词表，先背 10 个</span>
-            </span>
-            <span class="lr-side">
-              <span class="lr-chip is-new" id="lcVocab">未开始</span>
-              <span class="lr-meter" id="lmVocab" hidden><i></i><em></em></span>
-            </span>
-            <span class="ht-go" aria-hidden="true">›</span>
-          </button>
-
-          <button class="home-tile lc-slide" type="button" data-view="essays" data-icon="edit">
-            <span class="lr-main">
-              <span class="lr-top">
-                <b class="lr-name">范文</b>
-                <span class="lr-meta">24 篇 · 随时读</span>
-              </span>
-              <span class="lr-next" id="lnEssays">下一步：读一篇 Task 2，跟读三遍</span>
-            </span>
-            <span class="lr-side">
-              <span class="lr-chip" id="lcEssays">24 篇</span>
-            </span>
-            <span class="ht-go" aria-hidden="true">›</span>
-          </button>
-        </div>
-      </div>
-      <div class="lc-controls">
-        <button class="lc-arrow lc-prev" type="button" aria-label="上一个模块">‹</button>
-        <div class="lc-dots" role="group" aria-label="选择模块">
-          <button class="lc-dot" type="button" data-index="0" aria-label="第1个模块：阅读"></button>
-          <button class="lc-dot" type="button" data-index="1" aria-label="第2个模块：听力"></button>
-          <button class="lc-dot" type="button" data-index="2" aria-label="第3个模块：写作"></button>
-          <button class="lc-dot" type="button" data-index="3" aria-label="第4个模块：单词"></button>
-          <button class="lc-dot" type="button" data-index="4" aria-label="第5个模块：范文"></button>
-        </div>
-        <span class="lc-count" id="learnCount" aria-hidden="true">1 / 5</span>
-        <button class="lc-arrow lc-next" type="button" aria-label="下一个模块">›</button>
-      </div>
-      <div class="learn-strip" id="learnStrip">
-        <b class="learn-strip-name" id="learnStripName">阅读</b>
-        <span class="learn-strip-intro" id="learnStripIntro">剑桥 17 Test 1–4，40 题，60 分钟，机考双栏练习。</span>
-      </div>
-    </nav>
-  </section>
+    <!-- v27：学习区改为可扫描统一卡片列表（按评审：入口区适合快速扫描，
+         不再每卡 3D 旋转；每卡只留名 + 图标、题数 / 时长、最近状态、
+         一个主动作、一个简明进度；状态 chip / 细条沿用既有真实记录，
+         learn-carousel.js 因无 #learnCarousel 而整体 no-op，安全休眠） -->
+    <div class="ln-list" aria-label="五个练习模块">
+      <button class="ln-card hm-go" type="button" data-view="reading">
+        <span class="ln-qi" data-icon="book"></span>
+        <span class="ln-main">
+          <span class="ln-top"><b class="ln-name">阅读</b><span class="ln-meta">40 题 · 60 分钟</span></span>
+          <span class="ln-next" id="lnReading">下一步：做 Test 1，限时 60 分钟</span>
+          <span class="ln-meter" id="lmReading" hidden><i></i><em></em></span>
+        </span>
+        <span class="ln-side">
+          <span class="ln-chip" id="lcReading">未开始</span>
+          <span class="ln-act">开始阅读 ›</span>
+        </span>
+      </button>
+      <button class="ln-card hm-go" type="button" data-view="listening">
+        <span class="ln-qi" data-icon="volume"></span>
+        <span class="ln-main">
+          <span class="ln-top"><b class="ln-name">听力</b><span class="ln-meta">10 题 · 30 分钟</span></span>
+          <span class="ln-next" id="lnListening">下一步：听 Section 1，10 道填空</span>
+        </span>
+        <span class="ln-side">
+          <span class="ln-chip" id="lcListening">未开始</span>
+          <span class="ln-act">开始听力 ›</span>
+        </span>
+      </button>
+      <button class="ln-card hm-go" type="button" data-view="writing">
+        <span class="ln-qi" data-icon="pen"></span>
+        <span class="ln-main">
+          <span class="ln-top"><b class="ln-name">写作</b><span class="ln-meta">2 篇 · 60 分钟</span></span>
+          <span class="ln-next" id="lnWriting">下一步：写 Task 2，先列三段提纲</span>
+          <span class="ln-meter" id="lmWriting" hidden><i></i><em></em></span>
+        </span>
+        <span class="ln-side">
+          <span class="ln-chip" id="lcWriting">未开始</span>
+          <span class="ln-act">继续写作 ›</span>
+        </span>
+      </button>
+      <button class="ln-card hm-go" type="button" data-view="vocab">
+        <span class="ln-qi" data-icon="cards"></span>
+        <span class="ln-main">
+          <span class="ln-top"><b class="ln-name">单词</b><span class="ln-meta">50 词一轮 · 随到随练</span></span>
+          <span class="ln-next" id="lnVocab">下一步：载入示例词表，先背 10 个</span>
+          <span class="ln-meter" id="lmVocab" hidden><i></i><em></em></span>
+        </span>
+        <span class="ln-side">
+          <span class="ln-chip" id="lcVocab">未开始</span>
+          <span class="ln-act">开始背词 ›</span>
+        </span>
+      </button>
+      <button class="ln-card hm-go" type="button" data-view="essays">
+        <span class="ln-qi" data-icon="edit"></span>
+        <span class="ln-main">
+          <span class="ln-top"><b class="ln-name">范文</b><span class="ln-meta">24 篇 · 随时读</span></span>
+          <span class="ln-next" id="lnEssays">下一步：读一篇 Task 2，跟读三遍</span>
+        </span>
+        <span class="ln-side">
+          <span class="ln-chip" id="lcEssays">24 篇</span>
+          <span class="ln-act">浏览范文 ›</span>
+        </span>
+      </button>
+    </div>
 
   <!-- =========================================================
        VIEW 0.6 · COMMENTS（留言区：独立页，本地留言，无需登录）

@@ -159,7 +159,8 @@
       var n = $('#' + id);
       if (!n) return;
       n.textContent = txt;
-      n.className = 'lr-chip' + (isNew ? ' is-new' : '');
+      /* v27：只切 is-new，不再强制基类（卡片基类已改为 ln-chip） */
+      n.classList.toggle('is-new', !!isNew);
     };
     var nextLine = function (id, txt) {
       var n = $('#' + id);
@@ -245,10 +246,10 @@
       meter('lmVocab', 0);
     }
 
-    /* 范文：收录数固定，收藏数进下一步 */
+    /* 范文：收录数在卡片副标题里已有，状态位按评审给收藏数 */
     var eAll = (window.IELTS_ESSAYS || []).length;
     var eFav = (Store.get('essayFavs', []) || []).length;
-    chip('lcEssays', eAll + ' 篇');
+    chip('lcEssays', eFav ? ('已收藏 ' + eFav + ' 篇') : '暂无收藏', !eFav);
     nextLine('lnEssays', eFav ? ('从收藏的 ' + eFav + ' 篇里挑一篇跟读')
                               : '读一篇 Task 2，跟读三遍');
 
