@@ -19,11 +19,12 @@
 :root {
   color-scheme: light;
 
-  /* 主色 */
-  --brand: #4f6ef7;
-  --brand-700: #3a55d9;
-  --brand-soft: rgba(79, 110, 247, .10);
-  --brand-line: rgba(79, 110, 247, .28);
+  /* 主色 · Clear Glass 2.0：交互/文字主色取规格 hover 值 #2868DF（白字 5.07:1，AA），
+     装饰性主色 #3478F6 另见 --lg-accent / --hm-blue；次要文字取规格 #6D7D93 加深一档 #5F6F88（白底 5.08:1，AA） */
+  --brand: #2868DF;
+  --brand-700: #1E56BE;
+  --brand-soft: rgba(40, 104, 223, .10);
+  --brand-line: rgba(40, 104, 223, .28);
 
   /* 语义色 */
   --ok: #16a34a;
@@ -34,9 +35,9 @@
   --bad-soft: rgba(220, 77, 92, .12);
 
   /* 中性色 */
-  --ink: #161c2e;
+  --ink: #182A43;
   --ink-2: #3a4258;
-  --ink-3: #5c6580;
+  --ink-3: #5F6F88;
   --muted: #838da6;
 
   /* 玻璃 */
@@ -56,12 +57,12 @@
   --inner: inset 0 1px 0 rgba(255, 255, 255, .75);
 
   /* 背景 */
-  --bg-a: #f2f5fc;
-  --bg-b: #e9edf7;
-  --bg-c: #eef1f8;
+  --bg-a: #F5F8FD;
+  --bg-b: #F5F8FD;
+  --bg-c: #F5F8FD;
   --blob-1: #9db2ff;
   --blob-2: #a6e2ff;
-  --blob-3: #d9bdff;
+  --blob-3: #c2d8ff;
   --blob-4: #a8ecdc;
   --blob-op: .62;
 

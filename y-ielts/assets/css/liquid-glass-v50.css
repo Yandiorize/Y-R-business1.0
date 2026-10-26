@@ -26,10 +26,10 @@
   --lg-highlight: inset 0 1px 0 rgba(255, 255, 255, .55);
   --lg-shadow: 0 8px 32px rgba(0, 0, 0, .12);
 
-  --lg-accent: #1769E8;
+  --lg-accent: #3478F6;
   --lg-accent-2: #8ec5ff;
   --lg-accent-deep: #004a80;
-  --lg-accent-rgb: 23, 105, 232;
+  --lg-accent-rgb: 52, 120, 246;
   --lg-accent-2-rgb: 142, 197, 255;
 
   --lg-blur: blur(26px) saturate(190%);

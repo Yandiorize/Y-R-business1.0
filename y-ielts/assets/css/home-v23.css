@@ -6,7 +6,7 @@
      → C 今日目标（环 + 步进）→ D 本周概览（天数 + 掌握条）
      → E 练习模块（5 卡）→ F 最近练习 + 分数走势
    · 配色：纯净白 #FFFFFF / 雾白蓝 #F1F7FF / 冰川蓝 #DCEBFF /
-     柔和蓝 #8BB8FF / 品牌蓝 #1769E8；圆角走 token（10/14/20/28）；
+     柔和蓝 #8BB8FF / 品牌蓝 #3478F6 / 强蓝 #2868DF（文字与按钮）；圆角走 token（10/14/20/28）；
      动效 150–300ms；触点 ≥44px
    · 玻璃克制：只用在主视觉 hero 与今日目标卡；其余容器实底
      + 细线边框，长文本全程实底高对比
@@ -18,17 +18,18 @@
      一并删除；home-carousel.js 按学习区先例留空转，不删文件
    ============================================================ */
 #view-home {
-  --hm-blue: #1769E8;
+  --hm-blue: #3478F6;
+  --hm-blue-strong: #2868DF;  /* 文字/实心按钮用：白字 5.07:1，AA；装饰（环/轨道/图标）用 --hm-blue */
   --hm-blue-soft: #8BB8FF;
-  --hm-mist: #F1F7FF;
-  --hm-glacier: #DCEBFF;
+  --hm-mist: #EAF2FF;
+  --hm-glacier: #EAF2FF;
   --hm-card: rgba(255, 255, 255, .66);
-  --hm-hero-bg: linear-gradient(165deg, rgba(255, 255, 255, .88) 0%, rgba(220, 235, 255, .60) 100%);
+  --hm-hero-bg: linear-gradient(165deg, rgba(255, 255, 255, .88) 0%, rgba(234, 242, 255, .60) 100%);
   --hm-solid: #ffffff;
-  --hm-line: #e3eaf5;
+  --hm-line: #E2EAF5;
   --hm-border: rgba(255, 255, 255, .85);
-  --hm-shadow: 0 18px 44px -18px rgba(23, 105, 232, .28);
-  --hm-shadow-sm: 0 10px 26px -14px rgba(23, 105, 232, .30);
+  --hm-shadow: 0 18px 44px -18px rgba(52, 120, 246, .28);
+  --hm-shadow-sm: 0 10px 26px -14px rgba(52, 120, 246, .30);
   background:
     linear-gradient(180deg, #FFFFFF 0%, var(--hm-mist) 52%, #FFFFFF 100%);
 }
@@ -92,7 +93,7 @@
   color: var(--ink);
   cursor: pointer;
 }
-.hm-icon-btn:active { background: rgba(23, 105, 232, .08); }
+.hm-icon-btn:active { background: rgba(52, 120, 246, .08); }
 .hm-icon-btn .icon { display: inline-flex; }
 .hm-icon-btn .icon svg { width: 24px; height: 24px; }
 .hm-icon-btn .lbl:empty { display: none; }
@@ -114,7 +115,7 @@
   border: 1px solid var(--hm-border);
   -webkit-backdrop-filter: var(--glass-blur-card);
   backdrop-filter: var(--glass-blur-card);
-  box-shadow: var(--hm-shadow);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .85), var(--hm-shadow);
 }
 .hm-hero-text {
   flex: 1 1 auto;
@@ -141,12 +142,12 @@
   padding: 0 22px;
   border: 0;
   border-radius: 999px;
-  background: var(--hm-blue);
+  background: var(--hm-blue-strong);
   color: #fff;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 10px 24px -10px rgba(23, 105, 232, .55);
+  box-shadow: 0 10px 24px -10px rgba(40, 104, 223, .55);
   transition: transform 150ms var(--ease-out);
 }
 .hm-hero-cta:active { transform: scale(.97); }
@@ -165,7 +166,7 @@
   flex: 1 1 auto;
   height: 8px;
   border-radius: 999px;
-  background: rgba(23, 105, 232, .12);
+  background: rgba(52, 120, 246, .12);
   overflow: hidden;
 }
 .hm-hero-bar .bar > i {
@@ -205,16 +206,16 @@
   padding: 10px 8px;
   box-sizing: border-box;
   border-radius: 10px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, .92), rgba(220, 235, 255, .70));
+  background: linear-gradient(160deg, rgba(255, 255, 255, .92), rgba(234, 242, 255, .70));
   border: 1px solid rgba(255, 255, 255, .9);
-  box-shadow: 0 10px 24px -10px rgba(23, 105, 232, .40);
+  box-shadow: 0 10px 24px -10px rgba(52, 120, 246, .40);
 }
-.hmc-doc b { color: var(--hm-blue); font-size: 13px; letter-spacing: .5px; }
+.hmc-doc b { color: var(--hm-blue-strong); font-size: 13px; letter-spacing: .5px; }
 .hmc-doc i {
   display: block;
   height: 6px;
   border-radius: 3px;
-  background: rgba(23, 105, 232, .25);
+  background: rgba(52, 120, 246, .25);
   margin-top: 8px;
 }
 .hmc-doc span {
@@ -231,7 +232,7 @@
   right: -2px;
   top: 24px;
   height: 96px;
-  border: 1.5px solid rgba(23, 105, 232, .45);
+  border: 1.5px solid rgba(52, 120, 246, .45);
   border-radius: 50%;
   transform: rotate(-18deg);
   animation: hm-orbit-spin 24s linear infinite;
@@ -248,7 +249,7 @@
   height: 14px;
   border-radius: 50%;
   background: var(--hm-blue);
-  box-shadow: 0 2px 8px rgba(23, 105, 232, .50);
+  box-shadow: 0 2px 8px rgba(52, 120, 246, .50);
 }
 
 /* ---------- C · 今日目标：环 + 步进（重点容器，轻玻璃） ---------- */
@@ -294,7 +295,7 @@
   font-weight: 700;
   cursor: pointer;
 }
-.hm-goal-stepper button:active { background: rgba(23, 105, 232, .08); }
+.hm-goal-stepper button:active { background: rgba(40, 104, 223, .08); }
 .hm-goal-stepper span {
   min-width: 28px;
   text-align: center;
@@ -315,7 +316,7 @@
   height: 96px;
 }
 .hm-goal-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
-.hm-goal-ring-track { fill: none; stroke: rgba(23, 105, 232, .12); stroke-width: 12; }
+.hm-goal-ring-track { fill: none; stroke: rgba(52, 120, 246, .12); stroke-width: 12; }
 .hm-goal-ring-fill {
   fill: none;
   stroke: var(--hm-blue);
@@ -393,7 +394,7 @@
   flex: 1 1 100%;
   height: 8px;
   border-radius: 999px;
-  background: rgba(23, 105, 232, .12);
+  background: rgba(52, 120, 246, .12);
   overflow: hidden;
 }
 .hm-mastery-bar > i {
@@ -479,7 +480,7 @@
 .hm-mod-main b { font-size: 16px; font-weight: 800; color: var(--ink); }
 .hm-mod-meta { font-size: 12.5px; color: var(--muted); }
 .hm-mod-desc { font-size: 13px; color: var(--ink); }
-.hm-mod-prog { font-size: 13px; font-weight: 700; color: var(--hm-blue); }
+.hm-mod-prog { font-size: 13px; font-weight: 700; color: var(--hm-blue-strong); }
 .hm-mod-next { font-size: 13px; color: var(--muted); }
 .hm-mod-go {
   flex: 0 0 auto;
