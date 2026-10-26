@@ -326,6 +326,19 @@
       dotsEl.innerHTML = dotsHtml;
     }
 
+    /* v23：首页进度卡今日行（与单词面板同口径：vdaily 当天 new/review） */
+    var todayLine = document.getElementById('hmTodayLine');
+    if (todayLine) {
+      var allD = Store.get('vdaily', {}) || {};
+      var dk = (function () {
+        var d = new Date();
+        var p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+        return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+      })();
+      var td = allD[dk] || { new: 0, review: 0 };
+      todayLine.textContent = '今日新学 ' + (td.new || 0) + ' 词 · 复习 ' + (td.review || 0) + ' 词';
+    }
+
     /* 下一步细分条：只有真实分母时才出现（阅读=交卷套数/4，写作=草稿字数/250；
        听力与未开始没有分母，不画装饰条） */
     var pick2 = pickContinue();
@@ -552,6 +565,16 @@
     });
     $$('.home-tile').forEach(function (t) {
       t.addEventListener('click', function () { switchView(t.dataset.view); });
+    });
+    /* v23：首页快捷入口 + 热门推荐卡（.hm-go + data-view，直连既有路由） */
+    $$('.hm-go').forEach(function (b) {
+      b.addEventListener('click', function () { switchView(b.dataset.view); });
+    });
+    /* v23：进度卡「继续学习」与主按钮同口径（pickContinue，不新增逻辑） */
+    var homeProgressGo = $('#homeProgressGo');
+    if (homeProgressGo) homeProgressGo.addEventListener('click', function () {
+      var pick = pickContinue();
+      switchView(pick.view || 'reading');
     });
     refreshHomeContinue();
 

@@ -106,6 +106,7 @@
 <link rel="stylesheet" href="assets/css/liquid-glass-v55.css">
 <link rel="stylesheet" href="assets/css/liquid-glass-v57.css">
 <link rel="stylesheet" href="assets/css/ui-iter.css">
+<link rel="stylesheet" href="assets/css/home-v23.css">
 </head>
 <body data-view="home">
 
@@ -149,56 +150,90 @@
   </div>
 
   <!-- =========================================================
-       VIEW 0 · 首页仪表盘（v18 0.2 真仪表盘）
+       VIEW 0 · 首页（v23 蓝白液态玻璃重做）
        ---------------------------------------------------------
-       · 打开即本页（开屏启动页已移除）；单个「继续练习」主按钮接上次进度
-       · 五张大模块卡各带一行实时进度（与「我的」抽屉同口径）：
-         阅读=最新 Band / 听力=最近交卷 / 写作=草稿+历史 /
-         单词=词库数+今日待复习 / 范文=收录+收藏
-       · 底部导航条在模块页保留，首页隐藏；底栏「首页」可回本页
+       · 品牌栏（左上 Y-IELTS + 副标题，紧凑）→ 主视觉 hero 单卡
+         （项目无多组轮播内容，不虚构轮播；CTA 沿用 homeContinue /
+         pickContinue 动态逻辑：继续某模块或开始练习）
+       · 学习进度横卡：环（词库掌握度）+ 今日待复习 / 今日新学·复习 /
+         最近 Band / 连续天数，全部读既有 Store（deck / vdaily /
+         rhist / lsubmitted），无数据如实空态，不编数字
+       · 快速入口：5 个真实模块（阅读/听力/写作/单词/范文），
+         data-view 直连既有路由；热门推荐唯一卡：剑 17 全真模拟 → 阅读
+       · 旧 .home-hero / .home-next-card / .home-ring-card /
+         .home-overview / .home-jump 结构随本版移除；JS 仍用原 id，
+         口径一字不动（ovBandHint / ovStreakHint 两处提示文案随
+         卡片简化不再上首页，数字本身保留，详情仍在「我的」页）
        ========================================================= -->
   <section class="view is-active" id="view-home">
-    <div class="home-hero">
-      <h1 class="home-title">Y-IELTS</h1>
-      <p class="home-sub">ACADEMIC · CBT SIMULATOR · 数据只存本机浏览器</p>
-      <!-- v7：下一步宽卡（主按钮 + 提示 + 有真实分母时才出现的细分进度条；
-           细分条用 visibility 预留高度，不随显隐推动下方内容，避免位移） -->
-      <div class="home-next-card">
-        <span class="home-en" aria-hidden="true">NEXT STEP</span>
-        <div class="home-next-label">下一步</div>
-        <button class="btn btn-primary btn-lg" id="homeContinue" type="button" data-icon="play">
-          <span class="lbl">开始练习</span>
-        </button>
-        <p class="home-hint" id="homeContinueHint" aria-live="polite"></p>
-        <div class="home-next-bar" id="homeNextBar" hidden>
-          <div class="bar"><i id="homeNextFill"></i></div>
-          <em id="homeNextBarLabel"></em>
+    <div class="hm-page">
+      <!-- 品牌栏：左上 Y-IELTS -->
+      <header class="hm-brand">
+        <span class="hm-brand-name">Y-IELTS</span>
+        <span class="hm-brand-sub">ACADEMIC · CBT SIMULATOR · 数据只存本机浏览器</span>
+      </header>
+
+      <!-- 主视觉：单张 hero 卡（不虚构轮播） -->
+      <section class="hm-hero" aria-label="开始练习">
+        <div class="hm-hero-doc" aria-hidden="true"><i>Y-IELTS</i><b></b><b></b><b></b></div>
+        <div class="hm-hero-main">
+          <span class="hm-hero-pill">Y-IELTS</span>
+          <h1 class="hm-hero-title">开启你的<br>雅思高分之旅</h1>
+          <p class="hm-hero-sub">剑桥真题 · 机考模拟 · 本地出分</p>
+          <button class="hm-hero-cta" id="homeContinue" type="button" data-icon="play">
+            <span class="lbl">开始练习</span>
+          </button>
+          <p class="hm-hero-hint" id="homeContinueHint" aria-live="polite"></p>
+          <div class="hm-hero-bar" id="homeNextBar" hidden>
+            <div class="bar"><i id="homeNextFill"></i></div>
+            <em id="homeNextBarLabel"></em>
+          </div>
         </div>
-      </div>
-      <!-- v7：掌握进度圆环卡（口径与「我的」面板一致：right>=2 且 wrong==0 / 词库总数；
-           圆环只可视化已有指标，不新增任何数据；空词库时如实显示 0%） -->
-      <div class="home-ring-card">
-        <svg class="home-ring" viewBox="0 0 160 160" aria-hidden="true">
-          <circle class="home-ring-track" cx="80" cy="80" r="64"></circle>
-          <circle class="home-ring-fill" id="homeRingFill" cx="80" cy="80" r="64"></circle>
-        </svg>
-        <div class="home-ring-center"><b id="homeRingNum">0%</b><span>词库掌握进度</span></div>
-        <span class="home-en" aria-hidden="true">MASTERY</span>
-        <p class="home-ring-togo" id="homeRingToGo">词库还是空的，载入示例词表开始</p>
-      </div>
-      <!-- v18 0.2：今日概览条（三项实时数据），与五卡进度同一数据源 -->
-      <div class="home-overview" id="homeOverview">
-        <span class="home-en" aria-hidden="true">OVERVIEW</span>
-        <div class="home-ov-item"><span class="ov-ico" data-icon="cards"></span><b id="ovDue">0</b><span>今日待复习</span><i class="ov-hint" id="ovDueHint">词库为空</i></div>
-        <div class="home-ov-item"><span class="ov-ico" data-icon="target"></span><b id="ovBand">—</b><span>最近 Band</span><i class="ov-hint" id="ovBandHint">尚无交卷</i></div>
-        <div class="home-ov-item"><span class="ov-ico" data-icon="clock"></span><b id="ovStreak">0</b><span>连续学习（天）</span><i class="ov-hint" id="ovStreakHint">今天还没开始</i><span class="ov-dots" id="homeStreakDots" aria-hidden="true"></span></div>
-      </div>
-    </div>
-    <!-- super 结构手术①：首页不再堆模块卡，只留概览 + 继续练习 + 进学习区 -->
-    <div class="home-jump">
-      <button class="btn btn-ghost home-jump-btn" id="homeGoLearn" type="button" data-icon="cards">
-        <span class="lbl">进入学习区 · 五个模块</span>
-      </button>
+      </section>
+
+      <!-- 学习进度横卡：全部真实数据 -->
+      <section class="hm-prog" aria-label="我的学习进度">
+        <div class="hm-prog-ring">
+          <div class="hm-ring-wrap">
+            <svg class="hm-ring" viewBox="0 0 160 160" aria-hidden="true">
+              <circle class="hm-ring-track" cx="80" cy="80" r="64"></circle>
+              <circle class="hm-ring-fill" id="homeRingFill" cx="80" cy="80" r="64"></circle>
+            </svg>
+            <div class="hm-ring-center"><b id="homeRingNum">0%</b><span>词库掌握度</span></div>
+          </div>
+          <p class="hm-ring-togo" id="homeRingToGo">词库还是空的，载入示例词表开始</p>
+        </div>
+        <div class="hm-prog-info">
+          <h2 class="hm-prog-title">我的学习进度</h2>
+          <p class="hm-prog-line"><span>今日待复习 <b id="ovDue">0</b> 词</span><span class="hm-dot-sep">·</span><span id="ovDueHint">词库为空</span></p>
+          <p class="hm-prog-line" id="hmTodayLine">今日新学 0 词 · 复习 0 词</p>
+          <p class="hm-prog-line"><span>最近 Band <b id="ovBand">—</b></span><span class="hm-dot-sep">·</span><span>连续 <b id="ovStreak">0</b> 天</span><span class="hm-dots" id="homeStreakDots" aria-hidden="true"></span></p>
+          <button class="hm-prog-go" id="homeProgressGo" type="button">继续学习</button>
+        </div>
+      </section>
+
+      <!-- 快速入口：5 个真实模块 -->
+      <section class="hm-sec" aria-label="快速入口">
+        <h2 class="hm-sec-title">快速入口</h2>
+        <div class="hm-quick">
+          <button class="hm-go hm-quick-item" type="button" data-view="reading"><span class="hm-qi" data-icon="book"></span><b>阅读</b><span class="hm-qs">剑 17 Test 1–4</span></button>
+          <button class="hm-go hm-quick-item" type="button" data-view="listening"><span class="hm-qi" data-icon="volume"></span><b>听力</b><span class="hm-qs">Section 1 · 10 题</span></button>
+          <button class="hm-go hm-quick-item" type="button" data-view="writing"><span class="hm-qi" data-icon="pen"></span><b>写作</b><span class="hm-qs">Task 1 / 2 · 计时</span></button>
+          <button class="hm-go hm-quick-item" type="button" data-view="vocab"><span class="hm-qi" data-icon="cards"></span><b>单词</b><span class="hm-qs">50 词示例</span></button>
+          <button class="hm-go hm-quick-item" type="button" data-view="essays"><span class="hm-qi" data-icon="edit"></span><b>范文</b><span class="hm-qs">24 篇</span></button>
+        </div>
+      </section>
+
+      <!-- 热门推荐：唯一真实主打 -->
+      <section class="hm-sec" aria-label="热门推荐">
+        <h2 class="hm-sec-title">热门推荐</h2>
+        <button class="hm-go hm-feat" type="button" data-view="reading">
+          <span class="hm-feat-hot">HOT</span>
+          <span class="hm-feat-t">剑桥 17 全真模拟考试</span>
+          <span class="hm-feat-s">Test 1–4 · 40 题 · 60 分钟 · 机考双栏</span>
+          <span class="hm-feat-go" aria-hidden="true">›</span>
+        </button>
+      </section>
     </div>
   </section>
 

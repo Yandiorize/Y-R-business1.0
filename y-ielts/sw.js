@@ -45,6 +45,9 @@
  *             已在预缓存清单里，无需新增条目）。
  *  ui-iter v22：同 v21，仅加注释触发 SW 更新（v22 只改 vocab.js，
  *             已在预缓存清单里，无需新增条目）。
+ *  v23 首页重做：新增 home-v23.css 预缓存条目（新文件，必须进清单）+
+ *             注释触发 SW 更新（其余 v23 改动 index.html / app.js
+ *             均已在清单里，无需新增条目）。
  * ============================================================ */
 'use strict';
 
@@ -64,6 +67,7 @@ var CORE = [
   './assets/css/audio.css',
   './assets/css/tokens.css',
   './assets/css/ui-iter.css',
+  './assets/css/home-v23.css',
   './assets/css/liquid-glass-v50.css',
   './assets/css/liquid-glass-v52.css',
   './assets/css/liquid-glass-v55.css',
