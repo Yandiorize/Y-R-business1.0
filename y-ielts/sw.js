@@ -33,6 +33,16 @@
  *             theme.js / learn-carousel.js / vocab.js / ui-iter.css / sw.js）。
  *  ui-iter v16：同 v15，仅加注释触发 SW 更新（v16 改 index.html /
  *             learn-carousel.js / ui-iter.css，均已在预缓存清单里，无需新增条目）。
+ *  ui-iter v17：同 v16，仅加注释触发 SW 更新（v17 改 index.html / me.js /
+ *             learn-carousel.js / ui-iter.css，均已在预缓存清单里，无需新增条目）。
+ *  ui-iter v18：同 v17，仅加注释触发 SW 更新（v18 改 me.js / vocab.js /
+ *             ui-iter.css，均已在预缓存清单里，无需新增条目）。
+ *  ui-iter v19：同 v18，仅加注释触发 SW 更新（v19 改 index.html / me.js /
+ *             vocab.js，均已在预缓存清单里，无需新增条目）。
+ *  ui-iter v20：同 v19，仅加注释触发 SW 更新（v20 改 vocab.js /
+ *             ui-iter.css，均已在预缓存清单里，无需新增条目）。
+ *  ui-iter v21：同 v20，仅加注释触发 SW 更新（v21 只改 vocab.js，
+ *             已在预缓存清单里，无需新增条目）。
  * ============================================================ */
 'use strict';
 

@@ -63,6 +63,10 @@
         dots[i].removeAttribute('aria-current');
       }
     }
+    /* v17：轮播位置计数——与圆点同一信息的可读数字标签（圆点已有
+       aria-current，计数 aria-hidden，不重复播报）；只写文本，不改布局逻辑。 */
+    var countEl = document.getElementById('learnCount');
+    if (countEl) countEl.textContent = (index + 1) + ' / ' + slides.length;
     /* v16：学习区下方小条改为介绍——跟随居中封面，模块名读该封面
        已有的 .lr-name，介绍读上方 INTRO 事实表；v15 的下一步行与
        用法提示行已移除，本处不再读取 .lr-next。 */

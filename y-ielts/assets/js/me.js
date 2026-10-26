@@ -129,9 +129,41 @@
     if (rLatest && typeof rLatest.band === 'number') { hero = rLatest; heroSkill = '阅读'; }
     if (lLatest && typeof lLatest.band === 'number' && (!hero || lLatest.at > hero.at)) { hero = lLatest; heroSkill = '听力'; }
     setText('#meDashBand', hero ? hero.band.toFixed(1) : '—');
-    setText('#meDashBandMeta', hero
+    /* v17：最新 Band 较上次变化——只读既有交卷记录，同科目比（阅读比阅读、
+       听力比听力，不跨科目混比）；只有一次记录时不显示变化，不编造；
+       不新增存储键、不新增元素，只接在现有 meta 行末尾。 */
+    var prevBand = null;
+    if (heroSkill === '阅读') {
+      for (var hi = 1; hi < hist.length; hi++) {
+        if (hist[hi] && typeof hist[hi].band === 'number') { prevBand = hist[hi].band; break; }
+      }
+    } else if (heroSkill === '听力') {
+      var lAll = [];
+      for (var lk in lsub) {
+        if (lsub.hasOwnProperty(lk) && lsub[lk] && typeof lsub[lk].at === 'number' && typeof lsub[lk].band === 'number') lAll.push(lsub[lk]);
+      }
+      lAll.sort(function (a, b) { return b.at - a.at; });
+      if (lAll.length > 1) prevBand = lAll[1].band;
+    }
+    var dashMeta = hero
       ? ('最近一次：' + heroSkill + ' · ' + numOf(hero.got) + '/' + numOf(hero.total) + ' · ' + fmtMD(hero.at))
-      : '暂无记录，交卷后自动记录');
+      : '暂无记录，交卷后自动记录';
+    if (hero && prevBand !== null) {
+      var dBand = hero.band - prevBand;
+      dashMeta += (dBand > 0) ? (' · 较上次 +' + dBand.toFixed(1))
+        : (dBand < 0 ? (' · 较上次 ' + dBand.toFixed(1)) : ' · 较上次持平');
+    }
+    /* v18：最弱科目——只比两个已评分科目的最新 Band（同一量纲），
+       与 v17「变化只同科目比」不冲突（变化比先后，最弱比水平）；
+       只有一科有分或两科持平时不写，不编造；不新增存储键、不新增元素，
+       只接在现有 meta 行末尾。 */
+    var rBand = (rLatest && typeof rLatest.band === 'number') ? rLatest.band : null;
+    var lBand = (lLatest && typeof lLatest.band === 'number') ? lLatest.band : null;
+    if (rBand !== null && lBand !== null && rBand !== lBand) {
+      dashMeta += (rBand < lBand) ? (' · 最弱：阅读 ' + rBand.toFixed(1))
+        : (' · 最弱：听力 ' + lBand.toFixed(1));
+    }
+    setText('#meDashBandMeta', dashMeta);
 
     var rows = '';
     rows += dashSkillRow('阅读',
@@ -257,6 +289,13 @@
   function bindEntry() {
     var about = $('#btnAbout');
     if (about) about.addEventListener('click', function () { open(true); });
+    /* v19：页脚帮助——复用 UI.Confirm 对话框（标题 + 正文 + 知道了/关闭），不新增
+       HUD 入口与对话框组件；考试全屏时页脚隐藏，故本帮助服务考前与练习间隙，
+       考中帮助标签仍待后续轮次。 */
+    var help = $('#btnHelp');
+    if (help) help.addEventListener('click', function () {
+      UI.Confirm({ title: '考试帮助', text: '阅读：60 分钟，题号共 40 个，已答蓝底白字，当前蓝圈，待检查警告色；没答满就交卷会先请你确认，时间到自动交卷。听力：30 分钟，点播放即开考，题号共 10 个，没答满交卷先请你确认。写作：Task 1 计 20 分钟，Task 2 计 40 分钟，字数实时统计，草稿只存本机。作答开始后试题占满屏，点退出回到开始前的页面，答案还在，不会交卷。', ok: '知道了', cancel: '关闭', danger: false });
+    });
   }
 
   function renderAll() {

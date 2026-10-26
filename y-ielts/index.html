@@ -302,6 +302,7 @@
           <button class="lc-dot" type="button" data-index="3" aria-label="第4个模块：单词"></button>
           <button class="lc-dot" type="button" data-index="4" aria-label="第5个模块：范文"></button>
         </div>
+        <span class="lc-count" id="learnCount" aria-hidden="true">1 / 5</span>
         <button class="lc-arrow lc-next" type="button" aria-label="下一个模块">›</button>
       </div>
       <div class="learn-strip" id="learnStrip">
@@ -1108,6 +1109,7 @@
 <footer class="site-foot">
   <span>© <span id="footYear">2026</span> <b id="footName">Yan-di</b> · 数据保存在本机</span>
   <button class="foot-about" id="btnAbout" type="button">关于</button>
+  <button class="foot-about" id="btnHelp" type="button">帮助</button>
 </footer>
 
 <!-- ============ 历史记录抽屉 ============ -->
@@ -1198,7 +1200,7 @@
   </div>
 </div>
 
-<div class="toast-wrap" id="toastWrap"></div>
+<div class="toast-wrap" id="toastWrap" role="status"></div>
 <!-- 喇叭状态文字条（P-3：播放中 / 朗读失败，必须有可见文字，可不只靠颜色） -->
 <div class="spk-status" id="spkStatus" role="status" aria-live="polite"></div>
 

@@ -185,12 +185,44 @@ window.Vocab = (function () {
         e.preventDefault(); e.stopPropagation();
         spkStopNow(null);
       };
+      /* v21：键盘可达——喇叭键重按是“忽略 + 刷新 pill”（v15 P2-3 防连点），
+         停止只能点 pill；只用键盘的用户此前无法停止。pill 不是原生按钮
+         （Enter 不会触发 click），故补 keydown：播放态 Enter/Space 即停；
+         role="status" 不变，不新增实况区。 */
+      spkStatusEl.tabIndex = 0;
+      spkStatusEl.onkeydown = function (e) {
+        if (e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 || e.keyCode === 32) {
+          e.preventDefault();
+          spkStopNow(null);
+        }
+      };
     } else if (state === 'fail') {
-      spkStatusEl.innerHTML = '⚠️ 朗读失败，点我重试';
+      /* v18：失败原因写进 pill 本身（单通道播报；markFail 不再另发 toast，
+         否则同一失败会被 toastWrap 与 pill 两个 role="status" 区域各播报一次）。
+         msg 已是完整原因时不再重复追加「点我重试」。 */
+      var failText = '朗读失败，点我重试';
+      if (msg && msg !== '朗读失败，点我重试') failText = msg + '，点我重试';
+      else if (msg) failText = msg;
+      spkStatusEl.innerHTML = '⚠️ ' + failText;
       spkStatusEl.classList.add('is-fail', 'show');
+      /* v21：失败 pill 不再是停止键——播放态残留的 onclick 会先弹
+         「已停止朗读」，再被 900ms 停后冷却挡掉第一次重试点击；
+         失败态的点击语义是重试（init 里绑的 listener），故清掉 onclick，
+         鼠标重试第一次即生效。键盘：Enter/Space 同样重试（状态感知，
+         不走共享 click listener 的双触发路径）。 */
+      spkStatusEl.onclick = null;
+      spkStatusEl.tabIndex = 0;
+      spkStatusEl.onkeydown = function (e) {
+        if (e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 || e.keyCode === 32) {
+          e.preventDefault();
+          if (lastSpkWord) speakWord(lastSpkWord);
+        }
+      };
     } else {
       spkStatusEl.innerHTML = '';
       spkStatusEl.onclick = null;
+      spkStatusEl.onkeydown = null;
+      spkStatusEl.tabIndex = -1;
       spkStatusEl.removeAttribute('title');
     }
   }
@@ -208,12 +240,12 @@ window.Vocab = (function () {
       b.classList.remove('is-playing');
       b.classList.add('is-fail');
       /* v15 0.5：按钮名称只写动作，绝不把「当前设备暂无可用语音」冒名成按钮名；
-       * 真实原因由状态 pill 与 toast 给出（见下方 spkStatus('fail') + toast(msg)） */
+       * v18：失败原因只由状态 pill 给出（单通道播报），不再另发 toast——
+       * toastWrap 与 pill 同为 role="status"，双发即双播报；「永不静默」由 pill 承载。 */
       b.setAttribute('title', '朗读失败，点我重试');
       b.setAttribute('aria-label', '朗读失败，点我重试');
     });
-    spkStatus('fail');
-    if (msg) toast(msg, 2800);
+    spkStatus('fail', msg);
   }
   /* 系统语音不可用时的兜底：本地打包音频 → IndexedDB 缓存（audio.js 内部仍会
    * 再试系统 TTS，全失败则由 audio.js 给出「当前设备暂无可用语音」提示，绝不静默）。
@@ -231,6 +263,51 @@ window.Vocab = (function () {
           spkStatus('');
           releaseSpk(w);
         }, 900);
+      }
+      else if (r === 'tts') {
+        /* v20：DictAudio 系统语音已开口——按“正在朗读”显示，不再误判失败。
+         * play() 在开口时即 resolve、不给 onend，故用 speechSynthesis
+         * 全局状态轮询收尾：播完清 pill；2s 内始终未开播则翻为失败
+         * （DictAudio 内部 1.4s 看门狗的 TTS_ERROR 提示已被 v19 过滤
+         * 抑制，失败仍由 pill 单通道承载，绝不静默）；状态未知的
+         * 平台按“在播”计、只到 8s 上限清 pill，绝不误判失败；
+         * 代际守卫防旧轮询碰新朗读（spkStopNow 与新 speak 都会 bump
+         * spkGen，旧轮询下一跳即退出，不碰 pill 与按钮）。
+         * v21：2s 翻失败后轮询继续——迟到开播恢复播放中（防失败 pill
+         * 常驻诱使用户重按叠读），翻失败只做一次（否则每 300ms 重写
+         * pill 会刷屏播报）；8s 上限后已失败 pill 保留重试，不清。 */
+        markPlay(btns);
+        var ttsSeen = false, ttsFailed = false, ttsElapsed = 0, ttsTimer = null;
+        var ttsTick = function () {
+          if (st.gen !== undefined && st.gen !== spkGen) { clearInterval(ttsTimer); return; }
+          ttsElapsed += 300;
+          var sp = window.speechSynthesis;
+          var known = !!(sp && ('speaking' in sp || 'pending' in sp));
+          var active = known ? !!(sp.speaking || sp.pending) : true;
+          if (active) {
+            if (ttsFailed) { ttsFailed = false; markPlay(btns); }
+            ttsSeen = true;
+          }
+          if (ttsFailed) {
+            if (ttsElapsed >= 8000) clearInterval(ttsTimer);
+          } else if (ttsSeen && !active) {
+            clearInterval(ttsTimer);
+            btns.forEach(function (b) { b.classList.remove('is-playing'); });
+            spkStatus('');
+            releaseSpk(w);
+          } else if (!ttsSeen && ttsElapsed >= 2000) {
+            ttsFailed = true;
+            markFail(btns, '当前设备暂无可用语音');
+            releaseSpk(w);
+          } else if (ttsElapsed >= 8000) {
+            clearInterval(ttsTimer);
+            btns.forEach(function (b) { b.classList.remove('is-playing'); });
+            spkStatus('');
+            releaseSpk(w);
+          }
+        };
+        ttsTick(); /* 首跳立即执行：speak 已派发时 pending 常已为真，短词也不漏首跳 */
+        ttsTimer = setInterval(ttsTick, 300);
       }
       else { markFail(btns, '当前设备暂无可用语音'); releaseSpk(w); }
     }).catch(function () { markFail(btns, '当前设备暂无可用语音'); releaseSpk(w); });
@@ -265,6 +342,7 @@ window.Vocab = (function () {
     var ctxCard = card;                 /* 记录本次朗读对应的卡片，供看门狗判过期 */
     var st = { local: false };          /* 播放上下文：本地音频是否正在播 */
     var myGen = ++spkGen;               /* 本次朗读代际（旧 utterance 迟到回调整条忽略） */
+    st.gen = myGen; /* v20：代际随 st 进 fallbackAudio，供 'tts' 轮询防旧回调碰新朗读 */
 
     /* 设备根本没有语音合成：直接走本地音频兜底，仍失败则明确提示 */
     if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
@@ -482,7 +560,14 @@ window.Vocab = (function () {
     autoSpeak = Store.get('autoSpeak', true) !== false;
     if (window.DictAudio) {
       DictAudio.init();
-      DictAudio.setNotify(function (msg) { toast(msg, 2600); });
+      /* v19：DictAudio 终端失败只由 markFail 药丸播报一次（v18 单通道的另一半）。
+         注意 ONLINE_FAIL 一词两用：在线失败改用系统语音是进度提示（保留 toast），
+         在线与系统语音都失败才是终端提示（药丸已覆盖）；故终端判定以消息为准。
+         漏判只会回到旧的双播报，绝不会静默（药丸独立触发）。 */
+      DictAudio.setNotify(function (msg, reason) {
+        if (msg === '当前设备暂无可用语音' || reason === 'TTS_ERROR' || reason === 'EMPTY_OR_NON_EN') return;
+        toast(msg, 2600);
+      });
     }
     if (el.cardContent) el.cardContent.addEventListener('click', onSpeakClick);
     if (el.deckList) el.deckList.addEventListener('click', onSpeakClick);
@@ -584,6 +669,27 @@ window.Vocab = (function () {
 
     $$('.rate', el.rateRow).forEach(function (b) {
       b.addEventListener('click', function () { rate(parseInt(b.dataset.rate, 10)); });
+    });
+
+    /* v21：跨标签页同步（单词页自 v6 起跨 tab 加载后不刷新、需重载；
+       抽屉/My 页 v5 起已就地刷新，单词页此前没有监听）。
+       另一标签页写 localStorage 时本页收不到同文档 ielts:store 事件，
+       只会收到 storage 事件；先 syncFromStorage 再重读 deck/stats/
+       trend（Store.get 读的是内存快照，不重读仍是旧数）。
+       门控：练习进行中不刷新——round.queue 指向旧 deck 对象，换 deck
+       会丢本轮答案；空闲时 renderAll 只动列表/统计/错词本/空态，
+       不碰练习态。残留：另一标签页写数据时本页正在编辑的未提交
+       释义输入会被重渲染覆盖（与 My 页同款行为，极罕见）。 */
+    window.addEventListener('storage', function (e) {
+      if (e && e.key && e.key !== 'ielts.cbt.v1') return;
+      if (round && round.active) return;
+      if (window.Store && window.Store.syncFromStorage) {
+        try { window.Store.syncFromStorage(); } catch (err) {}
+      }
+      deck = Store.get('deck', []);
+      stats = Store.get('vstats', { rounds: 0, answered: 0, correct: 0 });
+      trend = Store.get('vtrend', []);
+      renderAll();
     });
 
     renderAll();
@@ -818,7 +924,7 @@ window.Vocab = (function () {
     if (card.ex) {
       rows += '<div class="fb-ex"><span class="lb">例句</span>' +
         '<span class="ex">' + esc(card.ex) + '</span>' +
-        '<button class="fb-listen sm" type="button" data-speak="' + esc(card.ex) + '">🔊</button></div>';
+        '<button class="fb-listen sm" type="button" data-speak="' + esc(card.ex) + '" aria-label="朗读例句" title="朗读例句">🔊</button></div>';
     }
     rows += '<div class="row"><span class="lb">你的' + (mode2 === 'spell' ? '拼写' : '选择') +
       '</span><span class="vl ' + (ok ? 'ok-t' : 'bad-t') + '">' +
