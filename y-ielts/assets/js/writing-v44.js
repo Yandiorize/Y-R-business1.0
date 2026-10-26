@@ -40,7 +40,7 @@ window.Writing = (function () {
       qLead: $('#qLead'), qStem: $('#qStem'), qAsk: $('#qAsk'), qInst: $('#qInst'),
       outline: $('#wOutline'),
       editor: $('#editor'), wcNum: $('#wcNum'), wcTarget: $('#wcTarget'),
-      wcBar: $('#wcBar'), wcFill: $('#wcFill'), wcNote: $('#wcNote'),
+      wcBar: $('#wcBar'), wcFill: $('#wcFill'), wcNote: $('#wcNote'), wcCohTotal: $('#wcCohTotal'),
       cohBox: $('#cohBox'), cohTotal: $('#cohTotal'), cohList: $('#cohList'),
       saveState: $('#saveState'), draftTime: $('#draftTime'),
       btnSave: $('#btnSave'), btnClear: $('#btnClear'), btnCopy: $('#btnCopy'),
@@ -229,7 +229,9 @@ window.Writing = (function () {
       el.draftTime.textContent = '尚未保存过草稿';
     }
     el.saveState.classList.remove('is-saving');
-    el.saveState.textContent = '草稿已同步';
+    /* v38：无草稿时说实话（此前无条件写“草稿已同步”，与“尚未保存过草稿”矛盾） */
+    var draftTxt = typeof draft === 'string' ? draft : (draft && draft.text) || '';
+    el.saveState.textContent = (typeof draftTxt === 'string' && draftTxt.trim()) ? '草稿已同步' : '暂无草稿';
 
     ensureTimer(p);
     renderTimer();
@@ -384,8 +386,6 @@ window.Writing = (function () {
   function renderCohesion() {
     if (!el.cohBox) return;
     var text = el.editor.value || '';
-    if (!text.trim()) { el.cohBox.hidden = true; return; }
-    el.cohBox.hidden = false;
     var found = [];
     var total = 0;
     LINKERS.forEach(function (w) {
@@ -393,6 +393,10 @@ window.Writing = (function () {
       if (c) { found.push({ w: w, c: c }); total += c; }
     });
     found.sort(function (a, b) { return b.c - a.c || a.w.localeCompare(b.w); });
+    /* v38：字数条内计数常驻（空编辑器也写 0，不留旧数）；明细面板仍空时隐藏 */
+    if (el.wcCohTotal) el.wcCohTotal.textContent = total;
+    if (!text.trim()) { el.cohBox.hidden = true; return; }
+    el.cohBox.hidden = false;
     el.cohTotal.textContent = total;
     el.cohList.innerHTML = found.length
       ? found.slice(0, 14).map(function (f) {

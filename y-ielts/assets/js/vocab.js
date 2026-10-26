@@ -831,7 +831,8 @@ window.Vocab = (function () {
     el.deckList.innerHTML = view.map(function (x) {
       var d = x.d, i = x.i;
       var miss = !d.m;
-      return '<div class="deck-row" data-i="' + i + '">' +
+      return '<div class="deck-row-wrap" data-i="' + i + '">' +
+        '<div class="deck-row" data-i="' + i + '">' +
         '<span class="deck-w">' + esc(d.w) +
           (d.pos ? '<em class="deck-pos">' + esc(d.pos) + '</em>' : '') +
           spkBtn(d.w, 'spk-deck') +
@@ -840,11 +841,21 @@ window.Vocab = (function () {
           'value="' + esc(d.m) + '" placeholder="点击补充中文释义">' +
         '<span class="due-pill' + (d.due && d.due <= Date.now() ? ' now' : '') + '">' +
           (d.seen ? fmtDue(d.due) : '未学') + '</span>' +
+        '<button class="deck-edit-btn" data-i="' + i + '" title="编辑词性与例句">编辑</button>' +
         '<button class="deck-del" data-i="' + i + '" title="移除">✕</button>' +
-      '</div>';
+      '</div>' +
+      '<div class="deck-edit" data-i="' + i + '" hidden>' +
+        '<span class="deck-edit-lb">词性</span>' +
+        '<input class="deck-m deck-pos" data-i="' + i + '" value="' + esc(d.pos || '') + '" placeholder="如 n./v." aria-label="词性">' +
+        '<span class="deck-edit-lb">例句</span>' +
+        '<input class="deck-m deck-ex" data-i="' + i + '" value="' + esc(d.ex || '') + '" placeholder="例句（可选）" aria-label="例句">' +
+        '<button class="btn btn-ghost btn-sm deck-edit-done" data-i="' + i + '">完成</button>' +
+        '<button class="btn btn-ghost btn-sm deck-edit-cancel" data-i="' + i + '">取消</button>' +
+      '</div></div>';
     }).join('');
 
-    $$('.deck-m', el.deckList).forEach(function (inp) {
+    /* 释义直改：只绑主行输入（编辑条里的输入另有完成按钮，不走这里，避免串改释义） */
+    $$('.deck-row .deck-m', el.deckList).forEach(function (inp) {
       inp.addEventListener('change', function () {
         var d = deck[parseInt(inp.dataset.i, 10)];
         if (!d) return;
@@ -853,13 +864,47 @@ window.Vocab = (function () {
         persist(); renderStats(); renderWrong();
       });
     });
+    /* v38：词性/例句行内编辑（编辑条默认收起；完成写回，取消重渲染丢弃） */
+    $$('.deck-edit-btn', el.deckList).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var strip = el.deckList.querySelector('.deck-edit[data-i="' + b.dataset.i + '"]');
+        if (!strip) return;
+        strip.hidden = !strip.hidden;
+        if (!strip.hidden) { var f = strip.querySelector('.deck-pos'); if (f) f.focus(); }
+      });
+    });
+    $$('.deck-edit-done', el.deckList).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var d = deck[parseInt(b.dataset.i, 10)];
+        if (!d) return;
+        var strip = el.deckList.querySelector('.deck-edit[data-i="' + b.dataset.i + '"]');
+        if (strip) {
+          var p = strip.querySelector('.deck-pos'), e = strip.querySelector('.deck-ex');
+          if (p) d.pos = p.value.trim();
+          if (e) d.ex = e.value.trim();
+        }
+        persist(); renderDeck(); renderStats(); renderWrong();
+      });
+    });
+    $$('.deck-edit-cancel', el.deckList).forEach(function (b) {
+      b.addEventListener('click', function () { renderDeck(); });
+    });
+    /* v38：移除加二次确认（此前一点即删） */
     $$('.deck-del', el.deckList).forEach(function (b) {
       b.addEventListener('click', function () {
         var i = parseInt(b.dataset.i, 10);
+        if (!deck[i]) return;
         var w = deck[i].w;
-        deck.splice(i, 1);
-        persist(); renderAll();
-        toast('已移除 ' + w);
+        UI.Confirm({
+          title: '移除单词',
+          text: '确定要移除「' + w + '」吗？此操作不可恢复。',
+          ok: '确定移除'
+        }, function (yes) {
+          if (!yes) return;
+          deck.splice(i, 1);
+          persist(); renderAll();
+          toast('已移除 ' + w);
+        });
       });
     });
   }
@@ -1388,7 +1433,11 @@ window.Vocab = (function () {
     }
     return n;
   }
-  function isMastered(d) { return d.right >= 2 && d.wrong === 0; }
+  /* v38 掌握口径统一：right>=2 且不在错词本（此前为 wrong===0，与学习区/首页不一致）。
+     核查结论（applyCardResult 为唯一落账点）：答对 2 次即清 inWrong（哪怕 wrong>0），
+     答错/模糊才置 inWrong；故自然数据里“wrong===0 且 right>=2”必有 inWrong=false，
+     改口径只会把“答错后又答对 2 次、已离本”的词计入掌握，绝不使已掌握的词掉出。 */
+  function isMastered(d) { return d.right >= 2 && !d.inWrong; }
 
   function endRoundUI() {
     el.cardEmpty.hidden = false;
@@ -1507,7 +1556,7 @@ window.Vocab = (function () {
     el.stRounds.textContent = stats.rounds;
     el.stAnswered.textContent = stats.answered;
 
-    var mastered = deck.filter(function (d) { return d.right >= 2 && d.wrong === 0; }).length;
+    var mastered = deck.filter(isMastered).length;
     var pct = deck.length ? Math.round((mastered / deck.length) * 100) : 0;
     if (el.masterCnt) el.masterCnt.textContent = mastered + ' / ' + deck.length;
     if (el.masterTxt) el.masterTxt.textContent = pct + '%';

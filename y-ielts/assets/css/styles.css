@@ -601,9 +601,9 @@ select option { background: var(--bg-b); color: var(--ink); }
 .deck-list { max-height: 320px; overflow: auto; margin-top: 4px; }
 .deck-row {
   display: flex; align-items: center; gap: 10px; padding: 8px 6px;
-  border-bottom: 1px solid var(--stroke-soft);
 }
-.deck-row:last-child { border-bottom: 0; }
+.deck-row-wrap { border-bottom: 1px solid var(--stroke-soft); }
+.deck-row-wrap:last-child { border-bottom: 0; }
 .deck-w { font-weight: 600; font-size: 13.5px; min-width: 118px; }
 .deck-m {
   flex: 1; min-width: 0; border: 1px solid transparent; background: transparent;
@@ -618,6 +618,20 @@ select option { background: var(--bg-b); color: var(--ink); }
   font-size: 15px; padding: 2px 6px; border-radius: 6px;
 }
 .deck-del:hover { color: var(--bad); background: var(--bad-soft); }
+/* v38：词行编辑（词性/例句编辑条，默认收起；释义仍在主行直接改） */
+.deck-edit-btn {
+  border: 0; background: none; cursor: pointer; color: var(--muted);
+  font-size: 13px; padding: 2px 6px; border-radius: 6px;
+}
+.deck-edit-btn:hover { color: var(--ink); background: var(--glass-2); }
+.deck-edit {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: 2px 6px 10px;
+}
+.deck-edit[hidden] { display: none; }
+.deck-edit-lb { font-size: 12px; color: var(--muted); }
+.deck-edit .deck-pos { flex: 0 0 110px; }
+.deck-edit .deck-ex { flex: 1; }
 
 .mode-cfg { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 13px; }
 
@@ -1236,6 +1250,9 @@ body[data-view="reading"] .exam-hud { display: inline-flex; }
 }
 .wc-note.is-short { color: var(--bad); font-weight: 600; }
 .wc-note.is-hit { color: var(--ok); font-weight: 600; }
+/* v38：字数条内衔接词计数（与字数同行，不撑高悬浮条；状态色不染计数） */
+.wc-num .wc-coh b { color: var(--ink); }
+.wc.is-short .wc-num .wc-coh b, .wc.is-hit .wc-num .wc-coh b { color: var(--ink); }
 .wc.is-short .wc-num b { color: var(--bad); }
 .wc.is-hit .wc-num b { color: var(--ok); }
 .wc.is-short .bar > i { background: linear-gradient(90deg, #f0a08a, var(--bad)); }

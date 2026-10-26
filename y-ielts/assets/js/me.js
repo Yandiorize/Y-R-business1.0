@@ -58,7 +58,7 @@
     hist = Array.isArray(hist) ? hist : [];
     var deck = Store.get('deck', []);
     deck = Array.isArray(deck) ? deck : [];
-    var mastered = deck.filter(function (d) { return d.right >= 2 && d.wrong === 0; }).length;
+    var mastered = deck.filter(function (d) { return d.right >= 2 && !d.inWrong; }).length;
     var pct = deck.length ? Math.round((mastered / deck.length) * 100) : 0;
     var due = deck.filter(function (d) { return d.m && d.due && d.due <= Date.now(); }).length;
     var wrong = deck.filter(function (d) { return d.inWrong; }).length;
@@ -241,7 +241,7 @@
     rows += dashSkillRow('写作',
       (draftN || wHist.length) ? ('不评分 · 草稿 ' + draftN + ' 篇 / 历史 ' + wHist.length + ' 条') : '不评分 · 暂无草稿与历史',
       0, false);
-    var mastered = deck.filter(function (d) { return d.right >= 2 && d.wrong === 0; }).length;
+    var mastered = deck.filter(function (d) { return d.right >= 2 && !d.inWrong; }).length;
     var mpct = deck.length ? Math.round((mastered / deck.length) * 100) : 0;
     rows += dashSkillRow('单词',
       deck.length ? ('掌握 ' + mastered + '/' + deck.length + ' 词 · ' + mpct + '%') : '词库为空',

@@ -307,7 +307,7 @@
       ? '今天还没有学习记录，交一次卷、存一篇草稿或背几个词都算完成 1 项。'
       : (done >= target ? '今日目标已完成，明天继续。' : ('今日已完成 ' + done + ' / ' + target + ' 项。')));
 
-    /* D · 本周概览：周一起算；掌握条沿用旧圆环口径（Me 口径 right>=2 且 wrong===0），只换环为条 */
+    /* D · 本周概览：周一起算；掌握条口径 v38 已统一（right>=2 且不在错词本，与学习区/我的/词库一致） */
     var dow = (new Date().getDay() + 6) % 7; /* 周一起算：周一=0 */
     var ws = new Date(); ws.setDate(ws.getDate() - dow);
     var weekStartKey = dateKeyOf(ws.getTime());
@@ -324,7 +324,7 @@
     }
     set('hmStreak', String(streak));
     set('hmDue', String(due));
-    var masteredMe = deck.filter(function (d) { return d && d.right >= 2 && d.wrong === 0; }).length;
+    var masteredMe = deck.filter(function (d) { return d && d.right >= 2 && !d.inWrong; }).length;
     set('hmMasteryText', deck.length ? ('掌握 ' + masteredMe + ' / 共 ' + deck.length) : '词库为空');
     var mFill = document.getElementById('hmMasteryFill');
     if (mFill) mFill.style.width = deck.length ? (Math.round(masteredMe / deck.length * 100) + '%') : '0%';
