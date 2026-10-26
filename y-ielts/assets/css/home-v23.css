@@ -17,6 +17,7 @@
   --hm-mist: #F1F7FF;
   --hm-glacier: #DCEBFF;
   --hm-card: rgba(255, 255, 255, .66);
+  --hm-slide-bg: linear-gradient(165deg, rgba(255, 255, 255, .88) 0%, rgba(220, 235, 255, .60) 100%);
   --hm-border: rgba(255, 255, 255, .85);
   --hm-shadow: 0 18px 44px -18px rgba(23, 105, 232, .28);
   --hm-shadow-sm: 0 10px 26px -14px rgba(23, 105, 232, .30);
@@ -64,7 +65,7 @@
 .hmc-track { display: grid; }
 .hmc-slide {
   grid-area: 1 / 1;
-  width: 62%;
+  width: 80%;
   margin: 0 auto;
   box-sizing: border-box;
   display: flex;
@@ -72,17 +73,17 @@
   justify-content: center;
   gap: 8px;
   padding: 24px 22px;
-  border-radius: 24px;
-  background: var(--hm-card);
+  border-radius: 28px;
+  background: var(--hm-slide-bg);
   border: 1px solid var(--hm-border);
   -webkit-backdrop-filter: var(--glass-blur-card);
   backdrop-filter: var(--glass-blur-card);
   box-shadow: var(--hm-shadow);
   transition: transform 280ms var(--ease-out), opacity 280ms var(--ease-out);
 }
-.hmc-slide.is-center { transform: translateX(0) rotateY(0deg) scale(1); opacity: 1; z-index: 2; }
-.hmc-slide.is-left { transform: translateX(-48%) rotateY(16deg) scale(.9); opacity: .55; z-index: 1; }
-.hmc-slide.is-right { transform: translateX(48%) rotateY(-16deg) scale(.9); opacity: .55; z-index: 1; }
+.hmc-slide.is-center { transform: translateX(0) perspective(900px) rotateY(-7deg) rotateX(2deg) scale(1); opacity: 1; z-index: 2; }
+.hmc-slide.is-left { transform: translateX(-18%) rotateY(16deg) scale(.9); opacity: .55; z-index: 1; }
+.hmc-slide.is-right { transform: translateX(18%) rotateY(-16deg) scale(.9); opacity: .55; z-index: 1; }
 .hmc-slide.is-hidden { opacity: 0; pointer-events: none; z-index: 0; }
 /* 侧卡上的透明切换层：点侧卡只切换，不触发卡内按钮 */
 .hmc-tap {
@@ -97,23 +98,94 @@
 }
 .hmc-slide:not(.is-center) .hmc-tap { display: block; }
 .hmc-slide.is-center .hmc-tap { display: none; }
-/* 第 1 张：继续练习 */
-.hmc-kicker {
-  margin: 0;
+/* 第 1 张：继续练习（按示范图：IELTS 小 pill + 两行标题 + 右侧资料卡插画） */
+.hmc-hero-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hmc-hero-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hmc-pill {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(23, 105, 232, .10);
+  color: var(--hm-blue);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 1px;
-  color: var(--muted);
 }
 .hmc-title {
   margin: 0;
-  font-size: clamp(28px, 7.5vw, 40px);
+  font-size: clamp(24px, 6.8vw, 38px);
   line-height: 1.2;
   font-weight: 800;
   letter-spacing: -.5px;
   color: var(--ink);
 }
-.hmc-tags { margin: 0; font-size: 13px; color: var(--muted); }
+.hmc-sub { margin: 0; font-size: 13px; color: var(--muted); }
+/* 右侧插画：倾斜的 IELTS 资料卡 + 轨道环 + 蓝色小球（纯 CSS，无图片） */
+.hmc-art {
+  position: relative;
+  flex: 0 0 96px;
+  height: 128px;
+}
+.hmc-doc {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 76px;
+  height: 104px;
+  transform: rotate(8deg);
+  padding: 10px 8px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .92), rgba(220, 235, 255, .70));
+  border: 1px solid rgba(255, 255, 255, .9);
+  box-shadow: 0 10px 24px -10px rgba(23, 105, 232, .40);
+}
+.hmc-doc b { color: var(--hm-blue); font-size: 13px; letter-spacing: .5px; }
+.hmc-doc i {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(23, 105, 232, .25);
+  margin-top: 8px;
+}
+.hmc-doc span {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: rgba(139, 184, 255, .55);
+  margin: 8px 4px 0 0;
+}
+.hmc-orbit {
+  position: absolute;
+  left: -6px;
+  right: -2px;
+  top: 24px;
+  height: 96px;
+  border: 1.5px solid rgba(23, 105, 232, .45);
+  border-radius: 50%;
+  transform: rotate(-18deg);
+}
+.hmc-orb {
+  position: absolute;
+  left: 4px;
+  bottom: 12px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--hm-blue);
+  box-shadow: 0 2px 8px rgba(23, 105, 232, .50);
+}
 .hmc-cta {
   align-self: flex-start;
   display: inline-flex;
@@ -288,12 +360,12 @@
   line-height: 1;
   cursor: pointer;
 }
-.hmc-prev { left: 8px; }
-.hmc-next { right: 8px; }
+.hmc-prev { left: calc(10% + 10px); }
+.hmc-next { right: calc(10% + 10px); }
 .hmc-count {
   position: absolute;
-  top: 14px;
-  right: 16px;
+  top: 12px;
+  right: calc(10% + 16px);
   z-index: 3;
   font-size: 12px;
   font-weight: 700;
@@ -441,7 +513,11 @@
   .hm-quick { gap: 8px; }
   .hm-quick-item { padding: 12px 4px 10px; }
   .hm-qi { width: 40px; height: 40px; }
-  .hmc-slide { width: 68%; padding: 20px 18px; }
+  .hmc-slide { width: 80%; padding: 20px 18px; }
+  .hmc-art { flex-basis: 72px; height: 112px; }
+  .hmc-doc { width: 60px; height: 90px; padding: 8px 6px; }
+  .hmc-doc b { font-size: 11px; }
+  .hmc-orbit { top: 20px; height: 84px; }
   .hmc-ring-row { flex-direction: column; text-align: center; }
   .hmc-ring-info { align-items: center; }
   .hmc-mini-go { align-self: center; }
@@ -449,7 +525,7 @@
   .hm-ring-center b { font-size: 24px; }
 }
 @media (max-width: 380px) {
-  .hmc-slide { width: 72%; padding: 18px 16px; }
+  .hmc-slide { width: 80%; padding: 18px 16px; }
   .hm-ring-wrap { width: 88px; height: 88px; }
 }
 @media (min-width: 901px) {
@@ -458,6 +534,11 @@
   .hmc-slide { padding: 28px 28px; }
   .hm-ring-wrap { width: 120px; height: 120px; }
   .hm-ring-center b { font-size: 30px; }
+  .hmc-art { flex-basis: 130px; height: 170px; }
+  .hmc-doc { width: 100px; height: 136px; padding: 12px 10px; }
+  .hmc-doc b { font-size: 15px; }
+  .hmc-orbit { top: 30px; height: 128px; }
+  .hmc-orb { width: 18px; height: 18px; }
   .hm-quick { gap: 12px; }
   .hm-quick-item { padding: 16px 8px 14px; }
 }
@@ -465,6 +546,7 @@
 /* ---------- 深色：只换卡面与渐变，文字沿用全站变量 ---------- */
 html[data-theme="dark"] #view-home {
   --hm-card: rgba(28, 30, 36, .55);
+  --hm-slide-bg: linear-gradient(165deg, rgba(38, 42, 54, .75) 0%, rgba(24, 30, 48, .75) 100%);
   --hm-border: rgba(255, 255, 255, .14);
   --hm-shadow: 0 18px 44px -18px rgba(0, 0, 0, .70);
   --hm-shadow-sm: 0 10px 26px -14px rgba(0, 0, 0, .70);
