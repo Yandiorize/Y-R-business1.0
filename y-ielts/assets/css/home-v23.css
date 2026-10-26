@@ -1,15 +1,21 @@
 /* ============================================================
-   v26 · 首页（按示范图 2 全页对齐；文件沿用 v23 名，
-   本站版本化文件惯例：名中数字为历史版本，不代表当前版次）
+   v37 · 首页 A–F（文件沿用 v23 名，本站版本化文件惯例：
+   名中数字为历史版本，不代表当前版次）
    ------------------------------------------------------------
-   · 设计变量收敛在本文件（--hm-*），配色：纯净白 #FFFFFF /
-     雾白蓝 #F1F7FF / 冰川蓝 #DCEBFF / 柔和蓝 #8BB8FF /
-     品牌蓝 #1769E8；圆角 16–28px；动效 280ms；触点 ≥44px
-   · 结构：顶栏品牌行 → 主轮播（3 张真实内容，轻微 3D 旋转，
-     无自动播放；圆点/计数在卡内左下/右下）→ 进步卡 →
-     快速入口（图 2 顺序与副标题）→ 热门推荐 → 信息弹窗
+   · 结构：A 品牌行 + 状态行 → B 主视觉（专用 hero，非轮播）
+     → C 今日目标（环 + 步进）→ D 本周概览（天数 + 掌握条）
+     → E 练习模块（5 卡）→ F 最近练习 + 分数走势
+   · 配色：纯净白 #FFFFFF / 雾白蓝 #F1F7FF / 冰川蓝 #DCEBFF /
+     柔和蓝 #8BB8FF / 品牌蓝 #1769E8；圆角走 token（10/14/20/28）；
+     动效 150–300ms；触点 ≥44px
+   · 玻璃克制：只用在主视觉 hero 与今日目标卡；其余容器实底
+     + 细线边框，长文本全程实底高对比
+   · 动效克制：只在主视觉轨道环慢转（24s）与卡片轻倾斜（按压
+     缩放）；减动效下全部关闭
    · 底栏浮动胶囊沿用 v23（.tabbar-inner 网格与高度不动，
      #tabbarInd 指示器位置不受影响）；其他视图一字不动
+   · 旧轮播 / 进步卡 / 快速入口 / HOT / 信息弹窗已随 v37 HTML
+     一并删除；home-carousel.js 按学习区先例留空转，不删文件
    ============================================================ */
 #view-home {
   --hm-blue: #1769E8;
@@ -17,8 +23,9 @@
   --hm-mist: #F1F7FF;
   --hm-glacier: #DCEBFF;
   --hm-card: rgba(255, 255, 255, .66);
-  --hm-slide-bg: linear-gradient(165deg, rgba(255, 255, 255, .88) 0%, rgba(220, 235, 255, .60) 100%);
-  --hm-hot-bg: linear-gradient(120deg, rgba(255, 255, 255, .78) 0%, rgba(220, 235, 255, .65) 100%);
+  --hm-hero-bg: linear-gradient(165deg, rgba(255, 255, 255, .88) 0%, rgba(220, 235, 255, .60) 100%);
+  --hm-solid: #ffffff;
+  --hm-line: #e3eaf5;
   --hm-border: rgba(255, 255, 255, .85);
   --hm-shadow: 0 18px 44px -18px rgba(23, 105, 232, .28);
   --hm-shadow-sm: 0 10px 26px -14px rgba(23, 105, 232, .30);
@@ -34,7 +41,9 @@
   gap: 16px;
 }
 
-/* ---------- 顶栏品牌行：毕业帽 + Y-IELTS + 搜索 + 铃铛 ---------- */
+.hm-go { cursor: pointer; }
+
+/* ---------- A · 顶栏品牌行：毕业帽 + Y-IELTS + 搜索 ---------- */
 .hm-brand {
   display: flex;
   align-items: center;
@@ -87,75 +96,34 @@
 .hm-icon-btn .icon { display: inline-flex; }
 .hm-icon-btn .icon svg { width: 24px; height: 24px; }
 .hm-icon-btn .lbl:empty { display: none; }
-
-/* ---------- 主轮播：中央卡 + 两侧细边露出，无自动播放 ---------- */
-.hmc { position: relative; }
-.hmc-viewport {
-  position: relative;
-  overflow: hidden;
-  perspective: 1200px;
-  touch-action: pan-y;
+.hm-status {
+  margin: -8px 0 0;
+  padding-left: 40px;
+  font-size: 12.5px;
+  color: var(--muted);
 }
-.hmc-track { display: grid; }
-.hmc-slide {
-  grid-area: 1 / 1;
-  width: 80%;
-  margin: 0 auto;
-  box-sizing: border-box;
+
+/* ---------- B · 主视觉：今日继续（玻璃主视觉 + 轨道插画慢转） ---------- */
+.hm-hero {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  padding: 24px 22px 48px;
-  border-radius: 28px;
-  background: var(--hm-slide-bg);
+  align-items: center;
+  gap: 10px;
+  padding: 24px 22px;
+  border-radius: var(--r-xl);
+  background: var(--hm-hero-bg);
   border: 1px solid var(--hm-border);
   -webkit-backdrop-filter: var(--glass-blur-card);
   backdrop-filter: var(--glass-blur-card);
   box-shadow: var(--hm-shadow);
-  transition: transform 280ms var(--ease-out), opacity 280ms var(--ease-out);
 }
-.hmc-slide.is-center { transform: translateX(0) perspective(900px) rotateY(-7deg) rotateX(2deg) scale(1); opacity: 1; z-index: 2; }
-.hmc-slide.is-left { transform: translateX(-18%) rotateY(16deg) scale(.9); opacity: .55; z-index: 1; }
-.hmc-slide.is-right { transform: translateX(18%) rotateY(-16deg) scale(.9); opacity: .55; z-index: 1; }
-.hmc-slide.is-hidden { opacity: 0; pointer-events: none; z-index: 0; }
-/* 侧卡上的透明切换层：点侧卡只切换，不触发卡内按钮 */
-.hmc-tap {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  display: none;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  font-size: 0;
-}
-.hmc-slide:not(.is-center) .hmc-tap { display: block; }
-.hmc-slide.is-center .hmc-tap { display: none; }
-/* 第 1 张：继续练习（示范图：IELTS 小 pill + 两行标题 + 右侧资料卡插画） */
-.hmc-hero-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.hmc-hero-text {
+.hm-hero-text {
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.hmc-pill {
-  align-self: flex-start;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(23, 105, 232, .10);
-  color: var(--hm-blue);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-.hmc-title {
+.hm-hero-title {
   margin: 0;
   font-size: clamp(24px, 6.8vw, 38px);
   line-height: 1.2;
@@ -163,9 +131,66 @@
   letter-spacing: -.5px;
   color: var(--ink);
 }
-.hmc-sub { margin: 0; font-size: 13px; color: var(--muted); }
+.hm-hero-sub { margin: 0; font-size: 13px; color: var(--muted); }
+.hm-hero-cta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 52px;
+  margin-top: 6px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--hm-blue);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 24px -10px rgba(23, 105, 232, .55);
+  transition: transform 150ms var(--ease-out);
+}
+.hm-hero-cta:active { transform: scale(.97); }
+.hm-hero-cta::after { content: ' →'; }
+.hm-hero-hint { margin: 0; font-size: 13px; color: var(--muted); }
+.hm-hero-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 22px;
+  margin-top: 4px;
+}
+/* 用 visibility 预留高度：条显隐不推动下方内容（沿用旧版做法） */
+.hm-hero-bar[hidden] { display: flex; visibility: hidden; }
+.hm-hero-bar .bar {
+  flex: 1 1 auto;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(23, 105, 232, .12);
+  overflow: hidden;
+}
+.hm-hero-bar .bar > i {
+  display: block;
+  height: 100%;
+  background: var(--hm-blue);
+  border-radius: inherit;
+  transition: width .3s var(--ease-out);
+}
+.hm-hero-bar em {
+  font-size: 12px;
+  font-style: normal;
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.hm-hero-latest {
+  margin: 4px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--hm-line);
+  font-size: 13px;
+  color: var(--muted);
+}
 /* 右侧插画：倾斜的 IELTS 资料卡 + 轨道环 + 蓝色小球（纯 CSS，无图片） */
-.hmc-art {
+.hm-hero-art {
   position: relative;
   flex: 0 0 96px;
   height: 128px;
@@ -209,6 +234,11 @@
   border: 1.5px solid rgba(23, 105, 232, .45);
   border-radius: 50%;
   transform: rotate(-18deg);
+  animation: hm-orbit-spin 24s linear infinite;
+}
+@keyframes hm-orbit-spin {
+  from { transform: rotate(-18deg); }
+  to { transform: rotate(342deg); }
 }
 .hmc-orb {
   position: absolute;
@@ -220,247 +250,161 @@
   background: var(--hm-blue);
   box-shadow: 0 2px 8px rgba(23, 105, 232, .50);
 }
-.hmc-cta {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  min-height: 52px;
-  margin-top: 6px;
-  padding: 0 22px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--hm-blue);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 10px 24px -10px rgba(23, 105, 232, .55);
-  transition: transform 150ms var(--ease-out);
-}
-.hmc-cta:active { transform: scale(.97); }
-.hmc-cta::after { content: ' →'; }
-.hmc-hint { margin: 0; font-size: 13px; color: var(--muted); }
-.hmc-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 22px;
-  margin-top: 4px;
-}
-/* 用 visibility 预留高度：条显隐不推动下方内容（沿用旧版做法） */
-.hmc-bar[hidden] { display: flex; visibility: hidden; }
-.hmc-bar .bar {
-  flex: 1 1 auto;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(23, 105, 232, .12);
-  overflow: hidden;
-}
-.hmc-bar .bar > i {
-  display: block;
-  height: 100%;
-  background: var(--hm-blue);
-  border-radius: inherit;
-  transition: width .3s var(--ease-out);
-}
-.hmc-bar em {
-  font-size: 12px;
-  font-style: normal;
-  color: var(--muted);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-/* 第 2 张：今日学习 */
-.hmc-slide-title { margin: 0; font-size: 17px; font-weight: 800; color: var(--ink); }
-.hmc-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px 12px;
-  margin-top: 4px;
-}
-.hmc-stat { display: flex; flex-direction: column; gap: 1px; }
-.hmc-stat b {
-  font-family: var(--font-num);
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-.hmc-stat span { font-size: 11px; color: var(--muted); font-weight: 600; }
-.hmc-today { margin: 2px 0 0; font-size: 13px; color: var(--ink-2); }
-.hmc-dots {
-  display: inline-flex;
-  gap: 4px;
-  margin-top: 2px;
-}
-.hmc-dots i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  border: 1px solid var(--lg-border);
-  background: transparent;
-}
-.hmc-dots i.on { background: var(--hm-blue); border-color: var(--hm-blue); }
-/* 轮播控件：左右箭头贴卡边 + 圆点卡内左下 + 计数卡内右下（触点 44px） */
-.hmc-arrow {
-  position: absolute;
-  top: 50%;
-  z-index: 3;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: translateY(-50%);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, .72);
-  border: 1px solid var(--hm-border);
-  -webkit-backdrop-filter: var(--glass-blur-card);
-  backdrop-filter: var(--glass-blur-card);
-  box-shadow: var(--hm-shadow-sm);
-  color: var(--hm-blue);
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-}
-.hmc-prev { left: calc(10% + 10px); }
-.hmc-next { right: calc(10% + 10px); }
-.hmc-count {
-  position: absolute;
-  bottom: 16px;
-  right: calc(10% + 22px);
-  z-index: 3;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-.hmc-dots {
-  position: absolute;
-  bottom: 14px;
-  left: calc(10% + 22px);
-  z-index: 3;
-  display: flex;
-  gap: 2px;
-}
-.hmc-dot {
-  width: 44px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: 0;
-  cursor: pointer;
-}
-.hmc-dot i {
-  display: block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(23, 105, 232, .25);
-  transition: width 200ms var(--ease-out), background 200ms var(--ease-out);
-}
-.hmc-dot.is-on i { width: 22px; border-radius: 999px; background: var(--hm-blue); }
 
-/* ---------- 圆环（进步卡用） ---------- */
-.hm-ring-wrap {
-  position: relative;
-  flex: 0 0 auto;
-  width: 92px;
-  height: 92px;
-}
-.hm-ring { width: 100%; height: 100%; display: block; }
-.hm-ring-track {
-  fill: none;
-  stroke: rgba(23, 105, 232, .14);
-  stroke-width: 10;
-}
-.hm-ring-fill {
-  fill: none;
-  stroke: var(--hm-blue);
-  stroke-width: 10;
-  stroke-linecap: round;
-  transform: rotate(-90deg);
-  transform-origin: center;
-  stroke-dasharray: 402.1;
-  stroke-dashoffset: 402.1;
-  transition: stroke-dashoffset .3s var(--ease-out);
-}
-.hm-ring-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  pointer-events: none;
-}
-.hm-ring-center b {
-  font-family: var(--font-num);
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-.hm-ring-center span { font-size: 11px; color: var(--muted); font-weight: 600; }
-
-/* ---------- 进步卡：环 + 我的学习进度 + 今日已学习 + 横条 + 去背单词 ---------- */
-.hm-prog {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 20px;
-  border-radius: 24px;
+/* ---------- C · 今日目标：环 + 步进（重点容器，轻玻璃） ---------- */
+.hm-goal {
+  padding: 20px;
+  border-radius: var(--r-lg);
   background: var(--hm-card);
   border: 1px solid var(--hm-border);
   -webkit-backdrop-filter: var(--glass-blur-card);
   backdrop-filter: var(--glass-blur-card);
   box-shadow: var(--hm-shadow-sm);
 }
-.hm-prog-mid {
-  flex: 1 1 auto;
-  min-width: 0;
+.hm-goal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.hm-goal-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: var(--ink);
+}
+.hm-goal-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hm-goal-stepper button {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hm-line);
+  border-radius: 12px;
+  background: var(--hm-solid);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.hm-goal-stepper button:active { background: rgba(23, 105, 232, .08); }
+.hm-goal-stepper span {
+  min-width: 28px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.hm-goal-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.hm-goal-ring-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: 96px;
+  height: 96px;
+}
+.hm-goal-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+.hm-goal-ring-track { fill: none; stroke: rgba(23, 105, 232, .12); stroke-width: 12; }
+.hm-goal-ring-fill {
+  fill: none;
+  stroke: var(--hm-blue);
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dashoffset .3s var(--ease-out);
+}
+.hm-goal-ring-center {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
 }
-.hm-prog-title { margin: 0; font-size: 17px; font-weight: 800; color: var(--ink); }
-.hm-prog-today { margin: 0; font-size: 13px; color: var(--muted); }
-.hm-prog-bar {
+.hm-goal-ring-center b {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.hm-goal-ring-center span { font-size: 11px; color: var(--muted); }
+.hm-goal-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+/* ---------- D · 本周概览：三数 + 掌握条（实底） ---------- */
+.hm-overview {
+  padding: 20px;
+  border-radius: var(--r-lg);
+  background: var(--hm-solid);
+  border: 1px solid var(--hm-line);
+  box-shadow: var(--hm-shadow-sm);
+}
+.hm-ov-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.hm-ov-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.hm-ov-item b {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.hm-ov-item span { font-size: 12px; color: var(--muted); }
+.hm-mastery {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.hm-mastery-label { font-size: 13px; font-weight: 700; color: var(--ink); }
+.hm-mastery-count {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.hm-mastery-bar {
+  flex: 1 1 100%;
   height: 8px;
   border-radius: 999px;
   background: rgba(23, 105, 232, .12);
   overflow: hidden;
 }
-.hm-prog-bar > i {
+.hm-mastery-bar > i {
   display: block;
   height: 100%;
-  width: 0;
   background: var(--hm-blue);
   border-radius: inherit;
   transition: width .3s var(--ease-out);
 }
-.hm-prog-go {
-  flex: 0 0 auto;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 0;
-  background: rgba(255, 255, 255, .72);
-  color: #7a90ad;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  box-shadow: var(--hm-shadow-sm);
-  transition: transform 150ms var(--ease-out);
-}
-.hm-prog-go:active { transform: scale(.96); }
 
-/* ---------- 分区头：蓝条标题 + 右侧链接 ---------- */
+/* ---------- 分区头：蓝条标题 ---------- */
 .hm-sec-head {
   display: flex;
   align-items: center;
@@ -486,230 +430,95 @@
   border-radius: 2px;
   background: var(--hm-blue);
 }
-.hm-sec-more {
-  flex: 0 0 auto;
-  min-height: 44px;
-  padding: 0 4px;
-  border: 0;
-  background: none;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
 
-/* ---------- 最近练习行（第 3 张内复用） ---------- */
-.hm-recent { display: flex; flex-direction: column; gap: 10px; }
-.hm-recent-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 48px;
-  padding: 10px 16px;
-  text-align: left;
-  border-radius: 16px;
-  background: var(--hm-card);
-  border: 1px solid var(--hm-border);
-  -webkit-backdrop-filter: var(--glass-blur-card);
-  backdrop-filter: var(--glass-blur-card);
-  box-shadow: var(--hm-shadow-sm);
-  color: var(--ink);
-  cursor: pointer;
-  transition: transform 150ms var(--ease-out);
-}
-.hm-recent-row:active { transform: scale(.99); }
-.hm-recent-name { flex: 0 0 auto; font-size: 14px; font-weight: 700; }
-.hm-recent-val {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: 13px;
-  color: var(--muted);
-}
-.hm-recent-go { flex: 0 0 auto; color: var(--hm-blue); font-size: 18px; font-weight: 700; }
-
-/* ---------- 快速入口：4 项（图 2 顺序与副标题，左对齐 + 底部小箭头） ---------- */
-.hm-quick {
+/* ---------- E · 练习模块：5 卡（桌面 2 列 / 手机 1 列） ---------- */
+.hm-modules {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: 1fr;
+  gap: 12px;
 }
-.hm-quick-item {
+.hm-module {
+  width: 100%;
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
-  padding: 14px 12px;
-  border-radius: 20px;
-  background: var(--hm-card);
-  border: 1px solid var(--hm-border);
-  -webkit-backdrop-filter: var(--glass-blur-card);
-  backdrop-filter: var(--glass-blur-card);
-  box-shadow: var(--hm-shadow-sm);
-  color: var(--ink);
+  gap: 12px;
+  padding: 16px;
+  box-sizing: border-box;
   text-align: left;
+  font: inherit;
+  color: var(--ink);
+  background: var(--hm-solid);
+  border: 1px solid var(--hm-line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--hm-shadow-sm);
   cursor: pointer;
   transition: transform 150ms var(--ease-out);
 }
-.hm-quick-item:active { transform: scale(.96); }
-.hm-qi {
+.hm-module:active { transform: scale(.99); }
+.hm-mod-ic {
+  flex: 0 0 auto;
   width: 44px;
   height: 44px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 14px;
+  background: var(--hm-mist);
   color: var(--hm-blue);
-  background: rgba(23, 105, 232, .10);
 }
-.hm-quick-item:nth-child(2) .hm-qi { background: rgba(23, 105, 232, .13); }
-.hm-quick-item:nth-child(3) .hm-qi { background: rgba(23, 105, 232, .08); }
-.hm-quick-item:nth-child(4) .hm-qi { background: rgba(23, 105, 232, .16); }
-.hm-qi .icon { display: inline-flex; }
-.hm-qi .icon svg { width: 24px; height: 24px; }
-.hm-qi .lbl:empty { display: none; }
-.hm-quick-item b { font-size: 14px; font-weight: 700; }
-.hm-qs {
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--muted);
-  font-weight: 600;
-}
-.hm-qi-go {
-  margin-top: auto;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: rgba(23, 105, 232, .10);
-  color: var(--hm-blue);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-/* ---------- 热门推荐：HOT 卡 ---------- */
-.hm-hot {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  padding: 18px 20px;
-  text-align: left;
-  border-radius: 24px;
-  background: var(--hm-hot-bg);
-  border: 1px solid var(--hm-border);
-  -webkit-backdrop-filter: var(--glass-blur-card);
-  backdrop-filter: var(--glass-blur-card);
-  box-shadow: var(--hm-shadow-sm);
-  color: var(--ink);
-  cursor: pointer;
-  transition: transform 150ms var(--ease-out);
-}
-.hm-hot:active { transform: scale(.99); }
-.hm-hot-main {
+.hm-mod-ic .icon { display: inline-flex; }
+.hm-mod-ic .icon svg { width: 24px; height: 24px; }
+.hm-mod-ic .lbl:empty { display: none; }
+.hm-mod-main {
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
+  gap: 2px;
 }
-.hm-hot-pill {
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: var(--hm-blue);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-.hm-hot-title { font-size: 17px; font-weight: 800; color: var(--ink); }
-.hm-hot-sub { font-size: 12.5px; color: var(--muted); }
-.hm-hot-art { flex: 0 0 auto; }
-.hm-hot-doc {
-  display: block;
-  width: 64px;
-  height: 84px;
-  transform: rotate(6deg);
-  padding: 8px 6px;
-  box-sizing: border-box;
-  border-radius: 8px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, .92), rgba(220, 235, 255, .70));
-  border: 1px solid rgba(255, 255, 255, .9);
-  box-shadow: 0 10px 24px -10px rgba(23, 105, 232, .40);
-}
-.hm-hot-doc b { color: var(--hm-blue); font-size: 11px; letter-spacing: .5px; }
-.hm-hot-doc i {
-  display: block;
-  height: 5px;
-  border-radius: 3px;
-  background: rgba(23, 105, 232, .25);
-  margin-top: 6px;
-}
-.hm-hot-go {
+.hm-mod-main b { font-size: 16px; font-weight: 800; color: var(--ink); }
+.hm-mod-meta { font-size: 12.5px; color: var(--muted); }
+.hm-mod-desc { font-size: 13px; color: var(--ink); }
+.hm-mod-prog { font-size: 13px; font-weight: 700; color: var(--hm-blue); }
+.hm-mod-next { font-size: 13px; color: var(--muted); }
+.hm-mod-go {
   flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--hm-blue);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
+  align-self: center;
+  color: var(--hm-blue);
+  font-size: 18px;
   font-weight: 700;
-  line-height: 1;
 }
 
-/* ---------- 信息弹窗：口语 / 通知的诚实空态 ---------- */
-.hm-dialog-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
+/* ---------- F · 最近练习 + 分数走势 ---------- */
+.hm-recent-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(10, 20, 40, .35);
+  flex-direction: column;
+  background: var(--hm-solid);
+  border: 1px solid var(--hm-line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--hm-shadow-sm);
 }
-.hm-dialog-backdrop[hidden] { display: none; }
-.hm-dialog {
-  width: 100%;
-  max-width: 320px;
-  padding: 22px 20px;
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 24px 60px -20px rgba(10, 20, 40, .45);
-  text-align: center;
+.hm-recent-list li {
+  padding: 12px 8px;
+  font-size: 14px;
+  color: var(--ink);
 }
-.hm-dialog h3 { margin: 0 0 8px; font-size: 17px; font-weight: 800; color: var(--ink); }
-.hm-dialog p { margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: var(--muted); }
-.hm-dialog button {
-  min-height: 44px;
-  padding: 0 24px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--hm-blue);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
+.hm-recent-list li + li { border-top: 1px solid var(--hm-line); }
+.hm-trend {
+  margin: 10px 0 0;
+  padding: 0 4px;
+  font-size: 13px;
+  color: var(--muted);
 }
 
 /* ---------- 焦点可见 ---------- */
 .hm-icon-btn:focus-visible,
-.hmc-cta:focus-visible,
-.hmc-arrow:focus-visible,
-.hmc-dot:focus-visible,
-.hmc-tap:focus-visible,
-.hm-prog-go:focus-visible,
-.hm-sec-more:focus-visible,
-.hm-recent-row:focus-visible,
-.hm-quick-item:focus-visible,
-.hm-hot:focus-visible,
-.hm-dialog button:focus-visible {
+.hm-hero-cta:focus-visible,
+.hm-goal-stepper button:focus-visible,
+.hm-module:focus-visible {
   outline: 2px solid var(--hm-blue);
   outline-offset: 2px;
 }
@@ -717,64 +526,62 @@
 /* ---------- 响应式 ---------- */
 @media (max-width: 600px) {
   .hm-brand-sub { font-size: 10px; }
-  .hm-quick { gap: 8px; }
-  .hm-quick-item { padding: 12px 10px; }
-  .hm-qi { width: 40px; height: 40px; }
-  .hmc-slide { width: 80%; padding: 20px 18px 48px; }
-  .hmc-art { flex-basis: 72px; height: 112px; }
+  .hm-hero { padding: 20px 18px; }
+  .hm-hero-art { flex-basis: 72px; height: 112px; }
   .hmc-doc { width: 60px; height: 90px; padding: 8px 6px; }
   .hmc-doc b { font-size: 11px; }
   .hmc-orbit { top: 20px; height: 84px; }
-  .hm-ring-wrap { width: 80px; height: 80px; }
-  .hm-ring-center b { font-size: 22px; }
-  .hm-prog { padding: 16px; gap: 12px; }
-  .hm-hot { padding: 16px; }
-  .hm-hot-doc { width: 54px; height: 72px; }
+  .hm-goal { padding: 16px; }
+  .hm-goal-ring-wrap { width: 80px; height: 80px; }
+  .hm-goal-ring-center b { font-size: 20px; }
+  .hm-goal-body { gap: 12px; }
+  .hm-overview { padding: 16px; }
+  .hm-module { padding: 14px 12px; }
 }
 @media (max-width: 380px) {
-  .hmc-slide { width: 80%; padding: 18px 16px 48px; }
+  .hm-hero { padding: 18px 16px; }
   .hm-brand-name { font-size: 24px; }
+}
+@media (min-width: 768px) {
+  .hm-modules { grid-template-columns: 1fr 1fr; }
 }
 @media (min-width: 901px) {
   .hm-page { gap: 18px; }
-  .hmc-title { font-size: 38px; }
-  .hmc-slide { padding: 28px 28px 48px; }
-  .hmc-art { flex-basis: 130px; height: 170px; }
+  .hm-hero-art { flex-basis: 130px; height: 170px; }
   .hmc-doc { width: 100px; height: 136px; padding: 12px 10px; }
   .hmc-doc b { font-size: 15px; }
   .hmc-orbit { top: 30px; height: 128px; }
   .hmc-orb { width: 18px; height: 18px; }
-  .hm-ring-wrap { width: 104px; height: 104px; }
-  .hm-ring-center b { font-size: 28px; }
-  .hm-quick { gap: 12px; }
-  .hm-quick-item { padding: 16px 14px; }
+  .hm-goal-ring-wrap { width: 104px; height: 104px; }
+  .hm-goal-ring-center b { font-size: 24px; }
 }
 
 /* ---------- 深色：只换卡面与渐变，文字沿用全站变量 ---------- */
 html[data-theme="dark"] #view-home {
   --hm-card: rgba(28, 30, 36, .55);
-  --hm-slide-bg: linear-gradient(165deg, rgba(38, 42, 54, .75) 0%, rgba(24, 30, 48, .75) 100%);
-  --hm-hot-bg: linear-gradient(120deg, rgba(38, 42, 54, .70) 0%, rgba(24, 30, 48, .70) 100%);
+  --hm-hero-bg: linear-gradient(165deg, rgba(38, 42, 54, .75) 0%, rgba(24, 30, 48, .75) 100%);
+  --hm-solid: #232733;
+  --hm-line: rgba(255, 255, 255, .14);
   --hm-border: rgba(255, 255, 255, .14);
   --hm-shadow: 0 18px 44px -18px rgba(0, 0, 0, .70);
   --hm-shadow-sm: 0 10px 26px -14px rgba(0, 0, 0, .70);
   background:
     linear-gradient(180deg, rgba(20, 24, 34, .92), rgba(16, 22, 38, .94) 52%, rgba(20, 24, 34, .92));
 }
-html[data-theme="dark"] .hm-dialog { background: #232733; }
+html[data-theme="dark"] .hmc-doc {
+  background: linear-gradient(160deg, rgba(38, 42, 54, .92), rgba(24, 30, 48, .70));
+  border-color: rgba(255, 255, 255, .14);
+}
+html[data-theme="dark"] .hm-mod-ic { background: rgba(23, 105, 232, .18); }
 
-/* ---------- 减动效：切换变瞬跳，3D 位置保留 ---------- */
+/* ---------- 减动效：轨道停转，过渡全关 ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .hmc-slide,
-  .hmc-bar .bar > i,
-  .hm-ring-fill,
-  .hm-prog-bar > i,
-  .hmc-dot i,
-  .hmc-cta,
-  .hm-prog-go,
-  .hm-recent-row,
-  .hm-quick-item,
-  .hm-hot { transition: none; }
+  .hmc-orbit { animation: none; }
+  .hm-hero-bar .bar > i,
+  .hm-goal-ring-fill,
+  .hm-mastery-bar > i,
+  .hm-hero-cta,
+  .hm-module { transition: none; }
 }
 
 /* ---------- 底栏浮动胶囊（仅移动端；网格与高度不动） ---------- */

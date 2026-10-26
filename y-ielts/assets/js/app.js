@@ -117,22 +117,6 @@
     return { view: '', reason: '' };
   }
 
-  /* v7：300ms 数字滚动（圆环百分比 + 首页整数统计共用；减动效偏好时直接写终值） */
-  function countUpNum(id, target, suffix) {
-    var n = document.getElementById(id);
-    if (!n) return;
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) { n.textContent = String(target) + (suffix || ''); return; }
-    var t0 = null;
-    var step = function (t) {
-      if (t0 === null) t0 = t;
-      var p = Math.min(1, (t - t0) / 300);
-      n.textContent = String(Math.round(target * p)) + (suffix || '');
-      if (p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }
-
   function refreshHomeContinue() {
     var btn = $('#homeContinue');
     if (!btn) return;
@@ -268,114 +252,144 @@
       }
     }
 
-    /* v24：首页今日学习“已完成练习”+ 最近练习行（只读既有交卷记录） */
-    var doneEl = document.getElementById('hmDone');
-    if (doneEl) doneEl.textContent = String(hist.length + Object.keys(lsub).length);
-    var fmtR = function (h) {
-      return (h && typeof h.band === 'number')
-        ? ('Band ' + h.band.toFixed(1) + ' · ' + fmtDT(h.at))
-        : '暂无交卷记录';
-    };
-    var rR = document.getElementById('hmRecentR');
-    if (rR) rR.textContent = fmtR(hist.length ? hist[0] : null);
-    var lbR = null, lbAtR = 0;
-    Object.keys(lsub).forEach(function (k) {
-      var r = lsub[k];
-      if (r && r.at > lbAtR) { lbAtR = r.at; lbR = r; }
-    });
-    var rL = document.getElementById('hmRecentL');
-    if (rL) rL.textContent = fmtR(lbR);
-
-    /* ---------- v18 0.2：今日概览条 ---------- */
-    countUpNum('ovDue', due);
-    set('ovDueHint', deck.length ? ('词库 ' + deck.length + ' 词') : '词库为空');
-
-    var rAt = (hist.length && hist[0].at) ? hist[0].at : 0;
-    var rBand = (hist.length && typeof hist[0].band === 'number') ? hist[0].band : null;
-    var lb = null, lbAt = 0;
-    Object.keys(lsub).forEach(function (k) {
-      var r = lsub[k];
-      if (r && r.at > lbAt) { lbAt = r.at; lb = (typeof r.band === 'number') ? r.band : null; }
-    });
-    var band = rBand, bandFrom = '阅读';
-    if (lb != null && lbAt >= rAt) { band = lb; bandFrom = '听力'; }
-    set('ovBand', band != null ? band.toFixed(1) : '—');
-    set('ovBandHint', band != null ? (bandFrom + ' · 最近一次') : '尚无交卷');
-
-    /* 连续学习天数：从今天往前推 vdaily */
-    var daily = Store.get('vdaily', {}) || {};
-    var streak = 0, dd = new Date();
+    /* ---------- Phase 3（v37）：首页 A–F 数据层（只读 Store；唯一写操作是目标步进，见启动绑定） ---------- */
+    /* 通用：本地日期键（与 vdaily 键格式一致） */
     var pp = function (n) { return (n < 10 ? '0' : '') + n; };
+    var dateKeyOf = function (ts) {
+      var d = new Date(ts);
+      return d.getFullYear() + '-' + pp(d.getMonth() + 1) + '-' + pp(d.getDate());
+    };
+    var todayKey = dateKeyOf(Date.now());
+    var daily = Store.get('vdaily', {}) || {};
+
+    /* 活动日期集合（交卷 at / 非空草稿 updatedAt / 有背词的 vdaily 键），供本周天数与最近动态用 */
+    var actDays = {};
+    var markDay = function (ts) { if (ts) actDays[dateKeyOf(ts)] = true; };
+    Object.keys(lsub).forEach(function (k) { var r = lsub[k]; if (r) markDay(r.at); });
+    hist.forEach(function (h) { if (h) markDay(h.at); });
+    Object.keys(drafts).forEach(function (k) {
+      var d = drafts[k];
+      var txt = typeof d === 'string' ? d : (d && typeof d.text === 'string' ? d.text : '');
+      if (txt.trim() && d && d.updatedAt) markDay(d.updatedAt);
+    });
+    Object.keys(daily).forEach(function (k) {
+      if (daily[k] && ((daily[k].new || 0) + (daily[k].review || 0) > 0)) actDays[k] = true;
+    });
+
+    /* C · 今日目标：交卷每套计 1；当日有非空草稿计 1；当日背词（new+review>0）计 1 */
+    var target = Store.get('dailyGoalTarget', 2);
+    target = (typeof target === 'number' && isFinite(target)) ? Math.max(1, Math.min(10, Math.round(target))) : 2;
+    var subToday = 0;
+    hist.forEach(function (h) { if (h && dateKeyOf(h.at) === todayKey) subToday++; });
+    Object.keys(lsub).forEach(function (k) { var r = lsub[k]; if (r && dateKeyOf(r.at) === todayKey) subToday++; });
+    var draftToday = 0;
+    Object.keys(drafts).forEach(function (k) {
+      var d = drafts[k];
+      var txt = typeof d === 'string' ? d : (d && typeof d.text === 'string' ? d.text : '');
+      if (txt.trim() && d && d.updatedAt && dateKeyOf(d.updatedAt) === todayKey) draftToday = 1;
+    });
+    var td0 = daily[todayKey] || { new: 0, review: 0 };
+    var vocabToday = ((td0.new || 0) + (td0.review || 0) > 0) ? 1 : 0;
+    var done = subToday + draftToday + vocabToday;
+    var firstUse = (hist.length === 0) && (Object.keys(lsub).length === 0) && (dN === 0) && (hN === 0) && (Object.keys(daily).length === 0);
+    set('hmGoalTarget', String(target));
+    var goalRing = document.getElementById('hmGoalRingFill');
+    if (goalRing) {
+      var circ = 402.1; /* 2π×64，与旧圆环同模 */
+      goalRing.style.strokeDasharray = String(circ);
+      var pct = target ? Math.min(100, Math.round(done / target * 100)) : 0;
+      var setGoalRing = function () { goalRing.style.strokeDashoffset = String(circ * (1 - pct / 100)); };
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) setGoalRing();
+      else requestAnimationFrame(function () { requestAnimationFrame(setGoalRing); });
+    }
+    set('hmGoalNum', done + '/' + target);
+    set('hmGoalText', firstUse
+      ? '今天还没有学习记录，交一次卷、存一篇草稿或背几个词都算完成 1 项。'
+      : (done >= target ? '今日目标已完成，明天继续。' : ('今日已完成 ' + done + ' / ' + target + ' 项。')));
+
+    /* D · 本周概览：周一起算；掌握条沿用旧圆环口径（Me 口径 right>=2 且 wrong===0），只换环为条 */
+    var dow = (new Date().getDay() + 6) % 7; /* 周一起算：周一=0 */
+    var ws = new Date(); ws.setDate(ws.getDate() - dow);
+    var weekStartKey = dateKeyOf(ws.getTime());
+    var weekDays = 0;
+    Object.keys(actDays).forEach(function (k) { if (k >= weekStartKey && k <= todayKey) weekDays++; });
+    set('hmWeekDays', String(weekDays));
+    /* 连续天数：vdaily 往前推（口径不变） */
+    var streak = 0, dd = new Date();
     for (;;) {
-      var k2 = dd.getFullYear() + '-' + pp(dd.getMonth() + 1) + '-' + pp(dd.getDate());
+      var k2 = dateKeyOf(dd.getTime());
       if (!daily[k2]) break;
       streak++;
       dd.setDate(dd.getDate() - 1);
     }
-    countUpNum('ovStreak', streak);
-    set('ovStreakHint', streak ? '保持住' : '今天还没开始');
-
-    /* ---------- v7：首页圆环 + 打卡点 + 下一步细分条（只读 Store，不写数据） ---------- */
-    /* 掌握口径与「我的」面板 renderStats 一致（right>=2 且 wrong===0），
-       与学习区单词行用的 !inWrong 口径不同——圆环取面板口径，特此说明。 */
+    set('hmStreak', String(streak));
+    set('hmDue', String(due));
     var masteredMe = deck.filter(function (d) { return d && d.right >= 2 && d.wrong === 0; }).length;
-    var ringPct = deck.length ? Math.round(masteredMe / deck.length * 100) : 0;
-    var ringEl = document.getElementById('homeRingFill');
-    if (ringEl) {
-      var circ = 402.1; /* 2π×64 */
-      ringEl.style.strokeDasharray = String(circ);
-      /* CSS 里先给满偏移（0%）；下一帧再写目标值，transition 才能画出入场弧 */
-      var setRing = function () { ringEl.style.strokeDashoffset = String(circ * (1 - ringPct / 100)); };
-      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) setRing();
-      else requestAnimationFrame(function () { requestAnimationFrame(setRing); });
-    }
-    countUpNum('homeRingNum', ringPct, '%');
-    /* v26：进步卡横条与环同口径（掌握率） */
-    var progBar = document.getElementById('hmProgBarFill');
-    if (progBar) progBar.style.width = ringPct + '%';
-    set('homeRingToGo', !deck.length
-      ? '词库还是空的，载入示例词表开始'
-      : (masteredMe >= deck.length ? '词库已全部掌握' : ('还差 ' + (deck.length - masteredMe) + ' 词掌握')));
+    set('hmMasteryText', deck.length ? ('掌握 ' + masteredMe + ' / 共 ' + deck.length) : '词库为空');
+    var mFill = document.getElementById('hmMasteryFill');
+    if (mFill) mFill.style.width = deck.length ? (Math.round(masteredMe / deck.length * 100) + '%') : '0%';
 
-    /* 近 7 天打卡点：左旧右新（今天在最右），只读 vdaily 键 */
-    var dotsEl = document.getElementById('homeStreakDots');
-    if (dotsEl) {
-      var dotsHtml = '';
-      for (var di = 6; di >= 0; di--) {
-        var dd2 = new Date();
-        dd2.setDate(dd2.getDate() - di);
-        var k3 = dd2.getFullYear() + '-' + pp(dd2.getMonth() + 1) + '-' + pp(dd2.getDate());
-        dotsHtml += '<i class="' + (daily[k3] ? 'on' : '') + '"></i>';
+    /* B · 最近一次（hero 行）：三源最新者（背词只有日期，显示 MM-DD） */
+    var latest = null; /* {t, text} */
+    var consider = function (t, text) { if (t && (!latest || t > latest.t)) latest = { t: t, text: text }; };
+    hist.forEach(function (h) { if (h && h.at) consider(h.at, '阅读交卷 · ' + fmtDT(h.at)); });
+    Object.keys(lsub).forEach(function (k) { var r = lsub[k]; if (r && r.at) consider(r.at, '听力交卷 · ' + fmtDT(r.at)); });
+    Object.keys(drafts).forEach(function (k) {
+      var d = drafts[k];
+      var txt = typeof d === 'string' ? d : (d && typeof d.text === 'string' ? d.text : '');
+      if (txt.trim() && d && d.updatedAt) consider(d.updatedAt, '写作草稿 · ' + fmtDT(d.updatedAt));
+    });
+    Object.keys(daily).forEach(function (k) {
+      if (daily[k] && ((daily[k].new || 0) + (daily[k].review || 0) > 0)) {
+        consider(new Date(k + 'T00:00:00').getTime(), '背词 · ' + k.slice(5));
       }
-      dotsEl.innerHTML = dotsHtml;
-    }
+    });
+    set('hmLatestLine', latest ? ('最近一次：' + latest.text) : '最近一次：还没有学习记录');
 
-    /* v23：首页进度卡今日行（与单词面板同口径：vdaily 当天 new/review） */
-    var todayLine = document.getElementById('hmTodayLine');
-    if (todayLine) {
-      var allD = Store.get('vdaily', {}) || {};
-      var dk = (function () {
-        var d = new Date();
-        var p2 = function (n) { return (n < 10 ? '0' : '') + n; };
-        return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
-      })();
-      var td = allD[dk] || { new: 0, review: 0 };
-      todayLine.textContent = '今日新学 ' + (td.new || 0) + ' 词 · 复习 ' + (td.review || 0) + ' 词';
-    }
+    /* E · 模块卡（复用本函数已算的 hist/lN/dN/hN/deck/due/mastered/eFav/eAll；mastered 取学习区口径） */
+    var hasR = false, hasL = false;
+    var rans = Store.get('ranswers', {}) || {};
+    Object.keys(rans).forEach(function (k) { var v = rans[k]; if (v && typeof v === 'object' && Object.keys(v).length > 0) hasR = true; });
+    var lans = Store.get('lanswers', {}) || {};
+    Object.keys(lans).forEach(function (k) { var v = lans[k]; if (v && typeof v === 'object' && Object.keys(v).length > 0) hasL = true; });
+    set('hmModReading', hist.length ? ('已交 ' + hist.length + '/4 套') : (hasR ? '进行中' : '已交 0/4 套'));
+    set('hmModReadingNext', hist.length >= 4 ? '四套都交了，专攻错得多的题型'
+      : (hist.length ? ('再交第 ' + (hist.length + 1) + ' 套') : (hasR ? '继续答题，答完交卷' : '做 Test 1，限时 60 分钟')));
+    set('hmModListening', lN ? ('已交 ' + lN + '/1 套') : (hasL ? '进行中' : '已交 0/1 套'));
+    set('hmModListeningNext', lN ? '重听没听清的句子' : (hasL ? '继续填空，填完交卷' : '听 Section 1，10 道填空'));
+    set('hmModWriting', dN ? ('草稿 ' + dN + ' 篇' + (hN ? ' · 历史 ' + hN + ' 条' : ''))
+      : (hN ? ('历史 ' + hN + ' 条') : '未开始'));
+    set('hmModWritingNext', dN ? '接着写草稿' : (hN ? '再写一篇 Task 2' : '写 Task 2，先列三段提纲'));
+    set('hmModVocab', deck.length ? ('掌握 ' + mastered + ' / 共 ' + deck.length + ' · 待复习 ' + due) : '未开始');
+    set('hmModVocabNext', deck.length ? (due ? ('复习 ' + due + ' 个到期词') : '新学 10 个') : '载入示例词表，先背 10 个');
+    set('hmModEssays', '收藏 ' + eFav + ' / ' + eAll + ' 篇');
+    set('hmModEssaysNext', eFav ? ('从收藏的 ' + eFav + ' 篇里挑一篇跟读') : '读一篇 Task 2，跟读三遍');
 
-    /* v26：进步卡今日行（与今日行同口径；空库时如实写空态，不编分母） */
-    var progToday = document.getElementById('hmProgToday');
-    if (progToday) {
-      var allD2 = Store.get('vdaily', {}) || {};
-      var d2 = new Date();
-      var p3 = function (n) { return (n < 10 ? '0' : '') + n; };
-      var dk2 = d2.getFullYear() + '-' + p3(d2.getMonth() + 1) + '-' + p3(d2.getDate());
-      var td2 = allD2[dk2] || { new: 0, review: 0 };
-      var t2 = (td2.new || 0) + (td2.review || 0);
-      progToday.textContent = deck.length
-        ? ('今日已学习 ' + t2 + ' / ' + deck.length + ' 词')
-        : '今日已学习 0 词 · 词库还是空的';
+    /* F · 最近练习（交卷 + 写作存档 + 背词日，按时间倒序 ≤5 条）与分数走势（仅 rhist；vtrend 为单词轮次非分数，不混入） */
+    var feed = [];
+    hist.forEach(function (h) {
+      if (h && h.at) feed.push({ t: h.at, text: '阅读 · ' + (typeof h.band === 'number' ? ('Band ' + h.band.toFixed(1)) : '已交卷') + ' · ' + fmtDT(h.at) });
+    });
+    Object.keys(lsub).forEach(function (k) {
+      var r = lsub[k];
+      if (r && r.at) feed.push({ t: r.at, text: '听力 · ' + (typeof r.band === 'number' ? ('Band ' + r.band.toFixed(1)) : '已交卷') + ' · ' + fmtDT(r.at) });
+    });
+    (Store.get('history', []) || []).forEach(function (w) {
+      if (w && w.createdAt) feed.push({ t: w.createdAt, text: '写作 · ' + (w.words || 0) + ' 词 · ' + fmtDT(w.createdAt) });
+    });
+    Object.keys(daily).forEach(function (k) {
+      var dv = daily[k] || {};
+      if ((dv.new || 0) + (dv.review || 0) > 0) feed.push({ t: new Date(k + 'T00:00:00').getTime(), text: '单词 · 新学 ' + (dv.new || 0) + ' · 复习 ' + (dv.review || 0) + ' · ' + k.slice(5) });
+    });
+    feed.sort(function (a, b) { return b.t - a.t; });
+    var rl = document.getElementById('hmRecentList');
+    if (rl) {
+      rl.innerHTML = feed.length ? feed.slice(0, 5).map(function (f) { return '<li>' + f.text + '</li>'; }).join('')
+        : '<li>还没有学习记录，交一次卷、存一篇草稿或背几个词，这里就会出现。</li>';
     }
+    var trend = hist.slice(0, 4).reverse().map(function (h) { return (typeof h.band === 'number') ? h.band.toFixed(1) : null; }).filter(function (b) { return b !== null; });
+    set('hmTrendLine', trend.length >= 2 ? ('阅读 Band 走势：' + trend.join(' → '))
+      : (trend.length === 1 ? ('阅读最新 Band ' + trend[0]) : '还没有交卷记录，交一套阅读就能在这里看到分数走势'));
 
     /* 下一步细分条：只有真实分母时才出现（阅读=交卷套数/4，写作=草稿字数/250；
        听力与未开始没有分母，不画装饰条） */
@@ -619,28 +633,6 @@
       var pick = pickContinue();
       switchView(pick.view || 'reading');
     });
-    /* v26：首页信息弹窗（口语 / 通知的诚实空态，非路由）+ 搜索进范文 */
-    var infoDlg = document.getElementById('hmInfoDlg');
-    var infoTitle = document.getElementById('hmInfoTitle');
-    var infoBody = document.getElementById('hmInfoBody');
-    function showInfo(t, b) {
-      if (!infoDlg) return;
-      if (infoTitle) infoTitle.textContent = t;
-      if (infoBody) infoBody.textContent = b;
-      infoDlg.hidden = false;
-    }
-    function hideInfo() { if (infoDlg) infoDlg.hidden = true; }
-    $$('.hm-info-open').forEach(function (b) {
-      b.addEventListener('click', function () {
-        showInfo(b.getAttribute('data-info-title') || '', b.getAttribute('data-info-body') || '');
-      });
-    });
-    var infoClose = document.getElementById('hmInfoClose');
-    if (infoClose) infoClose.addEventListener('click', hideInfo);
-    if (infoDlg) infoDlg.addEventListener('click', function (e) { if (e.target === infoDlg) hideInfo(); });
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && infoDlg && !infoDlg.hidden) hideInfo();
-    });
     var hmSearchBtn = document.getElementById('hmSearchBtn');
     if (hmSearchBtn) hmSearchBtn.addEventListener('click', function () {
       switchView('essays');
@@ -649,6 +641,17 @@
         if (s) s.focus();
       }, 50);
     });
+    /* Phase 3（v37）：今日目标步进（新键 dailyGoalTarget，只增不迁移，老数据默认 2；1–10 夹紧） */
+    var goalAdj = function (d) {
+      var cur = Store.get('dailyGoalTarget', 2);
+      cur = (typeof cur === 'number' && isFinite(cur)) ? Math.max(1, Math.min(10, Math.round(cur))) : 2;
+      Store.set('dailyGoalTarget', Math.max(1, Math.min(10, cur + d)));
+      refreshHomeStats();
+    };
+    var gMinus = document.getElementById('hmGoalMinus');
+    if (gMinus) gMinus.addEventListener('click', function () { goalAdj(-1); });
+    var gPlus = document.getElementById('hmGoalPlus');
+    if (gPlus) gPlus.addEventListener('click', function () { goalAdj(1); });
     refreshHomeContinue();
 
     // 首屏：v15 0.1 起默认落起始页；v17 0.6 起 hash 直达对应模块

@@ -98,8 +98,7 @@
      · 分技能正确率：阅读 = 最新 rhist got/total；听力 = 最新 lsubmitted
        got/total（按 at 取最新）；写作不评分，只列草稿篇数与历史条数；
        单词 = 掌握口径（right>=2 且 wrong===0 / 词库总数，与 renderStats 一致）。
-     · 连续学习：与首页 ovStreak 同口径（从今天往前推 vdaily），7 点条
-       左旧右新、今天在最右，与首页打卡点同一渲染。 */
+     · 连续学习：与首页连续天数同口径（从今天往前推 vdaily）。 */
   function fmtMD(ts) {
     var d = new Date(ts);
     return (d.getMonth() + 1) + '/' + d.getDate();
