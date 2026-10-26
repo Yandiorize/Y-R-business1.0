@@ -613,7 +613,7 @@
       <section class="me-sec" id="meAbout">
         <h4 class="me-sec-t">关于</h4>
         <p class="me-about-p"><b>Y-IELTS</b> 是 Yan-di 出品的雅思机考备考工具，覆盖阅读、听力、写作、单词、范文五大模块；所有练习记录与设置只保存在本机浏览器，无需登录，可离线使用。</p>
-        <p class="me-about-p"><b>版本</b>：v18 · 2026-10-24 · 本地存储键 <code>ielts.cbt.v1</code></p>
+        <p class="me-about-p"><b>版本</b>：v40 · 2026-10-26 · 本地存储键 <code>ielts.cbt.v1</code></p>
         <p class="me-about-p"><b>题源说明</b>：当前内置《剑桥雅思 17》Test 1 一套完整题目（阅读 / 听力 / 写作 Task 1&2）；剑 18、剑 19 为扫描版、无文字层，暂无法自动抽题入库，后续获取文字版后补充。</p>
         <p class="me-about-p"><b>本地存储</b>：练习记录、词库、主题、字号等均保存在浏览器 localStorage；清空浏览器数据前请先在此导出备份。</p>
       </section>
@@ -622,6 +622,8 @@
       <section class="me-sec" id="meChangelog">
         <h4 class="me-sec-t">更新日志</h4>
         <ul class="me-log">
+          <li><b>v40</b><span>2026-10-26</span><p>清理：删除未被引用的旧样式文件；About 版本校正；单词掌握口径文案统一为“不在错词本”。</p></li>
+          <li><b>v39</b><span>2026-10-26</span><p>Clear Glass 2.0 设计系统基础：页面底改冷调近白蓝，主色改科技蓝（文字与按钮取深档保对比度），首页主视觉加内侧高光；深色不动。</p></li>
           <li><b>super.5</b><span>2026-10-24</span><p>学习区改为翻转行：左边两行（模块名 + 题数时长 / 下一步整句，手机上也不再隐藏），右边只留一个状态 chip 和箭头；没开始的模块不再画空进度条；留言区补齐表单标签、空内容提示、提交中与写入失败可重试、删除与清空的二次确认，没有留言时给空态和「写第一条」，示例内容单独标注且不计入条数。</p></li>
           <li><b>super.4</b><span>2026-10-24</span><p>首页与学习区分开：首页只留概览、继续练习与「进入学习区」，五个模块收进独立学习区页；新增独立留言区（本地保存、无需登录，示例内容明确标注）；底栏改为 首页 / 学习 / 留言 / 我的；首页日期药丸从源码删除。</p></li>
           <li><b>super.3</b><span>2026-10-24</span><p>首页结构重做：五张高卡改为五行紧凑模块行（图标 / 名称 + 时长题数难度 / 一句介绍 / 进度条 + 下一步 / 箭头），概览、继续练习、五模块一屏纵深排列；1194×834 下整页 835px，不再有大片空白。</p></li>
@@ -1053,7 +1055,7 @@
               <div class="ring-txt"><b id="masterTxt">0%</b><span>已掌握</span></div>
             </div>
             <p class="hint" style="margin-top:10px;text-align:center">
-              掌握进度 <b id="masterCnt">0 / 0</b> 词（答对 2 次以上且无错记为已掌握）
+              掌握进度 <b id="masterCnt">0 / 0</b> 词（答对 2 次以上且不在错词本记为已掌握）
             </p>
             <div class="trend">
               <div class="trend-head"><span>近 8 轮正确率</span><b id="trendLast">—</b></div>
