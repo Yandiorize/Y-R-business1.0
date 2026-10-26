@@ -1,5 +1,5 @@
 /* =============================================================
- *  Y-IELTS · 留言区（独立页 · 本地留言，无登录、无后端）
+ *  Y-IELTS · 学习笔记（独立页 · 本地保存，无登录、无后端）
  *  ---------------------------------------------------------------
  *  · 数据只存 localStorage 的 comments 键（仍在 ielts.cbt.v1 里）
  *  · 不发网络请求，不上传任何内容
@@ -77,8 +77,8 @@
     el.send.disabled = !!busy;
     el.send.setAttribute('aria-busy', busy ? 'true' : 'false');
     var lbl = el.send.querySelector('.lbl');
-    if (lbl) lbl.textContent = busy ? '发布中…' : '发布留言';
-    else el.send.textContent = busy ? '发布中…' : '发布留言';
+    if (lbl) lbl.textContent = busy ? '保存中…' : '保存笔记';
+    else el.send.textContent = busy ? '保存中…' : '保存笔记';
   }
 
   /* 话题 chip 同步（发帖选择器 + 列表筛选器共用一套状态写法） */
@@ -135,14 +135,14 @@
           '<span class="cm-time">' + fmtAt(c.at) + '</span>' +
           '<button class="cm-reply" type="button" data-reply="' + esc(c.id) + '">回复</button>' +
           '<button class="cm-del" type="button" data-del="' + esc(c.id) + '"' +
-            ' title="删除这条留言" aria-label="删除这条留言">✕</button>' +
+            ' title="删除这条笔记" aria-label="删除这条笔记">✕</button>' +
         '</div>' +
         '<p class="cm-body">' + esc(c.text).replace(/\n/g, '<br>') + '</p>' +
       '</li>';
     }).join('');
 
     var n = rows.length;
-    if (el.count) el.count.textContent = n + ' 条留言';
+    if (el.count) el.count.textContent = n + ' 条笔记';
     if (el.empty) el.empty.hidden = n > 0;
     if (el.clear) el.clear.hidden = n === 0;
     /* 筛选命中 0 条但板上还有留言时，给一句说明，不动总数与空态 */
@@ -164,11 +164,11 @@
       var next = load().filter(function (c) { return String(c.id) !== String(id); });
       save(next);
       render();
-      toast('已删除' + (who ? '「' + who + '」的留言' : ''), 1600);
+      toast('已删除' + (who ? '「' + who + '」的笔记' : ''), 1600);
     };
     if (window.UI && UI.Confirm) {
-      UI.Confirm({ title: '删除这条留言', text: '删掉后不能恢复。', ok: '删除' }, fn);
-    } else if (window.confirm('删除这条留言？')) {
+      UI.Confirm({ title: '删除这条笔记', text: '删掉后不能恢复。', ok: '删除' }, fn);
+    } else if (window.confirm('删除这条笔记？')) {
       fn(true);
     }
   }
@@ -179,15 +179,15 @@
       if (!yes) return;
       Store.set(KEY, []);
       render();
-      toast('已清空 ' + n + ' 条留言', 1600);
+      toast('已清空 ' + n + ' 条笔记', 1600);
     };
     if (window.UI && UI.Confirm) {
       UI.Confirm({
-        title: '清空全部留言',
-        text: '这台设备上的 ' + n + ' 条留言会全部删掉，不能恢复。',
+        title: '清空全部笔记',
+        text: '这台设备上的 ' + n + ' 条笔记会全部删掉，不能恢复。',
         ok: '全部清空'
       }, fn);
-    } else if (window.confirm('清空全部 ' + n + ' 条留言？')) {
+    } else if (window.confirm('清空全部 ' + n + ' 条笔记？')) {
       fn(true);
     }
   }
@@ -223,7 +223,7 @@
       if (!ok) {
         save(prev);                       /* 回滚，别让列表出现存不住的留言 */
         setSend(false);
-        showErr('本机存储写不进去（可能已满或被浏览器禁用）。删几条旧留言再试，内容没丢。');
+        showErr('本机存储写不进去（可能已满或被浏览器禁用）。删几条旧笔记再试，内容没丢。');
         return;
       }
       if (el.text) el.text.value = '';

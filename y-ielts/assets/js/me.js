@@ -399,6 +399,10 @@
     bindVocab();
     bindData();
     bindTarget();
+    /* v30：启动直达 #me 时首渲染——boot 的 switchView 在 me.js 绑定监听前
+       就已派发 lastView 的 ielts:store 事件，首渲染不能依赖该事件；
+       init 末尾直接 renderAll 一次，与 open() 同口径（只读 Store）。 */
+    renderAll();
   }
 
   window.Me = {

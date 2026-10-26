@@ -67,7 +67,7 @@
   }
 
   /* v15 0.1：模块中文名（起始页「继续练习」用） */
-  var VIEW_NAMES = { learn: '学习区', comments: '留言区', reading: '阅读', listening: '听力', writing: '写作', vocab: '单词', essays: '范文' };
+  var VIEW_NAMES = { learn: '学习区', comments: '学习笔记', reading: '阅读', listening: '听力', writing: '写作', vocab: '单词', essays: '范文' };
   /* v17 0.6：模块入口即独立页面——每个模块一个 hash 路由（#reading 等），
      首页为 #home；范文详情 #essay/<id> 由 essays.js 自行管理，不进本表。
      pushState 不触发 hashchange，模块切换不会惊动范文子路由。 */
@@ -430,6 +430,10 @@
     }
     /* v18 0.2：每次回到首页都重算五卡进度（交卷/导入/收藏等变更即时反映） */
     if (target === 'home') refreshHomeStats();
+    /* v30：学习区与首页共用 refreshHomeStats 渲染（ln 卡片行）——此前只在
+       启动与回首页时刷新，直切学习区（页签直达/hash/前进后退）会显示旧状态；
+       切到学习区也重算一次，数据变化即时反映。 */
+    if (target === 'learn') refreshHomeStats();
 
     // 视图显示后再校准分段控件滑块（隐藏时量不到宽度）
     requestAnimationFrame(function () {

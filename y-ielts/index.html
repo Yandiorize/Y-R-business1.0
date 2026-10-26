@@ -381,16 +381,16 @@
   </section>
 
   <!-- =========================================================
-       VIEW 0.6 · COMMENTS（留言区：独立页，本地留言，无需登录）
+       VIEW 0.6 · COMMENTS（学习笔记：独立页，本地保存，无需登录）
        ========================================================= -->
   <section class="view" id="view-comments">
     <p class="page-brand">Y-IELTS</p>
     <header class="learn-head">
       <div class="learn-t">
-        <h2>留言区</h2>
-        <p>记下今天做了什么、哪道题卡住、想加什么功能。先存在这台设备上——以后接上共享墙，这里就是大家的贴吧。</p>
+        <h2>学习笔记</h2>
+        <p>记下今天做了什么、哪道题卡住、想加什么功能。只存在这台设备上，是你自己的学习笔记。</p>
       </div>
-      <div class="learn-meta" id="cmCount">0 条留言</div>
+      <div class="learn-meta" id="cmCount">0 条笔记</div>
     </header>
 
     <form class="cm-form" id="cmForm" autocomplete="off" novalidate>
@@ -400,12 +400,12 @@
                maxlength="20" placeholder="不填就显示「匿名」">
       </div>
       <div class="cm-field">
-        <label class="cm-label" for="cmText">留言内容</label>
+        <label class="cm-label" for="cmText">笔记内容</label>
         <textarea class="cm-text" id="cmText" name="cmText" rows="3" maxlength="500"
                   aria-required="true" aria-describedby="cmHint cmErr"
                   placeholder="比如：阅读 Test 2 的 Q27 总是错，有没有定位技巧？"></textarea>
       </div>
-      <!-- v7：话题标签（只给本机留言分类，不接后端、不代表已共享） -->
+      <!-- v7：话题标签（只给本机笔记分类，不接后端、不代表已共享） -->
       <div class="cm-field">
         <span class="cm-label" id="cmTagLabel">话题</span>
         <div class="cm-tags" id="cmTagPicker" role="group" aria-labelledby="cmTagLabel">
@@ -420,12 +420,12 @@
       <p class="cm-err" id="cmErr" role="alert" hidden></p>
       <div class="cm-bar">
         <span class="cm-hint" id="cmHint">只存本机，不上传 · 还能写 <b id="cmLeft">500</b> 字</span>
-        <button class="btn btn-primary cm-send" id="cmSend" type="submit" data-icon="check">发布留言</button>
+        <button class="btn btn-primary cm-send" id="cmSend" type="submit" data-icon="check">保存笔记</button>
       </div>
     </form>
 
     <!-- v7：话题筛选（只筛本机列表，不改条数统计） -->
-    <div class="cm-filter" id="cmFilter" role="group" aria-label="按话题筛选留言">
+    <div class="cm-filter" id="cmFilter" role="group" aria-label="按话题筛选笔记">
       <span class="cm-filter-label">看哪个话题</span>
       <button class="cm-tag is-on" type="button" data-filter="全部" aria-pressed="true">全部</button>
       <button class="cm-tag" type="button" data-filter="阅读" aria-pressed="false">阅读</button>
@@ -437,19 +437,19 @@
     </div>
 
     <ul class="cm-list" id="cmList" aria-live="polite"></ul>
-    <p class="cm-nomatch" id="cmNomatch" hidden>这个话题下还没有留言，写第一条吧。</p>
+    <p class="cm-nomatch" id="cmNomatch" hidden>这个话题下还没有笔记，写第一条吧。</p>
 
     <div class="cm-empty" id="cmEmpty">
-      <p class="cm-empty-t">还没有留言。写下第一条，下次打开还在。</p>
+      <p class="cm-empty-t">还没有笔记。写下第一条，下次打开还在。</p>
       <div class="cm-empty-demo">
         <span class="cm-badge">示例</span>
-        <p>示例留言：阅读 Test 2 的 Q27 总是错，求定位技巧。</p>
+        <p>示例笔记：阅读 Test 2 的 Q27 总是错，求定位技巧。</p>
       </div>
       <button class="cm-first" id="cmFirst" type="button">写第一条</button>
     </div>
 
     <p class="cm-foot">
-      <span>留言只在这台设备的浏览器里，换设备看不到。</span>
+      <span>笔记只在这台设备的浏览器里，换设备看不到。</span>
       <button class="cm-clear" id="cmClear" type="button" hidden>清空全部</button>
     </p>
   </section>
@@ -1249,7 +1249,7 @@
     <span class="tabbar-ind" id="tabbarInd" aria-hidden="true"></span>
     <button class="tabbar-btn is-active" data-view="home" data-icon="home"><span>首页</span></button>
     <button class="tabbar-btn" data-view="learn" data-icon="cards"><span>学习</span></button>
-    <button class="tabbar-btn" data-view="comments" data-icon="edit"><span>留言</span></button>
+    <button class="tabbar-btn" data-view="comments" data-icon="edit"><span>学习笔记</span></button>
     <button class="tabbar-btn" data-view="me" data-icon="user"><span>我的</span></button>
   </div>
 </nav>
