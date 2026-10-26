@@ -92,9 +92,11 @@
 
     /* 没有交卷：看有没有真的做了一半的进度 */
     var drafts = Store.get('drafts', {}) || {};
+    /* Phase 3：草稿存为对象 {text, updatedAt}，按非空文本判断；
+       旧的字符串判断对对象草稿永不命中，致使「继续写作」无法触发。 */
     var draftKey = Object.keys(drafts).filter(function (k) {
       var d = drafts[k];
-      return d && typeof d === 'string' && d.trim();
+      return d && typeof d === 'object' && typeof d.text === 'string' && d.text.trim();
     })[0];
     if (draftKey) return { view: 'writing', reason: '写作草稿还没写完' };
 

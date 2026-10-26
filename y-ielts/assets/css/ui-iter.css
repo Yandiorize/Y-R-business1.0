@@ -269,7 +269,7 @@ html[data-theme="dark"] .dp-box {
 }
 
 /* ---------- v7-2 Apple 按键语言（样式与层级，不改文案与功能） ----------
-   主按钮：实心填充（蓝色 #0071e3 + 白字，两档通用，对比 4.70:1 AA）；
+   主按钮：实心填充（蓝色 #1769E8 + 白字，两档通用，对比 4.98:1 AA）；
    次按钮：描边/幽灵（透明底 + 可见描边，无玻璃底）；
    圆角：全站 .btn 家族本来就是 pill，本版确认并守住，不另起半径；
    触靶：.btn 家族与段控/底栏/图标钮桌面端也提到 44px（与移动端已有规则一致）。
@@ -286,10 +286,10 @@ html[data-theme="dark"] .dp-box {
 .btn-lg { min-height: 48px; padding: 14px 28px; }
 .seg-btn, .tabbar-btn, .icon-btn { min-height: 44px; }
 .btn-primary {
-  background: #0071e3;
+  background: #1769E8;
   border-color: transparent;
   color: #ffffff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 8px 22px rgba(0, 113, 227, .35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 8px 22px rgba(23, 105, 232, .35);
 }
 .btn-primary:hover {
   background: #0066d6;
@@ -486,8 +486,8 @@ html[data-theme="dark"] .dp-box {
  *  布局/功能一字不动）
  *  ---------------------------------------------------------------
  *  映射（证据与数值见 VERSIONS.md v9 节）：
- *  · 旧暖色强调变量 → --lg-accent 系（浅 #0071e3 / 深 #0a84ff 图形色；
- *    主按钮两档 #0071e3 + 白字，对比 4.70:1 AA）；
+ *  · 旧暖色强调变量 → --lg-accent 系（浅 #1769E8 / 深 #0a84ff 图形色；
+ *    主按钮两档 #1769E8 + 白字，对比 4.98:1 AA）；
  *  · 首页顶部柔光：暖色 → 冷色微渐变（浅柔和蓝灰 wash，见
  *    --home-glow；深档低饱和蓝灰微光，下方深档规则）；
  *  · 关键数字本来就是墨色（圆环中心 var(--ink)、统计数字继承），
@@ -555,12 +555,12 @@ html[data-theme="dark"] {
 .drawer-panel .hist-item { background: transparent; }
 .me-panel .me-font-btns button { background: transparent; }
 .me-font-btns button.is-active {
-  background: #0071e3;
+  background: #1769E8;
   border-color: transparent;
   color: #fff;
 }
 html[data-theme="dark"] .me-font-btns button.is-active {
-  background: #0071e3;
+  background: #1769E8;
   border-color: transparent;
   color: #fff;
 }

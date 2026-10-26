@@ -26,20 +26,14 @@
   --lg-highlight: inset 0 1px 0 rgba(255, 255, 255, .55);
   --lg-shadow: 0 8px 32px rgba(0, 0, 0, .12);
 
-  --lg-accent: #0071e3;
+  --lg-accent: #1769E8;
   --lg-accent-2: #8ec5ff;
   --lg-accent-deep: #004a80;
-  --lg-accent-rgb: 0, 113, 227;
+  --lg-accent-rgb: 23, 105, 232;
   --lg-accent-2-rgb: 142, 197, 255;
 
   --lg-blur: blur(26px) saturate(190%);
   --lg-blur-soft: blur(14px) saturate(160%);
-
-  /* 同心圆角：外层 28 = 内层 20 + 8 间距 */
-  --r-xl: 28px;
-  --r-lg: 20px;
-  --r-md: 14px;
-  --r-sm: 10px;
 
   /* macOS 原生字体栈：SF Pro + 苹方 */
   --font-sans: -apple-system, "SF Pro Text", "PingFang SC", "Helvetica Neue",
