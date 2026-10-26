@@ -765,6 +765,12 @@ select option { background: var(--bg-b); color: var(--ink); }
 }
 .r-split .pane-body { padding: 22px 26px; }
 
+/* v32：阅读文章栏实底——审查要求玻璃只在考试条/题目栏/工具按钮，文章栏不半透明；
+   保留 glass 类的边框与圆角，只覆盖背景为实色并关闭模糊；题目栏不动。
+   实色取值自项目既有降透明度配色（浅色 #ffffff / 深色 #1c1e22），非新造色。 */
+#view-reading .r-split .pane.apane { background: #ffffff; -webkit-backdrop-filter: none; backdrop-filter: none; }
+html[data-theme="dark"] #view-reading .r-split .pane.apane { background: #1c1e22; }
+
 .article { font-size: 15.5px; line-height: 1.95; color: var(--ink-2); }
 .article h3 {
   font-size: var(--fs-lg); margin: 26px 0 10px; color: var(--ink);
