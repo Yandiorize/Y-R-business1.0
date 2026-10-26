@@ -1038,6 +1038,12 @@ window.Reading = (function () {
   function reportHtml() {
     var s = score();
     var sub = subs[cur.id] || {};
+    /* v31：显式错题数——答对/答错/未答三态之和 = 总题数（与行 class ok/bad/blank 同口径）。 */
+    var nWrong = 0, nBlank = 0;
+    s.rows.forEach(function (r) {
+      if (r.ok) return;
+      if (r.mine) nWrong++; else nBlank++;
+    });
     var used = timer.started() ? Math.round(timer.total() - timer.remaining()) : null;
     /* 近期交卷记录（每条带 Band） */
     var hist = Store.get('rhist', []);
@@ -1090,7 +1096,7 @@ window.Reading = (function () {
         '<b class="rpt-score">' + s.got + ' <i>/ ' + s.total + '</i></b>' +
         '<span class="rpt-band">预估 Band <b>' + bandOf(s.got).toFixed(1) + '</b>' +
           '<em>按剑桥官方换算表预估，仅供参考</em></span>' +
-        '<span class="muted">答对 ' + s.got + ' 题 · 正确率 ' +
+        '<span class="muted">答对 ' + s.got + ' 题 · 答错 ' + nWrong + ' 题 · 未答 ' + nBlank + ' 题 · 正确率 ' +
           (s.total ? Math.round((s.got / s.total) * 100) : 0) + '%' +
           (used != null ? ' · 用时 ' + fmtClock(used) : '') +
           (sub.at ? ' · 交卷于 ' + fmtDate(sub.at) : '') + '</span>' +
@@ -1102,6 +1108,11 @@ window.Reading = (function () {
         Math.min(12, getHist().length) + ' 次</div>' + trendChart() + '</div>' +
       typesHead +
       '<div class="rpt-types">' + types + '</div>' +
+      '<div class="rpt-filter" style="margin:12px 0 4px">' +
+        '<button type="button" class="btn btn-sm" id="rWrongOnly" aria-pressed="false"' +
+          ((nWrong + nBlank) === 0 ? ' disabled title="本套全对，没有错题"' : '') +
+          '>只看错题</button>' +
+      '</div>' +
       '<div class="rpt-scroll"><table class="rpt-table">' +
         '<thead><tr><th>题号</th><th>我的答案</th><th>正确答案</th><th>对错</th></tr></thead>' +
         '<tbody>' + rows + '</tbody></table></div>' +
@@ -1133,6 +1144,19 @@ window.Reading = (function () {
     if (lr) lr.addEventListener('click', retry);
     var r = $('#rRetry', el.qs);
     if (r) r.addEventListener('click', retry);
+    /* v31：只看错题开关——默认全量题序；开启后仅显示错题与未答行（行 class bad/blank），
+       答对行（ok）隐藏；关闭恢复全量。定位仍按题号，不动行序数据。 */
+    var wo = $('#rWrongOnly', el.qs);
+    if (wo && !wo.disabled) {
+      wo.addEventListener('click', function () {
+        var on = wo.getAttribute('aria-pressed') !== 'true';
+        wo.setAttribute('aria-pressed', on ? 'true' : 'false');
+        wo.textContent = on ? '显示全部' : '只看错题';
+        $$('tr', el.qs).forEach(function (tr) {
+          if (tr.classList.contains('ok')) tr.style.display = on ? 'none' : '';
+        });
+      });
+    }
     $$('tr[data-locate]', el.qs).forEach(function (tr) {
       tr.addEventListener('click', function () {
         jumpLocate(parseInt(tr.getAttribute('data-locate'), 10));
