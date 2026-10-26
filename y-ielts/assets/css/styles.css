@@ -767,6 +767,9 @@ select option { background: var(--bg-b); color: var(--ink); }
    实色取值自项目既有降透明度配色（浅色 #ffffff / 深色 #1c1e22），非新造色。 */
 #view-reading .r-split .pane.apane { background: #ffffff; -webkit-backdrop-filter: none; backdrop-filter: none; }
 html[data-theme="dark"] #view-reading .r-split .pane.apane { background: #1c1e22; }
+/* v42：写作作答区与范文长文本区同规则加硬实底（长文本/编辑区实底不再依赖玻璃度滑杆）；题目栏与问题区不动。 */
+#view-writing .pane.ans-pane, #view-essay-detail .ed-pane.e-pane { background: #ffffff; -webkit-backdrop-filter: none; backdrop-filter: none; }
+html[data-theme="dark"] #view-writing .pane.ans-pane, html[data-theme="dark"] #view-essay-detail .ed-pane.e-pane { background: #1c1e22; }
 
 .article { font-size: 15.5px; line-height: 1.95; color: var(--ink-2); }
 .article h3 {
