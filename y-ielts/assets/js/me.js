@@ -62,9 +62,24 @@
     var pct = deck.length ? Math.round((mastered / deck.length) * 100) : 0;
     var due = deck.filter(function (d) { return d.m && d.due && d.due <= Date.now(); }).length;
     var wrong = deck.filter(function (d) { return d.inWrong; }).length;
-    var band = (hist.length && typeof hist[0].band === 'number') ? hist[0].band.toFixed(1) : '—';
+    /* v29：总览口径与仪表盘/首页统一——交卷次数 = 阅读 + 听力，
+       最新 Band = 两科最近一次中较晚者（与 renderDashboard 的 hero 同口径）。 */
+    var lsub = Store.get('lsubmitted', {}) || {};
+    var lCount = 0, lHero = null, lk;
+    for (lk in lsub) {
+      if (!lsub.hasOwnProperty(lk)) continue;
+      var le = lsub[lk];
+      if (le && typeof le.at === 'number') {
+        lCount++;
+        if (typeof le.band === 'number' && (!lHero || le.at > lHero.at)) lHero = le;
+      }
+    }
+    var rHero = (hist.length && typeof hist[0].band === 'number') ? hist[0] : null;
+    var hero = rHero;
+    if (lHero && (!hero || lHero.at > hero.at)) hero = lHero;
+    var band = hero ? hero.band.toFixed(1) : '—';
 
-    setText('#meSubmits', hist.length);
+    setText('#meSubmits', hist.length + lCount);
     setText('#meBand', band);
     setText('#meWords', deck.length);
     setText('#meMaster', pct + '%');
@@ -77,9 +92,9 @@
   /* ---------------- v13：学习仪表盘（Band.pk 式本地仪表盘；只读既有数据） ----------------
      · Band：取阅读与听力最近一次交卷中时间较晚者的 Band（两者都存 Band；
        只取其一时 meta 写明科目，不混成“总 Band”）；无记录时 '—' + 空态文案。
-     · 目标：站内没有任何目标分数记录（无目标设定功能、无目标存储键），
-       故目标行如实写“未设”，不编造数字；目标功能若要加，需新功能 +
-       新存储键，另起一版，不在本版偷偷加。
+     · 目标（v29）：目标 Band 下拉可设（未设/4.0–9.0，步进 0.5），存新键
+       targetBand；进度按最新 Band 与目标算差值；无目标或无成绩时不画
+       进度条，不编造。
      · 分技能正确率：阅读 = 最新 rhist got/total；听力 = 最新 lsubmitted
        got/total（按 at 取最新）；写作不评分，只列草稿篇数与历史条数；
        单词 = 掌握口径（right>=2 且 wrong===0 / 词库总数，与 renderStats 一致）。
@@ -105,6 +120,51 @@
     }
     row += '<span class="me-dash-val">' + text + '</span></div>';
     return row;
+  }
+
+  /* v29：目标 Band 进度——只按最新 Band（renderDashboard 的 hero）与目标算差值；
+     无目标或无成绩时只给文案、不画进度条；下拉值与存储键双向一致（程序设值
+     不触发 change 事件，不会循环）。 */
+  function renderTarget(heroBand) {
+    var sel = document.getElementById('meTargetSel');
+    var prog = document.getElementById('meTargetProg');
+    var bar = document.getElementById('meTargetBar');
+    var fill = document.getElementById('meTargetFill');
+    if (!sel || !prog) return;
+    var stored = Store.get('targetBand', '');
+    var target = parseFloat(stored);
+    var targetOk = !isNaN(target);
+    var val = targetOk ? target.toFixed(1) : '';
+    if (sel.value !== val) sel.value = val;
+    if (!targetOk) {
+      prog.textContent = '先定一个目标，交卷后开始算进度';
+      if (bar) bar.hidden = true;
+      return;
+    }
+    if (typeof heroBand !== 'number') {
+      prog.textContent = '暂无成绩，交卷后开始计算进度';
+      if (bar) bar.hidden = true;
+      return;
+    }
+    if (heroBand >= target) {
+      prog.textContent = '已达到目标 Band ' + target.toFixed(1);
+    } else {
+      prog.textContent = '最新 ' + heroBand.toFixed(1) + ' · 距目标还差 ' + (target - heroBand).toFixed(1);
+    }
+    if (bar) {
+      bar.hidden = false;
+      if (fill) fill.style.width = Math.min(100, (heroBand / target) * 100) + '%';
+    }
+  }
+
+  function bindTarget() {
+    var sel = document.getElementById('meTargetSel');
+    if (!sel) return;
+    sel.addEventListener('change', function () {
+      Store.set('targetBand', sel.value);
+      /* Store.set 已广播 ielts:store，本页可见时 renderAll 会重算，
+         这里不直接调 renderDashboard，避免与广播重复渲染。 */
+    });
   }
 
   function renderDashboard() {
@@ -172,7 +232,13 @@
     rows += dashSkillRow('听力',
       lLatest ? (numOf(lLatest.got) + '/' + numOf(lLatest.total) + ' · ' + pctOf(numOf(lLatest.got), numOf(lLatest.total)) + '%') : '暂无记录',
       lLatest ? pctOf(numOf(lLatest.got), numOf(lLatest.total)) : 0, !!lLatest);
-    var draftN = Object.keys(drafts).length;
+    /* v29：草稿只计正文非空者（与学习区同口径；清空后残留的空文本键不再计入）。 */
+    var draftN = 0;
+    Object.keys(drafts).forEach(function (k) {
+      var d = drafts[k];
+      var txt = typeof d === 'string' ? d : (d && typeof d.text === 'string' ? d.text : '');
+      if (txt.trim()) draftN++;
+    });
     rows += dashSkillRow('写作',
       (draftN || wHist.length) ? ('不评分 · 草稿 ' + draftN + ' 篇 / 历史 ' + wHist.length + ' 条') : '不评分 · 暂无草稿与历史',
       0, false);
@@ -205,6 +271,7 @@
       }
       dotsEl.innerHTML = dotsHtml;
     }
+    renderTarget(hero ? hero.band : null);
   }
 
   /* ---------------- ③ 成绩趋势（复用阅读模块渲染，真图真点） ---------------- */
@@ -331,6 +398,7 @@
     bindFont();
     bindVocab();
     bindData();
+    bindTarget();
   }
 
   window.Me = {

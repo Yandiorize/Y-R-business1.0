@@ -108,6 +108,7 @@
 <link rel="stylesheet" href="assets/css/ui-iter.css">
 <link rel="stylesheet" href="assets/css/home-v23.css">
     <link rel="stylesheet" href="assets/css/learn-v27.css">
+    <link rel="stylesheet" href="assets/css/me-v29.css">
 </head>
 <body data-view="home">
 
@@ -479,8 +480,8 @@
         </div>
       </section>
 
-      <!-- v13：学习仪表盘（Band.pk 式本地仪表盘；只读既有 ielts.cbt.v1 数据，
-           不新增存储键；站内无目标分数记录，目标行如实写“未设”，不编造数字；
+      <!-- v13：学习仪表盘（Band.pk 式本地仪表盘；只读既有 ielts.cbt.v1 数据；
+           v29：目标 Band 下拉可设，存新键 targetBand，进度按最新 Band 与目标算差值；
            写作不评分，只列草稿与历史数；无记录时各行给空态文案，不画假数据） -->
       <section class="me-sec">
         <h4 class="me-sec-t">学习仪表盘</h4>
@@ -490,13 +491,31 @@
             <span>最新 Band</span>
             <em id="meDashBandMeta">暂无记录，交卷后自动记录</em>
           </div>
-          <p class="me-dash-target" id="meDashTarget">目标 Band：未设</p>
-          <div class="me-dash-skills" id="meDashSkills"></div>
+          <div class="me-dash-target" id="meTargetBox">
+            <label for="meTargetSel">目标 Band</label>
+            <select id="meTargetSel" aria-label="目标 Band">
+              <option value="">未设</option>
+              <option value="4.0">4.0</option>
+              <option value="4.5">4.5</option>
+              <option value="5.0">5.0</option>
+              <option value="5.5">5.5</option>
+              <option value="6.0">6.0</option>
+              <option value="6.5">6.5</option>
+              <option value="7.0">7.0</option>
+              <option value="7.5">7.5</option>
+              <option value="8.0">8.0</option>
+              <option value="8.5">8.5</option>
+              <option value="9.0">9.0</option>
+            </select>
+            <p class="me-target-prog" id="meTargetProg">先定一个目标，交卷后开始算进度</p>
+            <div class="me-target-bar" id="meTargetBar" hidden><i id="meTargetFill"></i></div>
+          </div>
           <div class="me-dash-streak">
             <b id="meDashStreak">0</b><span>连续学习（天）</span>
             <i class="me-dash-hint" id="meDashStreakHint">今天还没开始</i>
             <span class="ov-dots" id="meDashDots" aria-hidden="true"></span>
           </div>
+          <p class="me-dash-note">Band 按答对题数换算；听力仅 Section 1，分数为折算预估，仅供参考。</p>
         </div>
       </section>
 
@@ -504,6 +523,13 @@
       <section class="me-sec">
         <h4 class="me-sec-t">成绩趋势</h4>
         <div class="me-trend" id="meTrendBody"></div>
+      </section>
+
+      <!-- v29：分模块记录（原仪表盘内 meDashSkills 移出归位；成绩趋势之后、
+           词库之前，符合三层结构：总览 → 趋势/分模块 → 词库 → 设置 → 数据/关于） -->
+      <section class="me-sec">
+        <h4 class="me-sec-t">分模块记录</h4>
+        <div class="me-dash-skills" id="meDashSkills"></div>
       </section>
 
       <!-- ④ 我的词库 -->

@@ -63,6 +63,9 @@
  *  v28 修复：v27 学习区替换时漏了 </section>，致其后全部视图被
  *             嵌套隐藏（模块页空白）；仅补 index.html 一行闭合，
  *             仅加注释触发 SW 更新。
+ *  v29 我的：index.html（目标下拉 + 分模块记录归位）/ me-v29.css
+ *             （新文件，已加入清单）/ me.js（总览口径统一、草稿非空计、
+ *             目标进度）；meDashTarget 旧行已移除，无 JS 引用残留。
  * ============================================================ */
 'use strict';
 
@@ -84,6 +87,7 @@ var CORE = [
   './assets/css/ui-iter.css',
   './assets/css/home-v23.css',
   './assets/css/learn-v27.css',
+  './assets/css/me-v29.css',
   './assets/css/liquid-glass-v50.css',
   './assets/css/liquid-glass-v52.css',
   './assets/css/liquid-glass-v55.css',
