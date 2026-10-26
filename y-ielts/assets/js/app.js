@@ -327,6 +327,9 @@
       else requestAnimationFrame(function () { requestAnimationFrame(setRing); });
     }
     countUpNum('homeRingNum', ringPct, '%');
+    /* v26：进步卡横条与环同口径（掌握率） */
+    var progBar = document.getElementById('hmProgBarFill');
+    if (progBar) progBar.style.width = ringPct + '%';
     set('homeRingToGo', !deck.length
       ? '词库还是空的，载入示例词表开始'
       : (masteredMe >= deck.length ? '词库已全部掌握' : ('还差 ' + (deck.length - masteredMe) + ' 词掌握')));
@@ -355,6 +358,20 @@
       })();
       var td = allD[dk] || { new: 0, review: 0 };
       todayLine.textContent = '今日新学 ' + (td.new || 0) + ' 词 · 复习 ' + (td.review || 0) + ' 词';
+    }
+
+    /* v26：进步卡今日行（与今日行同口径；空库时如实写空态，不编分母） */
+    var progToday = document.getElementById('hmProgToday');
+    if (progToday) {
+      var allD2 = Store.get('vdaily', {}) || {};
+      var d2 = new Date();
+      var p3 = function (n) { return (n < 10 ? '0' : '') + n; };
+      var dk2 = d2.getFullYear() + '-' + p3(d2.getMonth() + 1) + '-' + p3(d2.getDate());
+      var td2 = allD2[dk2] || { new: 0, review: 0 };
+      var t2 = (td2.new || 0) + (td2.review || 0);
+      progToday.textContent = deck.length
+        ? ('今日已学习 ' + t2 + ' / ' + deck.length + ' 词')
+        : '今日已学习 0 词 · 词库还是空的';
     }
 
     /* 下一步细分条：只有真实分母时才出现（阅读=交卷套数/4，写作=草稿字数/250；
@@ -593,6 +610,36 @@
     if (homeProgressGo) homeProgressGo.addEventListener('click', function () {
       var pick = pickContinue();
       switchView(pick.view || 'reading');
+    });
+    /* v26：首页信息弹窗（口语 / 通知的诚实空态，非路由）+ 搜索进范文 */
+    var infoDlg = document.getElementById('hmInfoDlg');
+    var infoTitle = document.getElementById('hmInfoTitle');
+    var infoBody = document.getElementById('hmInfoBody');
+    function showInfo(t, b) {
+      if (!infoDlg) return;
+      if (infoTitle) infoTitle.textContent = t;
+      if (infoBody) infoBody.textContent = b;
+      infoDlg.hidden = false;
+    }
+    function hideInfo() { if (infoDlg) infoDlg.hidden = true; }
+    $$('.hm-info-open').forEach(function (b) {
+      b.addEventListener('click', function () {
+        showInfo(b.getAttribute('data-info-title') || '', b.getAttribute('data-info-body') || '');
+      });
+    });
+    var infoClose = document.getElementById('hmInfoClose');
+    if (infoClose) infoClose.addEventListener('click', hideInfo);
+    if (infoDlg) infoDlg.addEventListener('click', function (e) { if (e.target === infoDlg) hideInfo(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && infoDlg && !infoDlg.hidden) hideInfo();
+    });
+    var hmSearchBtn = document.getElementById('hmSearchBtn');
+    if (hmSearchBtn) hmSearchBtn.addEventListener('click', function () {
+      switchView('essays');
+      setTimeout(function () {
+        var s = document.getElementById('esSearch');
+        if (s) s.focus();
+      }, 50);
     });
     refreshHomeContinue();
 
