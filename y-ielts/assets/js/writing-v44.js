@@ -417,7 +417,17 @@ window.Writing = (function () {
       if (!yes) return;
       el.editor.value = '';
       updateWordCount();
-      flushDraft();
+      /* v41：清空后不再留空草稿 + 说实话——此前 flushDraft 会存 {text:'', updatedAt}
+         并把保存态写成“草稿已同步”/“上次保存 刚刚”，与空编辑器矛盾；
+         现删掉该题草稿键，保存态与时间戳回到无草稿文案 */
+      if (cur) {
+        var drafts = Store.get('drafts', {});
+        delete drafts[cur.id];
+        Store.set('drafts', drafts);
+      }
+      el.saveState.classList.remove('is-saving');
+      el.saveState.textContent = '暂无草稿';
+      el.draftTime.textContent = '尚未保存过草稿';
       toast('已清空作答区');
     });
   }

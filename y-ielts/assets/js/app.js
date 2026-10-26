@@ -198,7 +198,10 @@
       var txt = typeof d === 'string' ? d : (d && typeof d.text === 'string' ? d.text : '');
       if (txt.trim()) {
         dN++;
-        if (txt.trim().length > maxDraft) maxDraft = txt.trim().length;
+        /* v41：与编辑器同口径——按词计（window.countWords），不再按字符计；
+           此前卡片“还差 N 字”与编辑器“还差 N 词”对不上（15 字/3 词草稿：卡片 235 字 vs 编辑器 247 词） */
+        var w = (typeof countWords === 'function') ? countWords(txt) : 0;
+        if (w > maxDraft) maxDraft = w;
       }
     });
     var hN = (Store.get('history', []) || []).length;
@@ -206,7 +209,7 @@
     if (dN) {
       chip('lcWriting', '草稿 ' + dN + ' 篇');
       nextLine('lnWriting', maxDraft < 250
-        ? ('接着写，这篇还差 ' + (250 - maxDraft) + ' 字')
+        ? ('接着写，这篇还差 ' + (250 - maxDraft) + ' 词')
         : '通读一遍，检查 Task 2 的两处论证');
       meter('lmWriting', wPct, Math.round(wPct) + '%');
     } else if (hN) {
