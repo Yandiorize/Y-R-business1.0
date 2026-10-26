@@ -206,6 +206,19 @@ window.Listening = (function () {
       $$('input', el.qs).forEach(function (n) { n.disabled = true; });
       var r = $('#lRetry', el.qs);
       if (r) r.addEventListener('click', retry);
+      /* v33：成绩表行点击定位到原文该句（与阅读 data-locate 同款属性与
+         悬停样式；交卷后字幕已全显，只高亮 + 滚动，不写任何状态）。 */
+      $$('tr[data-locate]', el.qs).forEach(function (tr) {
+        tr.addEventListener('click', function () {
+          var i = parseInt(tr.getAttribute('data-locate'), 10);
+          if (isNaN(i)) return;
+          highlightSeg(i);
+          var node = el.transcript && el.transcript.querySelector('.l-seg[data-i="' + i + '"]');
+          if (!node) return;
+          try { node.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+          catch (e) { if (node.scrollIntoView) node.scrollIntoView(); }
+        });
+      });
     }
     renderProg();
   }
@@ -673,7 +686,9 @@ window.Listening = (function () {
     var s = score();
     var band = bandOf(s.got, s.total);
     var rows = s.rows.map(function (r) {
-      return '<tr class="' + (r.ok ? 'ok' : (r.mine ? 'bad' : 'blank')) + '">' +
+      var loc = (cur.loc || {})[r.no];
+      var locAttr = loc != null ? ' data-locate="' + loc + '" title="点击定位到原文该句"' : '';
+      return '<tr class="' + (r.ok ? 'ok' : (r.mine ? 'bad' : 'blank')) + '"' + locAttr + '>' +
         '<td class="c-no">' + r.no + '</td>' +
         '<td class="c-mine">' + (r.mine ? esc(r.mine) : '<span class="muted">未作答</span>') + '</td>' +
         '<td class="c-right">' + esc(r.right) + '</td>' +
