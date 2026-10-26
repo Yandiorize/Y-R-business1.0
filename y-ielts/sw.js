@@ -48,6 +48,10 @@
  *  v23 首页重做：新增 home-v23.css 预缓存条目（新文件，必须进清单）+
  *             注释触发 SW 更新（其余 v23 改动 index.html / app.js
  *             均已在清单里，无需新增条目）。
+ *  v24 首页全套重做：新增 home-carousel.js 预缓存条目（新文件，
+ *             必须进清单）+ 注释触发 SW 更新（其余 v24 改动
+ *             index.html / home-v23.css / app.js 均已在清单里，
+ *             home-v23.css 文件名沿用，内容已是 v24 规则）。
  * ============================================================ */
 'use strict';
 
@@ -93,6 +97,7 @@ var CORE = [
   './assets/js/listening.js',
   './assets/js/exam-shell.js',
   './assets/js/learn-carousel.js',
+  './assets/js/home-carousel.js',
   './assets/js/tabbar-indicator.js',
   './assets/js/app.js?v=51',
   './assets/js/comments.js?v=51',

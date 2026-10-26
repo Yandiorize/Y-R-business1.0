@@ -150,89 +150,105 @@
   </div>
 
   <!-- =========================================================
-       VIEW 0 · 首页（v23 蓝白液态玻璃重做）
+       VIEW 0 · 首页（v24：按 ChatGPT 分享最终方案全套重做）
        ---------------------------------------------------------
-       · 品牌栏（左上 Y-IELTS + 副标题，紧凑）→ 主视觉 hero 单卡
-         （项目无多组轮播内容，不虚构轮播；CTA 沿用 homeContinue /
-         pickContinue 动态逻辑：继续某模块或开始练习）
-       · 学习进度横卡：环（词库掌握度）+ 今日待复习 / 今日新学·复习 /
-         最近 Band / 连续天数，全部读既有 Store（deck / vdaily /
-         rhist / lsubmitted），无数据如实空态，不编数字
-       · 快速入口：5 个真实模块（阅读/听力/写作/单词/范文），
-         data-view 直连既有路由；热门推荐唯一卡：剑 17 全真模拟 → 阅读
-       · 旧 .home-hero / .home-next-card / .home-ring-card /
-         .home-overview / .home-jump 结构随本版移除；JS 仍用原 id，
-         口径一字不动（ovBandHint / ovStreakHint 两处提示文案随
-         卡片简化不再上首页，数字本身保留，详情仍在「我的」页）
+       · 品牌栏（左上 Y-IELTS + YOUR IELTS STUDY SPACE）
+       · 主轮播（3 张真实内容，轻微 3D 旋转，无自动播放）：
+         ① 继续练习（pickContinue 动态）② 今日学习（已完成/待复习/
+         最近 Band/连续天数/今日新学·复习）③ 词库掌握（环 + 去背单词）
+       · 最近练习（阅读/听力最近一次真实交卷，无记录如实空态）
+       · 快速开始：4 项（阅读/听力/写作/单词；范文在学习区）
+       · 最终方案主动收窄：热门推荐卡随本版移除（方案原文：不另设
+         热门横幅）；搜索/铃铛不设（方案原文：仅在真实支持时保留，
+         本站无此功能）；口语不进首页（本站无口语模块）
+       · JS 仍用原 id（ovDueHint / ovStreakHint / homeProgressGo 随
+         v23 卡片移除而不再上首页，set() 与 if 守卫均已处理，不抛）
        ========================================================= -->
   <section class="view is-active" id="view-home">
     <div class="hm-page">
       <!-- 品牌栏：左上 Y-IELTS -->
       <header class="hm-brand">
         <span class="hm-brand-name">Y-IELTS</span>
-        <span class="hm-brand-sub">ACADEMIC · CBT SIMULATOR · 数据只存本机浏览器</span>
+        <span class="hm-brand-sub">YOUR IELTS STUDY SPACE</span>
       </header>
 
-      <!-- 主视觉：单张 hero 卡（不虚构轮播） -->
-      <section class="hm-hero" aria-label="开始练习">
-        <div class="hm-hero-doc" aria-hidden="true"><i>Y-IELTS</i><b></b><b></b><b></b></div>
-        <div class="hm-hero-main">
-          <span class="hm-hero-pill">Y-IELTS</span>
-          <h1 class="hm-hero-title">开启你的<br>雅思高分之旅</h1>
-          <p class="hm-hero-sub">剑桥真题 · 机考模拟 · 本地出分</p>
-          <button class="hm-hero-cta" id="homeContinue" type="button" data-icon="play">
-            <span class="lbl">开始练习</span>
-          </button>
-          <p class="hm-hero-hint" id="homeContinueHint" aria-live="polite"></p>
-          <div class="hm-hero-bar" id="homeNextBar" hidden>
-            <div class="bar"><i id="homeNextFill"></i></div>
-            <em id="homeNextBarLabel"></em>
+      <!-- 主轮播：3 张真实内容，轻微 3D 旋转，无自动播放 -->
+      <section class="hmc" aria-label="首页主轮播">
+        <div class="hmc-viewport" id="hmCarViewport">
+          <div class="hmc-track">
+            <article class="hmc-slide">
+              <p class="hmc-kicker">继续你的备考之旅</p>
+              <h1 class="hmc-title">今天，从一步开始。</h1>
+              <p class="hmc-tags">阅读 · 听力 · 写作 · 词汇</p>
+              <button class="hmc-cta" id="homeContinue" type="button">
+                <span class="lbl">开始练习</span>
+              </button>
+              <p class="hmc-hint" id="homeContinueHint" aria-live="polite"></p>
+              <div class="hmc-bar" id="homeNextBar" hidden>
+                <div class="bar"><i id="homeNextFill"></i></div>
+                <em id="homeNextBarLabel"></em>
+              </div>
+              <button class="hmc-tap" type="button" data-index="0" aria-label="切换到第 1 张：继续练习"></button>
+            </article>
+            <article class="hmc-slide">
+              <h2 class="hmc-slide-title">今日学习</h2>
+              <div class="hmc-stats">
+                <div class="hmc-stat"><b id="hmDone">0</b><span>已完成练习</span></div>
+                <div class="hmc-stat"><b id="ovDue">0</b><span>待复习词</span></div>
+                <div class="hmc-stat"><b id="ovBand">—</b><span>最近 Band</span></div>
+                <div class="hmc-stat"><b id="ovStreak">0</b><span>连续学习（天）</span></div>
+              </div>
+              <p class="hmc-today" id="hmTodayLine">今日新学 0 词 · 复习 0 词</p>
+              <span class="hmc-dots" id="homeStreakDots" aria-hidden="true"></span>
+              <button class="hmc-tap" type="button" data-index="1" aria-label="切换到第 2 张：今日学习"></button>
+            </article>
+            <article class="hmc-slide">
+              <div class="hmc-ring-row">
+                <div class="hm-ring-wrap">
+                  <svg class="hm-ring" viewBox="0 0 160 160" aria-hidden="true">
+                    <circle class="hm-ring-track" cx="80" cy="80" r="64"></circle>
+                    <circle class="hm-ring-fill" id="homeRingFill" cx="80" cy="80" r="64"></circle>
+                  </svg>
+                  <div class="hm-ring-center"><b id="homeRingNum">0%</b><span>词库掌握度</span></div>
+                </div>
+                <div class="hmc-ring-info">
+                  <h2 class="hmc-slide-title">词库掌握</h2>
+                  <p class="hmc-togo" id="homeRingToGo">词库还是空的，载入示例词表开始</p>
+                  <button class="hm-go hmc-mini-go" type="button" data-view="vocab">去背单词</button>
+                </div>
+              </div>
+              <button class="hmc-tap" type="button" data-index="2" aria-label="切换到第 3 张：词库掌握"></button>
+            </article>
           </div>
+          <button class="hmc-arrow hmc-prev" type="button" aria-label="上一张">‹</button>
+          <button class="hmc-arrow hmc-next" type="button" aria-label="下一张">›</button>
+          <span class="hmc-count" id="hmCarCount" aria-live="polite">01 / 03</span>
+        </div>
+        <div class="hmc-dots" role="group" aria-label="选择轮播卡片">
+          <button class="hmc-dot" type="button" data-index="0" aria-label="第 1 张"><i></i></button>
+          <button class="hmc-dot" type="button" data-index="1" aria-label="第 2 张"><i></i></button>
+          <button class="hmc-dot" type="button" data-index="2" aria-label="第 3 张"><i></i></button>
         </div>
       </section>
 
-      <!-- 学习进度横卡：全部真实数据 -->
-      <section class="hm-prog" aria-label="我的学习进度">
-        <div class="hm-prog-ring">
-          <div class="hm-ring-wrap">
-            <svg class="hm-ring" viewBox="0 0 160 160" aria-hidden="true">
-              <circle class="hm-ring-track" cx="80" cy="80" r="64"></circle>
-              <circle class="hm-ring-fill" id="homeRingFill" cx="80" cy="80" r="64"></circle>
-            </svg>
-            <div class="hm-ring-center"><b id="homeRingNum">0%</b><span>词库掌握度</span></div>
-          </div>
-          <p class="hm-ring-togo" id="homeRingToGo">词库还是空的，载入示例词表开始</p>
-        </div>
-        <div class="hm-prog-info">
-          <h2 class="hm-prog-title">我的学习进度</h2>
-          <p class="hm-prog-line"><span>今日待复习 <b id="ovDue">0</b> 词</span><span class="hm-dot-sep">·</span><span id="ovDueHint">词库为空</span></p>
-          <p class="hm-prog-line" id="hmTodayLine">今日新学 0 词 · 复习 0 词</p>
-          <p class="hm-prog-line"><span>最近 Band <b id="ovBand">—</b></span><span class="hm-dot-sep">·</span><span>连续 <b id="ovStreak">0</b> 天</span><span class="hm-dots" id="homeStreakDots" aria-hidden="true"></span></p>
-          <button class="hm-prog-go" id="homeProgressGo" type="button">继续学习</button>
+      <!-- 最近练习：真实交卷记录，无记录如实空态 -->
+      <section class="hm-sec" aria-label="最近练习">
+        <h2 class="hm-sec-title">最近练习</h2>
+        <div class="hm-recent">
+          <button class="hm-go hm-recent-row" type="button" data-view="reading"><span class="hm-recent-name">阅读</span><span class="hm-recent-val" id="hmRecentR">暂无交卷记录</span><span class="hm-recent-go" aria-hidden="true">›</span></button>
+          <button class="hm-go hm-recent-row" type="button" data-view="listening"><span class="hm-recent-name">听力</span><span class="hm-recent-val" id="hmRecentL">暂无交卷记录</span><span class="hm-recent-go" aria-hidden="true">›</span></button>
         </div>
       </section>
 
-      <!-- 快速入口：5 个真实模块 -->
-      <section class="hm-sec" aria-label="快速入口">
-        <h2 class="hm-sec-title">快速入口</h2>
+      <!-- 快速开始：4 项（最终方案收窄，范文在学习区） -->
+      <section class="hm-sec" aria-label="快速开始">
+        <h2 class="hm-sec-title">快速开始</h2>
         <div class="hm-quick">
           <button class="hm-go hm-quick-item" type="button" data-view="reading"><span class="hm-qi" data-icon="book"></span><b>阅读</b><span class="hm-qs">剑 17 Test 1–4</span></button>
           <button class="hm-go hm-quick-item" type="button" data-view="listening"><span class="hm-qi" data-icon="volume"></span><b>听力</b><span class="hm-qs">Section 1 · 10 题</span></button>
           <button class="hm-go hm-quick-item" type="button" data-view="writing"><span class="hm-qi" data-icon="pen"></span><b>写作</b><span class="hm-qs">Task 1 / 2 · 计时</span></button>
           <button class="hm-go hm-quick-item" type="button" data-view="vocab"><span class="hm-qi" data-icon="cards"></span><b>单词</b><span class="hm-qs">50 词示例</span></button>
-          <button class="hm-go hm-quick-item" type="button" data-view="essays"><span class="hm-qi" data-icon="edit"></span><b>范文</b><span class="hm-qs">24 篇</span></button>
         </div>
-      </section>
-
-      <!-- 热门推荐：唯一真实主打 -->
-      <section class="hm-sec" aria-label="热门推荐">
-        <h2 class="hm-sec-title">热门推荐</h2>
-        <button class="hm-go hm-feat" type="button" data-view="reading">
-          <span class="hm-feat-hot">HOT</span>
-          <span class="hm-feat-t">剑桥 17 全真模拟考试</span>
-          <span class="hm-feat-s">Test 1–4 · 40 题 · 60 分钟 · 机考双栏</span>
-          <span class="hm-feat-go" aria-hidden="true">›</span>
-        </button>
       </section>
     </div>
   </section>
@@ -1261,6 +1277,7 @@
 <script src="assets/js/glass-v33.js"></script>
 <script src="assets/js/exam-shell.js"></script>
 <script src="assets/js/learn-carousel.js"></script>
+<script src="assets/js/home-carousel.js"></script>
 <script src="assets/js/app.js?v=51"></script>
 <!-- v16：「我的」抽屉（依赖 App/Vocab/Reading 导出面，必须放在 app.js 之后） -->
 <script src="assets/js/comments.js?v=51"></script>

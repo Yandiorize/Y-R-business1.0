@@ -265,6 +265,24 @@
       }
     }
 
+    /* v24：首页今日学习“已完成练习”+ 最近练习行（只读既有交卷记录） */
+    var doneEl = document.getElementById('hmDone');
+    if (doneEl) doneEl.textContent = String(hist.length + Object.keys(lsub).length);
+    var fmtR = function (h) {
+      return (h && typeof h.band === 'number')
+        ? ('Band ' + h.band.toFixed(1) + ' · ' + fmtDT(h.at))
+        : '暂无交卷记录';
+    };
+    var rR = document.getElementById('hmRecentR');
+    if (rR) rR.textContent = fmtR(hist.length ? hist[0] : null);
+    var lbR = null, lbAtR = 0;
+    Object.keys(lsub).forEach(function (k) {
+      var r = lsub[k];
+      if (r && r.at > lbAtR) { lbAtR = r.at; lbR = r; }
+    });
+    var rL = document.getElementById('hmRecentL');
+    if (rL) rL.textContent = fmtR(lbR);
+
     /* ---------- v18 0.2：今日概览条 ---------- */
     countUpNum('ovDue', due);
     set('ovDueHint', deck.length ? ('词库 ' + deck.length + ' 词') : '词库为空');
