@@ -431,7 +431,8 @@
       refreshHomeContinue();
     }
     /* v18 0.2：每次回到首页都重算五卡进度（交卷/导入/收藏等变更即时反映） */
-    if (target === 'home') refreshHomeStats();
+    /* v36：同理重算继续按钮——此前回首页只刷五卡不刷 CTA，写作存草稿后直接回首页仍显示旧按钮，需重载或再离首页一次才翻转（v35 实机验证 19:16 发现；与 v30 学习区同款刷新遗漏）。 */
+    if (target === 'home') { refreshHomeStats(); refreshHomeContinue(); }
     /* v30：学习区与首页共用 refreshHomeStats 渲染（ln 卡片行）——此前只在
        启动与回首页时刷新，直切学习区（页签直达/hash/前进后退）会显示旧状态；
        切到学习区也重算一次，数据变化即时反映。 */
