@@ -118,6 +118,7 @@ window.Vocab = (function () {
   }
   /* 喇叭状态文字（P-3：必须有可见文字，不许只用颜色变化表示状态） */
   var spkStatusEl = null, spkStatusTimer = null, lastSpkWord = '';
+  var lastSpkKind = '';  /* v22：失败 pill 重试的目标种类：'word' | 'sentence' */
   /* v15：朗读代际号——每次发起朗读 +1，旧 utterance 的迟到回调
    * （onstart/onend/onerror/看门狗）代际不符即整条忽略，避免：
    * ① 旧朗读被 cancel 的回调把新朗读的「播放中」pill 擦掉；
@@ -169,6 +170,13 @@ window.Vocab = (function () {
     spkStatus('');
     if (!silent) toast('已停止朗读', 1200);
   }
+  /* v22：失败 pill 重试——按上次朗读的种类分派。旧代码固定调 speakWord，
+     例句失败时小条实际重读的是上一个单词，例句按钮仍显示失败。 */
+  function retryLastSpk() {
+    if (!lastSpkWord) return;
+    if (lastSpkKind === 'sentence') speakSentence(lastSpkWord);
+    else speakWord(lastSpkWord);
+  }
   function spkStatus(state, msg) {
     if (!spkStatusEl) spkStatusEl = document.getElementById('spkStatus');
     if (!spkStatusEl) return;
@@ -180,22 +188,10 @@ window.Vocab = (function () {
       spkStatusEl.innerHTML = '🔊 播放中… <b>点此停止</b>';
       spkStatusEl.classList.add('is-playing', 'show');
       spkStatusEl.setAttribute('title', '点击停止朗读');
-      /* P2-3：明确的停止控制（状态条本身可点即停） */
-      spkStatusEl.onclick = function (e) {
-        e.preventDefault(); e.stopPropagation();
-        spkStopNow(null);
-      };
-      /* v21：键盘可达——喇叭键重按是“忽略 + 刷新 pill”（v15 P2-3 防连点），
-         停止只能点 pill；只用键盘的用户此前无法停止。pill 不是原生按钮
-         （Enter 不会触发 click），故补 keydown：播放态 Enter/Space 即停；
-         role="status" 不变，不新增实况区。 */
+      /* v22：点击/键盘统一由 init 里的一次性 listener 按态分派（播放中=停止），
+         此处不再挂 onclick/onkeydown（P2-3 的“状态条本身可点即停”与 v21 的键盘
+         可达均由统一入口承载；role="status" 不变，不新增实况区）。 */
       spkStatusEl.tabIndex = 0;
-      spkStatusEl.onkeydown = function (e) {
-        if (e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 || e.keyCode === 32) {
-          e.preventDefault();
-          spkStopNow(null);
-        }
-      };
     } else if (state === 'fail') {
       /* v18：失败原因写进 pill 本身（单通道播报；markFail 不再另发 toast，
          否则同一失败会被 toastWrap 与 pill 两个 role="status" 区域各播报一次）。
@@ -205,23 +201,11 @@ window.Vocab = (function () {
       else if (msg) failText = msg;
       spkStatusEl.innerHTML = '⚠️ ' + failText;
       spkStatusEl.classList.add('is-fail', 'show');
-      /* v21：失败 pill 不再是停止键——播放态残留的 onclick 会先弹
-         「已停止朗读」，再被 900ms 停后冷却挡掉第一次重试点击；
-         失败态的点击语义是重试（init 里绑的 listener），故清掉 onclick，
-         鼠标重试第一次即生效。键盘：Enter/Space 同样重试（状态感知，
-         不走共享 click listener 的双触发路径）。 */
-      spkStatusEl.onclick = null;
+      /* v22：失败态点击/键盘统一由 init 里的一次性 listener 按态分派（失败=重试），
+         此处不再挂 onclick/onkeydown（v21 的“清掉 onclick”思路被统一入口取代）。 */
       spkStatusEl.tabIndex = 0;
-      spkStatusEl.onkeydown = function (e) {
-        if (e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 || e.keyCode === 32) {
-          e.preventDefault();
-          if (lastSpkWord) speakWord(lastSpkWord);
-        }
-      };
     } else {
       spkStatusEl.innerHTML = '';
-      spkStatusEl.onclick = null;
-      spkStatusEl.onkeydown = null;
       spkStatusEl.tabIndex = -1;
       spkStatusEl.removeAttribute('title');
     }
@@ -339,6 +323,7 @@ window.Vocab = (function () {
     spkActive = w;
     spkStartAt = Date.now ? Date.now() : 0;
     lastSpkWord = w;
+    lastSpkKind = 'word';
     var ctxCard = card;                 /* 记录本次朗读对应的卡片，供看门狗判过期 */
     var st = { local: false };          /* 播放上下文：本地音频是否正在播 */
     var myGen = ++spkGen;               /* 本次朗读代际（旧 utterance 迟到回调整条忽略） */
@@ -433,17 +418,19 @@ window.Vocab = (function () {
     if (act === 'stop') { spkStopNow(btns); return false; }
     spkActive = t;
     spkStartAt = Date.now ? Date.now() : 0;
+    lastSpkWord = t;   /* v22：例句失败时 pill 重试必须回到这句，而非上一个单词 */
+    lastSpkKind = 'sentence';
     if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
       markFail(btns, '当前环境不支持朗读例句');
       return false;
     }
+    var myGen = ++spkGen;   /* v22：代际先 bump 再 cancel——与 speakWord 一致，否则旧 utterance 的 canceled 回调会擦掉本次刚置的 spkActive */
     try { window.speechSynthesis.cancel(); } catch (e) {}
     var u = new SpeechSynthesisUtterance(t);
     u.lang = accent === 'uk' ? 'en-GB' : 'en-US';
     u.rate = 0.92; u.volume = 1;
     var v = pickVoice(); if (v) u.voice = v;
     var started = false;
-    var myGen = ++spkGen;               /* 与 speakWord 共用代际号，避免跨入口擦 pill */
     u.onstart = function () {
       if (myGen !== spkGen) return;
       started = true; markPlay(btns);
@@ -614,9 +601,25 @@ window.Vocab = (function () {
         toast('新题自动朗读已' + (autoSpeak ? '开启' : '关闭'));
       });
     }
-    /* 状态条可点：朗读失败后一键重试上一个单词 */
+    /* v22：小条交互单一入口（点击 + 键盘共用，按当前态分派：播放中=停止，失败=重试）。
+       旧设计是 init listener + 各态 onclick/onkeydown 属性并存：失败态处理器为空，
+       重试起播时 markPlay 又把处理器置为停止，某些引擎会在同一次派发里接着触发
+       这个新置的停止，导致重试刚起播就被停掉（jsdom 实测；Chromium 未复现，Safari 未知）；
+       统一入口后派发中不再增改处理器，各引擎行为一致。 */
     var ss = document.getElementById('spkStatus');
-    if (ss) ss.addEventListener('click', function () { if (lastSpkWord) speakWord(lastSpkWord); });
+    if (ss) {
+      ss.addEventListener('click', function () {
+        if (ss.classList.contains('is-playing')) spkStopNow(null);
+        else if (ss.classList.contains('is-fail')) retryLastSpk();
+      });
+      ss.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 || e.keyCode === 32) {
+          e.preventDefault();
+          if (ss.classList.contains('is-playing')) spkStopNow(null);
+          else if (ss.classList.contains('is-fail')) retryLastSpk();
+        }
+      });
+    }
 
     buildSubOptions();
     /* v18 0.7：模式选择移入全屏练习页 #pfMode（英译汉/汉译英/拼写默写/复习队列），
@@ -1229,6 +1232,7 @@ window.Vocab = (function () {
   }
 
   function answer(ok) {
+    locked = true;   /* v22：四选一作答也锁住——看门狗 1.5s 后不再把未开口的自动读补响到反馈卡上（与拼写模式一致） */
     if (window.Feedback) window.Feedback.playChime(ok);   /* v13：判定瞬间播放提示音（先提示音） */
     round.answered++;
     if (ok) round.ok++;
@@ -1272,6 +1276,7 @@ window.Vocab = (function () {
 
   function rate(r, thenNext) {
     if (!card) return;
+    locked = true;   /* v22：翻卡评分也锁住——同 answer()，防看门狗答后补读 */
     if (card._ok === undefined) {           // 翻卡模式尚未判定
       /* v13：翻卡模式判定瞬间提示音——认识=对、不认识=错、模糊=中性不响。
          客观题（四选一/拼写）的判定瞬间在 answer() 已响过，此处不重复响。 */
