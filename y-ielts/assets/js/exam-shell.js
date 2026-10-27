@@ -27,7 +27,11 @@
   }
 
   function apply(on) {
-    if (document.body) document.body.classList.toggle('exam-answering', !!on);
+    if (!document.body) return;
+    document.body.classList.toggle('exam-answering', !!on);
+    /* D1：同步 body[data-mode="exam"]，供布局层做考试沉浸态的钩子；计时、交卷、评分逻辑一字不动。 */
+    if (on) document.body.setAttribute('data-mode', 'exam');
+    else if (document.body.getAttribute('data-mode') === 'exam') document.body.removeAttribute('data-mode');
   }
 
   function enter(view, force) {
@@ -66,10 +70,14 @@
   }
 
   function bindExit() {
+    /* D1：退出需二次确认；确认后才退出，不交卷、不清作答、不停计时（与 comments.js 的 window.confirm 用法一致）。 */
+    function confirmExit() {
+      if (window.confirm('退出作答视图？计时和作答不会被清除。')) exit();
+    }
     var ex = document.getElementById('examExit');
-    if (ex) ex.addEventListener('click', exit);
+    if (ex) ex.addEventListener('click', confirmExit);
     var wx = document.getElementById('wBtnExit');
-    if (wx) wx.addEventListener('click', exit);
+    if (wx) wx.addEventListener('click', confirmExit);
   }
 
   if (document.readyState === 'loading') {
