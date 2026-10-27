@@ -1343,3 +1343,14 @@ body[data-mode="exam"] main.wrap.shell {
 body[data-mode="exam"] .r-split,
 body[data-mode="exam"] .l-split,
 body[data-mode="exam"] .w-split { flex: 1; min-height: 0; }
+
+/* D1 补丁 A（2026-10-27，用户选 A，仅桌面端 ≥1024）：
+   首页 #view-home.is-active 在 ≥901px 是纵向 flex 容器，
+   .hm-page 的 margin: 0 auto 会让它在 flex 横轴上按内容宽
+   居中、缩窄，导致品牌行左边界比其他页更靠右。
+   这里只让它在 ≥1024 时占满壳内容宽、去掉横向 auto，
+   品牌行左边界即与其他页品牌行一致；不改 home-v23.css，
+   不改首页内部结构、颜色、字号、圆角，<1024 不受影响。 */
+@media (min-width: 1024px) {
+  #view-home.is-active .hm-page { width: 100%; margin-left: 0; margin-right: 0; }
+}
