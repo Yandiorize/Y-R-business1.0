@@ -1313,6 +1313,11 @@ main.wrap.shell {
     border-top: 0;
     border-right: 1px solid var(--lg-border);
     padding-bottom: 0;
+    /* D1 补丁（2026-10-28，用户批准，仅测试分支）：
+       v57 在 ≥901px 给 .tabbar 设了 translateX(-50%) 居中浮层，
+       D1 改了 left/宽却没清 transform，侧栏会被左推 104px、
+       只剩右半边可见。只清这一条，不改宽、内边距、按钮。 */
+    transform: none;
   }
   #tabbar .tabbar-inner {
     display: flex;
