@@ -1249,3 +1249,138 @@ html[data-theme="dark"] #view-home { --home-glow: rgba(90, 120, 160, .28); }
  *    与本行无冲突。
  * ============================================================= */
 .site-foot { flex-wrap: wrap; }
+
+/* ============================================================
+ *  D1 · 布局壳（手册 00+01，2026-10-27，本地完成，未推送）
+ *  ------------------------------------------------------------
+ *  · 只做布局：唯一容器 .shell、四档断点、底部胶囊留白、
+ *    1024+ 左侧栏、考试沉浸态。不改颜色、字号、圆角，
+ *    不动 .hm-module / .ln-card 内部结构，不新增依赖。
+ *  · .shell 只加在 <main class="wrap shell"> 上，不把 .wrap
+ *    改名（考试全屏与各处 .wrap 规则都依赖它）。
+ *  · 底部留白沿用现有已验证公式（栏高 + 安全区 + 下边距
+ *    + 呼吸间距），不用手册字面的 +16px，以免少留 12px。
+ *  · 1024+ 左侧栏直接复用 #tabbar 的 4 个按钮，不新增
+ *    统计/设置链接；>1280 右栏内容在 01 里未定义，D1 不发明，
+ *    只保证主区流式、不溢出。
+ * ============================================================ */
+main.wrap.shell {
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-inline: clamp(16px, 4vw, 32px);
+  box-sizing: border-box;
+}
+
+/* <1024：底部胶囊。≤900 已有同款规则，这里把胶囊形态
+   延伸到 901-1023，并统一主区底部留白。 */
+@media (max-width: 1023px) {
+  #tabbar {
+    display: block;
+    position: fixed;
+    left: var(--tabbar-margin);
+    right: var(--tabbar-margin);
+    bottom: calc(var(--tabbar-margin) + var(--safe-b));
+    z-index: 30;
+    border-radius: var(--r-4xl);
+    border: 1px solid var(--lg-border);
+    background: var(--lg-chrome);
+    -webkit-backdrop-filter: var(--lg-chrome-blur);
+    backdrop-filter: var(--lg-chrome-blur);
+    box-shadow: var(--capsule-shadow), var(--lg-highlight);
+    padding-bottom: 0;
+  }
+  #tabbar .tabbar-inner { grid-template-columns: repeat(4, 1fr); }
+  main.wrap.shell {
+    padding-bottom: calc(var(--tabbar-h) + var(--safe-b) + var(--tabbar-margin) + var(--tabbar-gap));
+  }
+}
+
+/* 1024+：左侧栏。复用 #tabbar，不新增 DOM；指示器
+   tabbar-indicator.js 按按钮 offsetLeft/Top/Width/Height
+   落位，竖排下仍能跟随，无需改 JS。 */
+@media (min-width: 1024px) {
+  #tabbar {
+    display: block !important;
+    position: fixed;
+    left: 0;
+    right: auto;
+    top: 0;
+    bottom: 0;
+    width: 208px;
+    height: 100dvh;
+    z-index: 30;
+    border-top: 0;
+    border-right: 1px solid var(--lg-border);
+    padding-bottom: 0;
+    /* D1 补丁（2026-10-28，用户批准，仅测试分支）：
+       v57 在 ≥901px 给 .tabbar 设了 translateX(-50%) 居中浮层，
+       D1 改了 left/宽却没清 transform，侧栏会被左推 104px、
+       只剩右半边可见。只清这一条，不改宽、内边距、按钮。 */
+    transform: none;
+  }
+  #tabbar .tabbar-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    height: 100%;
+    padding: 16px 12px;
+    box-sizing: border-box;
+  }
+  #tabbar .tabbar-btn { flex: none; min-height: 44px; }
+  main.wrap.shell { margin-left: 208px; margin-right: auto; padding-bottom: 44px; }
+}
+
+/* 考试沉浸态：只留 #examHud。阅读/听力/写作的工具栏、
+   计时、交卷、题号、退出是考试自身控件，不在此隐藏。 */
+body[data-mode="exam"] #tabbar { display: none !important; }
+body[data-mode="exam"] .site-foot { display: none !important; }
+body[data-mode="exam"] .hm-brand,
+body[data-mode="exam"] .learn-head,
+body[data-mode="exam"] .page-brand { display: none !important; }
+body[data-mode="exam"] main.wrap.shell {
+  max-width: none;
+  margin-left: 0;
+  margin-right: auto;
+  padding-bottom: 12px;
+}
+body[data-mode="exam"] .r-split,
+body[data-mode="exam"] .l-split,
+body[data-mode="exam"] .w-split { flex: 1; min-height: 0; }
+
+/* D1 补丁 A（2026-10-27，用户选 A，仅桌面端 ≥1024）：
+   首页 #view-home.is-active 在 ≥901px 是纵向 flex 容器，
+   .hm-page 的 margin: 0 auto 会让它在 flex 横轴上按内容宽
+   居中、缩窄，导致品牌行左边界比其他页更靠右。
+   这里只让它在 ≥1024 时占满壳内容宽、去掉横向 auto，
+   品牌行左边界即与其他页品牌行一致；不改 home-v23.css，
+   不改首页内部结构、颜色、字号、圆角，<1024 不受影响。 */
+@media (min-width: 1024px) {
+  #view-home.is-active .hm-page { width: 100%; margin-left: 0; margin-right: 0; }
+}
+
+/* D2 · 第一阶段（2026-10-29，用户批准按手册 D2 做全局统一玻璃）：
+   只统一模糊值，不动透明度滑杆（--g-chrome/--g-container 仍驱动背景透明度，
+   暗色与滑杆逻辑不动），不动题源、判分、localStorage。
+   G1 = 导航：blur(24px) saturate(180%)；G2 = 主卡：blur(18px) saturate(165%)。
+   旧的 30/32px 铬层模糊全部收敛到 G1；主卡已有 G2 值，改为变量映射以便后续删除重复定义。
+   G3（内嵌不加模糊）第一阶段只给考试题号胶囊：它在 G1 的 exam-hud 内，嵌套模糊是多余的一层。 */
+:root {
+  --lg-chrome-blur: var(--glass-g1);
+  --glass-blur-card: var(--glass-g2);
+}
+html[data-theme="dark"] {
+  --lg-chrome-blur: var(--glass-g1);
+}
+#tabbar,
+.topbar-in,
+.exam-hud {
+  -webkit-backdrop-filter: var(--glass-g1);
+  backdrop-filter: var(--glass-g1);
+}
+.qnav-pill {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: var(--glass-g3-bg);
+}

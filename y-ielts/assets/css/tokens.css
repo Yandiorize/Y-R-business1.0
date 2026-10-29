@@ -51,6 +51,27 @@
   /* 遮罩（ui-iter v3：变暗为主、模糊为辅，背后文字可读） */
   --mask-dim: rgba(6, 10, 22, .55);
   --mask-blur: blur(2px);
+
+  /* D2 · 统一 token（手册 02，2026-10-29，第一阶段）：
+     旧 token 暂保留，待各层迁移后再删，避免一次性改塌 2600 条规则。
+     品牌唯一实体蓝，派生色一律 color-mix()，不再新增十六进制蓝。 */
+  --brand: #1D5BF0;
+  --ink-0: #0c1018; --ink-1: #1c1e22; --ink-2: #5b6577; --ink-3: #8a93a6;
+
+  /* 玻璃三级：G1 导航 / G2 主卡 / G3 内嵌（内嵌不加模糊） */
+  --glass-g1: blur(24px) saturate(180%);
+  --glass-g1-bg: rgba(255, 255, 255, .72);
+  --glass-g2: blur(18px) saturate(165%);
+  --glass-g2-bg: rgba(255, 255, 255, .56);
+  --glass-g3-bg: rgba(255, 255, 255, .38);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, .9);
+
+  /* 圆角 4 档（D2 目标）：12 / 18 / 26 / pill */
+  --r-12: 12px; --r-18: 18px; --r-26: 26px;
+
+  /* 字阶 6 档（D2 目标）：40 / 28 / 20 / 16 / 14 / 12.5 */
+  --fs-40: 40px; --fs-28: 28px; --fs-20: 20px;
+  --fs-16: 16px; --fs-14: 14px; --fs-125: 12.5px;
 }
 html[data-theme="dark"] {
   --glass-blur-card: blur(18px) saturate(150%);
