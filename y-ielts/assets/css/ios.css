@@ -73,7 +73,7 @@
 }
 
 /* ---------- 页面切换动画（iOS 风格推入/推出） ---------- */
-.view { transform: translateZ(0); will-change: transform, opacity; }
+.view { transform: translateZ(0); } /* V5(D5)：去掉常驻 will-change——页面切换是一次性 .36s 动画，浏览器在动画期间自动提升合成层，常驻 hint 只占 GPU 内存 */
 .view.is-active { animation: iosViewIn .36s var(--ease) both; }
 .view.is-leaving { animation: iosViewOut .28s var(--ease) both; }
 @keyframes iosViewIn {
