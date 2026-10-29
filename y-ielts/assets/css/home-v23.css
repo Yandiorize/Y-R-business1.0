@@ -30,8 +30,10 @@
   --hm-border: rgba(255, 255, 255, .85);
   --hm-shadow: 0 18px 44px -18px rgba(52, 120, 246, .28);
   --hm-shadow-sm: 0 10px 26px -14px rgba(52, 120, 246, .30);
+  /* D4 顶栏一致性：顶部纯白 → 页面底色（--bg-b），与其他三视图同底；
+     中段保留雾蓝带，不动深色 */
   background:
-    linear-gradient(180deg, #FFFFFF 0%, var(--hm-mist) 52%, #FFFFFF 100%);
+    linear-gradient(180deg, var(--bg-b) 0%, var(--hm-mist) 52%, var(--bg-b) 100%);
 }
 
 .hm-page {
@@ -97,12 +99,7 @@
 .hm-icon-btn .icon { display: inline-flex; }
 .hm-icon-btn .icon svg { width: 24px; height: 24px; }
 .hm-icon-btn .lbl:empty { display: none; }
-.hm-status {
-  margin: -8px 0 0;
-  padding-left: 40px;
-  font-size: 12.5px;
-  color: var(--muted);
-}
+/* D4：.hm-status 已删（品牌区只留 logo + 一句 slogan，手册 04） */
 
 /* ---------- B · 主视觉：今日继续（玻璃主视觉 + 轨道插画慢转） ---------- */
 .hm-hero {
@@ -348,62 +345,35 @@
   line-height: 1.6;
   color: var(--ink);
 }
-
-/* ---------- D · 本周概览：三数 + 掌握条（实底） ---------- */
-.hm-overview {
-  padding: 20px;
-  border-radius: var(--r-lg);
-  background: var(--hm-solid);
-  border: 1px solid var(--hm-line);
-  box-shadow: var(--hm-shadow-sm);
-}
-.hm-ov-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 14px;
-}
-.hm-ov-item {
+/* D4/手册 04：今日进度 —— 细环 + 三个数字（今日/连续/待复习），数字比标签重 */
+.hm-goal-main {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  text-align: center;
+  gap: 10px;
 }
-.hm-ov-item b {
+.hm-prog-nums {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.hm-prog-num {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hm-prog-num b {
   font-size: 22px;
   font-weight: 800;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
-.hm-ov-item span { font-size: 12px; color: var(--muted); }
-.hm-mastery {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-}
-.hm-mastery-label { font-size: 13px; font-weight: 700; color: var(--ink); }
-.hm-mastery-count {
-  margin-left: auto;
-  font-size: 13px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-.hm-mastery-bar {
-  flex: 1 1 100%;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(52, 120, 246, .12);
-  overflow: hidden;
-}
-.hm-mastery-bar > i {
-  display: block;
-  height: 100%;
-  background: var(--hm-blue);
-  border-radius: inherit;
-  transition: width .3s var(--ease-out);
-}
+.hm-prog-num span { font-size: 12px; color: var(--muted); }
+.hm-goal-main .hm-goal-text { flex: none; }
+
+/* D4：.hm-overview 整块已删（手册 04“四连零的统计条”；hmStreak/hmDue 已迁入今日进度；
+   hmWeekDays/词库掌握条无替代者，按手册明确删除项处理） */
 
 /* ---------- 分区头：蓝条标题 ---------- */
 .hm-sec-head {
@@ -432,30 +402,9 @@
   background: var(--hm-blue);
 }
 
-/* ---------- E · 练习模块：5 卡（桌面 2 列 / 手机 1 列） ---------- */
-.hm-modules {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
-.hm-module {
-  width: 100%;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px;
-  box-sizing: border-box;
-  text-align: left;
-  font: inherit;
-  color: var(--ink);
-  background: var(--hm-solid);
-  border: 1px solid var(--hm-line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--hm-shadow-sm);
-  cursor: pointer;
-  transition: transform 150ms var(--ease-out);
-}
-.hm-module:active { transform: scale(.99); }
+/* D4：.hm-modules / .hm-module 整套已删 —— 替代者是 V3 #modTurntable / .t5-* 转盘体系
+   （面片为 .t5-face.hm-go 原生按钮，走 app.js 既有绑定）；.hm-mod-ic 保留（转盘面片在用）。
+   .hm-mod-main/meta/desc/prog/next/go 同卡片配套，无引用，一并删除。 */
 .hm-mod-ic {
   flex: 0 0 auto;
   width: 44px;
@@ -470,56 +419,13 @@
 .hm-mod-ic .icon { display: inline-flex; }
 .hm-mod-ic .icon svg { width: 24px; height: 24px; }
 .hm-mod-ic .lbl:empty { display: none; }
-.hm-mod-main {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.hm-mod-main b { font-size: 16px; font-weight: 800; color: var(--ink); }
-.hm-mod-meta { font-size: 12.5px; color: var(--muted); }
-.hm-mod-desc { font-size: 13px; color: var(--ink); }
-.hm-mod-prog { font-size: 13px; font-weight: 700; color: var(--hm-blue-strong); }
-.hm-mod-next { font-size: 13px; color: var(--muted); }
-.hm-mod-go {
-  flex: 0 0 auto;
-  align-self: center;
-  color: var(--hm-blue);
-  font-size: 18px;
-  font-weight: 700;
-}
-
 /* ---------- F · 最近练习 + 分数走势 ---------- */
-.hm-recent-list {
-  list-style: none;
-  margin: 0;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  background: var(--hm-solid);
-  border: 1px solid var(--hm-line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--hm-shadow-sm);
-}
-.hm-recent-list li {
-  padding: 12px 8px;
-  font-size: 14px;
-  color: var(--ink);
-}
-.hm-recent-list li + li { border-top: 1px solid var(--hm-line); }
-.hm-trend {
-  margin: 10px 0 0;
-  padding: 0 4px;
-  font-size: 13px;
-  color: var(--muted);
-}
+/* D4：F 整块已删 —— “最近一次”只留 hero #hmLatestLine 一条；趋势在“我的”成绩趋势里已有 */
 
 /* ---------- 焦点可见 ---------- */
 .hm-icon-btn:focus-visible,
 .hm-hero-cta:focus-visible,
-.hm-goal-stepper button:focus-visible,
-.hm-module:focus-visible {
+.hm-goal-stepper button:focus-visible {
   outline: 2px solid var(--hm-blue);
   outline-offset: 2px;
 }
@@ -536,16 +442,12 @@
   .hm-goal-ring-wrap { width: 80px; height: 80px; }
   .hm-goal-ring-center b { font-size: 20px; }
   .hm-goal-body { gap: 12px; }
-  .hm-overview { padding: 16px; }
-  .hm-module { padding: 14px 12px; }
 }
 @media (max-width: 380px) {
   .hm-hero { padding: 18px 16px; }
   .hm-brand-name { font-size: 24px; }
 }
-@media (min-width: 768px) {
-  .hm-modules { grid-template-columns: 1fr 1fr; }
-}
+/* D4：768px 的 .hm-modules 双列已随卡片删除 */
 @media (min-width: 901px) {
   .hm-page { gap: 18px; }
   .hm-hero-art { flex-basis: 130px; height: 170px; }
@@ -580,9 +482,7 @@ html[data-theme="dark"] .hm-mod-ic { background: rgba(23, 105, 232, .18); }
   .hmc-orbit { animation: none; }
   .hm-hero-bar .bar > i,
   .hm-goal-ring-fill,
-  .hm-mastery-bar > i,
-  .hm-hero-cta,
-  .hm-module { transition: none; }
+  .hm-hero-cta { transition: none; }
 }
 
 /* ---------- 底栏浮动胶囊（仅移动端；网格与高度不动） ---------- */
