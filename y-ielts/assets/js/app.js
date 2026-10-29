@@ -238,7 +238,7 @@
     /* 范文：收录数在卡片副标题里已有，状态位按评审给收藏数 */
     var eAll = (window.IELTS_ESSAYS || []).length;
     var eFav = (Store.get('essayFavs', []) || []).length;
-    chip('lcEssays', eFav ? ('已收藏 ' + eFav + ' 篇') : '暂无收藏', !eFav);
+    chip('lcEssays', eFav ? ('已收藏 ' + eFav + ' 篇') : '还没收藏', !eFav);
     nextLine('lnEssays', eFav ? ('从收藏的 ' + eFav + ' 篇里挑一篇跟读')
                               : '读一篇 Task 2，跟读三遍');
 
