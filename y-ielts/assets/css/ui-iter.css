@@ -1494,3 +1494,87 @@ html[data-theme="dark"] {
   .t5-dot::after { transition: none; }
   .t5-arrow:active { transform: none; }
 }
+
+/* ============================================================
+ * D4 · 首页 + 笔记 + 我的抛光（手册 prompt 04 + 05）
+ * ------------------------------------------------------------
+ * 顶栏一致性：首页 #view-home 顶部纯白渐变已在 home-v23.css 改为页面底色，
+ * 此处只做笔记/我的两页版式。JS 改动只在 me.js（两个分区按有无数据显隐），
+ * 其余 DOM 改动（id 保留）均有空 guard，不动业务逻辑。
+ * ============================================================ */
+
+/* ---- 05 笔记页：1024+ 左 380px 固定表单 + 右侧自适应笔记流；表单 sticky top 88px ---- */
+@media (min-width: 1024px) {
+  #view-comments {
+    display: grid;
+    grid-template-columns: 380px minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  #view-comments > .page-brand,
+  #view-comments > .learn-head { grid-column: 1 / -1; }
+  #view-comments > .cm-form {
+    grid-column: 1;
+    grid-row: 3 / span 5;
+    position: sticky;
+    top: 88px;
+    max-width: none;
+  }
+  #view-comments > .cm-filter,
+  #view-comments > .cm-list,
+  #view-comments > .cm-nomatch,
+  #view-comments > .cm-empty,
+  #view-comments > .cm-foot { grid-column: 2; }
+}
+
+/* ---- 05 笔记页：保存按钮不参与换行，表单底部单独一行，宽度 100% ---- */
+#view-comments .cm-bar { flex-direction: column; align-items: stretch; }
+#view-comments .cm-send { width: 100%; }
+
+/* ---- 05 笔记页：移动端话题芯片行合并成一条横向滚动条，不做两行断行 ---- */
+@media (max-width: 640px) {
+  #view-comments .cm-tags,
+  #view-comments .cm-filter {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+  }
+  #view-comments .cm-tag { flex: 0 0 auto; }
+}
+
+/* ---- 05 我的页：统计卡两种规格 —— Band/掌握进度是大卡（数字 40px），
+        交卷次数/词数/待复习是小字行 ---- */
+.me-stat-grid.me-stat-d4 { grid-template-columns: 1fr 1fr; }
+.me-stat-d4 .me-stat-lg b { font-size: 40px; line-height: 1.1; }
+.me-stat-d4 .me-stat-lg span { font-size: 12.5px; }
+.me-stat-d4 .me-stat-sm {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 12px;
+}
+.me-stat-d4 .me-stat-sm b { font-size: 16px; }
+.me-stat-d4 .me-stat-sm span { font-size: 12px; white-space: nowrap; } /* 390 下“今日待复习”不换行 */
+/* 390 宽下不许 5 卡并排：2 列网格，第一张跨两列 */
+@media (max-width: 480px) {
+  .me-stat-grid.me-stat-d4 .me-stat-lg:first-child { grid-column: 1 / -1; }
+}
+
+/* ---- 05 我的页：连续学习 7 天刻度 —— 最小直径 10px；
+        空心描边取 --ink-3（白底 3.09:1），实心取 --lg-accent（白底 4.07:1） ---- */
+.ov-dots i {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--ink-3);
+  background: transparent;
+}
+.ov-dots i.on { background: var(--lg-accent); border-color: var(--lg-accent); }
+
+/* ---- 05 我的页：目标 Band 选择器与左侧标签基线对齐（行容器 flex，高度 40px；
+        select 本体保持 44px 触控高，不动） ---- */
+.me-target-row { display: flex; align-items: center; gap: 10px; height: 40px; }
+
+/* ---- 05 我的页：成绩趋势 / 分模块记录无数据时整块不渲染（me.js 切 hidden；
+        .me-sec 自带 display:flex 会盖掉 UA 的 [hidden]，需显式压住） ---- */
+.me-sec[hidden] { display: none; }
