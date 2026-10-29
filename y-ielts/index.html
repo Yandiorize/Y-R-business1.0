@@ -245,62 +245,82 @@
         <div class="hm-sec-head">
           <h2 class="hm-sec-title">练习模块</h2>
         </div>
-        <div class="hm-modules">
-          <button class="hm-go hm-module" type="button" data-view="reading">
-            <span class="hm-mod-ic" data-icon="book"></span>
-            <span class="hm-mod-main">
-              <b>阅读</b>
-              <span class="hm-mod-meta">剑17 · 4 套 · 60 分钟</span>
-              <span class="hm-mod-desc">按题型练 · 限时模考</span>
-              <span class="hm-mod-prog" id="hmModReading">已交 0/4 套</span>
-              <span class="hm-mod-next" id="hmModReadingNext">做 Test 1，限时 60 分钟</span>
-            </span>
-            <span class="hm-mod-go" aria-hidden="true">›</span>
-          </button>
-          <button class="hm-go hm-module" type="button" data-view="listening">
-            <span class="hm-mod-ic" data-icon="volume"></span>
-            <span class="hm-mod-main">
-              <b>听力</b>
-              <span class="hm-mod-meta">剑17 Test 1 · Section 1 · 10 题</span>
-              <span class="hm-mod-desc">精听填空 · 对照原文</span>
-              <span class="hm-mod-prog" id="hmModListening">已交 0/1 套</span>
-              <span class="hm-mod-next" id="hmModListeningNext">听 Section 1，10 道填空</span>
-            </span>
-            <span class="hm-mod-go" aria-hidden="true">›</span>
-          </button>
-          <button class="hm-go hm-module" type="button" data-view="writing">
-            <span class="hm-mod-ic" data-icon="pen"></span>
-            <span class="hm-mod-main">
-              <b>写作</b>
-              <span class="hm-mod-meta">Task 1 · Task 2 · 保存历史</span>
-              <span class="hm-mod-desc">限时写作 · 本地存稿</span>
-              <span class="hm-mod-prog" id="hmModWriting">未开始</span>
-              <span class="hm-mod-next" id="hmModWritingNext">写 Task 2，先列三段提纲</span>
-            </span>
-            <span class="hm-mod-go" aria-hidden="true">›</span>
-          </button>
-          <button class="hm-go hm-module" type="button" data-view="vocab">
-            <span class="hm-mod-ic" data-icon="cards"></span>
-            <span class="hm-mod-main">
-              <b>单词</b>
-              <span class="hm-mod-meta">词库 · 拼写默写 · 错题本</span>
-              <span class="hm-mod-desc">背词默写 · 到期复习</span>
-              <span class="hm-mod-prog" id="hmModVocab">未开始</span>
-              <span class="hm-mod-next" id="hmModVocabNext">载入示例词表，先背 10 个</span>
-            </span>
-            <span class="hm-mod-go" aria-hidden="true">›</span>
-          </button>
-          <button class="hm-go hm-module" type="button" data-view="essays">
-            <span class="hm-mod-ic" data-icon="edit"></span>
-            <span class="hm-mod-main">
-              <b>范文</b>
-              <span class="hm-mod-meta">Task 1 / 2 范文 · 可收藏跟读</span>
-              <span class="hm-mod-desc">范文跟读 · 仿写结构</span>
-              <span class="hm-mod-prog" id="hmModEssays">收藏 0 / 0 篇</span>
-              <span class="hm-mod-next" id="hmModEssaysNext">读一篇 Task 2，跟读三遍</span>
-            </span>
-            <span class="hm-mod-go" aria-hidden="true">›</span>
-          </button>
+        <!-- V3（D3 旋转模式）：练习模块改为手动五面 3D 转盘。面片仍是
+             .hm-go + data-view 原生按钮，点击走 app.js 既有绑定（本文件不加
+             任何 click）；图标/文案/进度与下一步的真实 ID 原样保留，数据仍由
+             app.js 写入。无自动轮播，转动层无玻璃模糊（手册 8.1）。 -->
+        <div class="t5" id="modTurntable" role="region" aria-roledescription="carousel" aria-label="练习模块">
+          <div class="t5-stage">
+            <div class="t5-wheel" id="t5Wheel">
+              <button class="t5-face hm-go" type="button" data-view="reading">
+                <span class="hm-mod-ic" data-icon="book"></span>
+                <span class="t5-main">
+                  <b class="t5-name">阅读</b>
+                  <span class="t5-meta">剑17 · 4 套 · 60 分钟</span>
+                  <span class="t5-desc">按题型练 · 限时模考</span>
+                  <span class="t5-prog" id="hmModReading">已交 0/4 套</span>
+                  <span class="t5-nextline" id="hmModReadingNext">做 Test 1，限时 60 分钟</span>
+                </span>
+                <span class="t5-go" aria-hidden="true">›</span>
+              </button>
+              <button class="t5-face hm-go" type="button" data-view="listening">
+                <span class="hm-mod-ic" data-icon="volume"></span>
+                <span class="t5-main">
+                  <b class="t5-name">听力</b>
+                  <span class="t5-meta">剑17 Test 1 · Section 1 · 10 题</span>
+                  <span class="t5-desc">精听填空 · 对照原文</span>
+                  <span class="t5-prog" id="hmModListening">已交 0/1 套</span>
+                  <span class="t5-nextline" id="hmModListeningNext">听 Section 1，10 道填空</span>
+                </span>
+                <span class="t5-go" aria-hidden="true">›</span>
+              </button>
+              <button class="t5-face hm-go" type="button" data-view="writing">
+                <span class="hm-mod-ic" data-icon="pen"></span>
+                <span class="t5-main">
+                  <b class="t5-name">写作</b>
+                  <span class="t5-meta">Task 1 · Task 2 · 保存历史</span>
+                  <span class="t5-desc">限时写作 · 本地存稿</span>
+                  <span class="t5-prog" id="hmModWriting">未开始</span>
+                  <span class="t5-nextline" id="hmModWritingNext">写 Task 2，先列三段提纲</span>
+                </span>
+                <span class="t5-go" aria-hidden="true">›</span>
+              </button>
+              <button class="t5-face hm-go" type="button" data-view="vocab">
+                <span class="hm-mod-ic" data-icon="cards"></span>
+                <span class="t5-main">
+                  <b class="t5-name">单词</b>
+                  <span class="t5-meta">词库 · 拼写默写 · 错题本</span>
+                  <span class="t5-desc">背词默写 · 到期复习</span>
+                  <span class="t5-prog" id="hmModVocab">未开始</span>
+                  <span class="t5-nextline" id="hmModVocabNext">载入示例词表，先背 10 个</span>
+                </span>
+                <span class="t5-go" aria-hidden="true">›</span>
+              </button>
+              <button class="t5-face hm-go" type="button" data-view="essays">
+                <span class="hm-mod-ic" data-icon="edit"></span>
+                <span class="t5-main">
+                  <b class="t5-name">范文</b>
+                  <span class="t5-meta">Task 1 / 2 范文 · 可收藏跟读</span>
+                  <span class="t5-desc">范文跟读 · 仿写结构</span>
+                  <span class="t5-prog" id="hmModEssays">收藏 0 / 0 篇</span>
+                  <span class="t5-nextline" id="hmModEssaysNext">读一篇 Task 2，跟读三遍</span>
+                </span>
+                <span class="t5-go" aria-hidden="true">›</span>
+              </button>
+            </div>
+          </div>
+          <div class="t5-ctrl">
+            <button class="t5-arrow" id="t5Prev" type="button" aria-label="上一个模块">‹</button>
+            <div class="t5-dots" role="group" aria-label="选择模块">
+              <button class="t5-dot" type="button" data-index="0" aria-label="阅读"></button>
+              <button class="t5-dot" type="button" data-index="1" aria-label="听力"></button>
+              <button class="t5-dot" type="button" data-index="2" aria-label="写作"></button>
+              <button class="t5-dot" type="button" data-index="3" aria-label="单词"></button>
+              <button class="t5-dot" type="button" data-index="4" aria-label="范文"></button>
+            </div>
+            <button class="t5-arrow" id="t5Next" type="button" aria-label="下一个模块">›</button>
+          </div>
+          <p class="t5-count" aria-hidden="true"><span id="t5Count">1 / 5</span></p>
         </div>
       </section>
 
@@ -1335,6 +1355,7 @@
 <script src="assets/js/exam-shell.js"></script>
 <script src="assets/js/learn-carousel.js"></script>
 <script src="assets/js/home-carousel.js"></script>
+<script src="assets/js/module-turntable.js"></script>
 <script src="assets/js/app.js?v=51"></script>
 <!-- v16：「我的」抽屉（依赖 App/Vocab/Reading 导出面，必须放在 app.js 之后） -->
 <script src="assets/js/comments.js?v=51"></script>
