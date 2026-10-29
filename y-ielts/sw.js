@@ -102,12 +102,15 @@
  *             12px 窄屏间距仍在本地，不随本推上线。
  *  v42 逐页统一收尾：styles.css（写作作答区与范文长文本区加硬实底，与阅读原文区同规则）；
  *             仅加注释触发 SW 更新。12px 窄屏间距仍未定，变体文件在 y-ielts-iter，不随本推上线。
+ *  V3（D3 旋转模式）：新增 module-turntable.js 预缓存条目（新文件，
+ *             必须进清单）+ 注释触发 SW 更新（其余 V3 改动 index.html /
+ *             ui-iter.css 均已在清单里）。
  * ============================================================ */
 'use strict';
 
-var PAGE_CACHE = 'ielts-page-v56';
+var PAGE_CACHE = 'ielts-page-v57';
 var AUDIO_CACHE = 'ielts-audio';   /* 与 audio.js 的 IndexedDB 同名但互不冲突 */
-var VERSION = 'v56';
+var VERSION = 'v57';
 
 var CORE = [
   './',
@@ -150,6 +153,7 @@ var CORE = [
   './assets/js/exam-shell.js',
   './assets/js/learn-carousel.js',
   './assets/js/home-carousel.js',
+  './assets/js/module-turntable.js',
   './assets/js/tabbar-indicator.js',
   './assets/js/app.js?v=51',
   './assets/js/comments.js?v=51',
