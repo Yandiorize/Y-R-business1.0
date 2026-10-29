@@ -1322,7 +1322,7 @@ body[data-view="reading"] .exam-hud { display: inline-flex; }
   transition: height .5s var(--ease);
 }
 .trend-bar em {
-  font-style: normal; font-size: 9px; color: var(--muted);
+  font-style: normal; font-size: 10px; color: var(--muted); /* V5(D5)：9px→10px，趋势图轴注可读性 */
   font-family: var(--font-num); line-height: 1;
 }
 .trend-none { font-size: var(--fs-2xs); color: var(--muted); line-height: 1.6; }
@@ -1330,7 +1330,7 @@ body[data-view="reading"] .exam-hud { display: inline-flex; }
 /* 示例词标记 */
 .deck-tag {
   display: inline-block; margin-left: 5px; padding: 0 5px;
-  border-radius: 4px; font-style: normal; font-size: 9px;
+  border-radius: 4px; font-style: normal; font-size: 11px; /* V5(D5)：9px→11px，示例词标记可读性；inline-block 自适应宽度，无布局影响 */
   line-height: 15px; vertical-align: middle;
   background: var(--stroke-soft); color: var(--muted);
   font-family: var(--font-sans);
