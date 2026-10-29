@@ -271,6 +271,12 @@
       dotsEl.innerHTML = dotsHtml;
     }
     renderTarget(hero ? hero.band : null);
+    /* D4/手册 05：成绩趋势与分模块记录在无数据时整块不渲染（只读既有 Store，不新增键）。
+       趋势看阅读交卷史；分模块看四源任一有数据。空态全页只留仪表盘 meta 一处。 */
+    var secTrend = document.getElementById('meSecTrend');
+    if (secTrend) secTrend.hidden = !(hist.length > 0);
+    var secSkills = document.getElementById('meSecSkills');
+    if (secSkills) secSkills.hidden = !(rLatest || lLatest || draftN || wHist.length || deck.length);
   }
 
   /* ---------------- ③ 成绩趋势（复用阅读模块渲染，真图真点） ---------------- */
