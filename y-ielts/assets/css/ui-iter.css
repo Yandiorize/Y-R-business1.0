@@ -1359,3 +1359,28 @@ body[data-mode="exam"] .w-split { flex: 1; min-height: 0; }
 @media (min-width: 1024px) {
   #view-home.is-active .hm-page { width: 100%; margin-left: 0; margin-right: 0; }
 }
+
+/* D2 · 第一阶段（2026-10-29，用户批准按手册 D2 做全局统一玻璃）：
+   只统一模糊值，不动透明度滑杆（--g-chrome/--g-container 仍驱动背景透明度，
+   暗色与滑杆逻辑不动），不动题源、判分、localStorage。
+   G1 = 导航：blur(24px) saturate(180%)；G2 = 主卡：blur(18px) saturate(165%)。
+   旧的 30/32px 铬层模糊全部收敛到 G1；主卡已有 G2 值，改为变量映射以便后续删除重复定义。
+   G3（内嵌不加模糊）第一阶段只给考试题号胶囊：它在 G1 的 exam-hud 内，嵌套模糊是多余的一层。 */
+:root {
+  --lg-chrome-blur: var(--glass-g1);
+  --glass-blur-card: var(--glass-g2);
+}
+html[data-theme="dark"] {
+  --lg-chrome-blur: var(--glass-g1);
+}
+#tabbar,
+.topbar-in,
+.exam-hud {
+  -webkit-backdrop-filter: var(--glass-g1);
+  backdrop-filter: var(--glass-g1);
+}
+.qnav-pill {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: var(--glass-g3-bg);
+}
