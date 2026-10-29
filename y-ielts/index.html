@@ -180,7 +180,7 @@
           <button class="hm-icon-btn" id="hmSearchBtn" type="button" data-icon="search" aria-label="搜索范文"></button>
         </span>
       </header>
-      <p class="hm-status">本地保存 · 无需登录</p>
+      <!-- D4：品牌区只留 logo + 一句 slogan（手册 04）；状态行删，信息在笔记页脚/我的关于已有 -->
 
       <!-- B · 主视觉：今日继续（专用 hero，非轮播；轨道插画复用，慢转 only） -->
       <section class="hm-hero" aria-label="今日继续">
@@ -204,10 +204,11 @@
         </div>
       </section>
 
-      <!-- C · 今日目标：1 项 = 当日交卷 1 套 / 当日有非空草稿计 1 / 当日背词计 1；默认 2/天，步进 1–10 -->
-      <section class="hm-goal" aria-label="今日目标">
+      <!-- C · 今日进度（D4/手册 04）：一条细环 + 三个数字（今日/连续/待复习），数字比标签重；
+           目标加减器保留；原 D 本周概览整块删除（四连零统计条），hmStreak/hmDue 迁入本块，JS 按 id 填充不受影响 -->
+      <section class="hm-goal" aria-label="今日进度">
         <div class="hm-goal-head">
-          <h2 class="hm-goal-title">今日目标</h2>
+          <h2 class="hm-goal-title">今日进度</h2>
           <div class="hm-goal-stepper" role="group" aria-label="调整每日目标">
             <button type="button" id="hmGoalMinus" aria-label="目标减一">−</button>
             <span id="hmGoalTarget">2</span>
@@ -222,25 +223,19 @@
             </svg>
             <div class="hm-goal-ring-center"><b id="hmGoalNum">0/2</b><span>今日任务</span></div>
           </div>
-          <p class="hm-goal-text" id="hmGoalText"></p>
+          <div class="hm-goal-main">
+            <div class="hm-prog-nums">
+              <div class="hm-prog-num"><b id="hmStreak">0</b><span>连续学习（天）</span></div>
+              <div class="hm-prog-num"><b id="hmDue">0</b><span>今日待复习</span></div>
+            </div>
+            <p class="hm-goal-text" id="hmGoalText"></p>
+          </div>
         </div>
       </section>
 
-      <!-- D · 本周概览：周一起算天数 + 掌握条（非第二圆环）+ 连续天数 + 待复习 -->
-      <section class="hm-overview" aria-label="本周概览">
-        <div class="hm-ov-grid">
-          <div class="hm-ov-item"><b id="hmWeekDays">0</b><span>本周学习天数</span></div>
-          <div class="hm-ov-item"><b id="hmStreak">0</b><span>连续学习（天）</span></div>
-          <div class="hm-ov-item"><b id="hmDue">0</b><span>今日待复习</span></div>
-        </div>
-        <div class="hm-mastery">
-          <span class="hm-mastery-label">词库掌握</span>
-          <span class="hm-mastery-count" id="hmMasteryText">掌握 0 / 共 0</span>
-          <div class="hm-mastery-bar"><i id="hmMasteryFill"></i></div>
-        </div>
-      </section>
-
-      <!-- E · 练习模块：五模块全量（口语占位已删）；进度与下一步均为真实数据 -->
+      <!-- E · 练习模块：V3 转盘在此（手册 03 原定在学习区，V3 落在首页已验证通过，D4 不搬）；
+           因此“练习模块”标题保留 —— 它仍在标注真实内容，不适用手册 04“下面没东西了删标题”；
+           进度与下一步均为真实数据 -->
       <section class="hm-sec" aria-label="练习模块">
         <div class="hm-sec-head">
           <h2 class="hm-sec-title">练习模块</h2>
@@ -324,14 +319,9 @@
         </div>
       </section>
 
-      <!-- F · 最近练习（交卷 + 写作存档 + 背词日，倒序 ≤5）+ 阅读分数走势 -->
-      <section class="hm-sec" aria-label="最近练习">
-        <div class="hm-sec-head">
-          <h2 class="hm-sec-title">最近练习</h2>
-        </div>
-        <ul class="hm-recent-list" id="hmRecentList"></ul>
-        <p class="hm-trend" id="hmTrendLine"></p>
-      </section>
+      <!-- D4/手册 04：F 最近练习整块删除 —— “最近一次”只有 hero 里的 #hmLatestLine 一条；
+           趋势线在“我的”成绩趋势里已有；三处“暂无记录”文案减至 1 处。JS 的 hmRecentList/hmTrendLine
+           写入均有空 guard，不改 JS。 -->
     </div>
   </section>
 
@@ -473,7 +463,7 @@
     <p class="cm-nomatch" id="cmNomatch" hidden>这个话题下还没有笔记，写第一条吧。</p>
 
     <div class="cm-empty" id="cmEmpty">
-      <p class="cm-empty-t">还没有笔记。写下第一条，下次打开还在。</p>
+      <p class="cm-empty-t">还没有笔记。写第一条。</p>
       <div class="cm-empty-demo">
         <span class="cm-badge">示例</span>
         <p>示例笔记：阅读 Test 2 的 Q27 总是错，求定位技巧。</p>
@@ -494,22 +484,25 @@
        更新日志；主题按钮由原顶栏迁入设置区；不再套抽屉面板玻璃）
        ========================================================= -->
   <section class="view" id="view-me">
+    <!-- D4 顶栏一致性：与其他三视图同为 page-brand 小字行 + learn-head 标题（原 h2 直接写 Y-IELTS） -->
+    <p class="page-brand">Y-IELTS</p>
     <header class="learn-head">
       <div class="learn-t">
-        <h2>Y-IELTS</h2>
+        <h2>我的</h2>
       </div>
     </header>
     <div class="me-body">
 
-      <!-- ② 个人学习总览 -->
+      <!-- ② 个人学习总览（D4/手册 05：两种规格 —— Band/掌握进度是大卡 40px 数字；
+           交卷次数/词数/待复习是小字行；390 下 2 列网格，第一张跨两列） -->
       <section class="me-sec">
         <h4 class="me-sec-t">学习总览</h4>
-        <div class="me-stat-grid">
-          <div class="me-stat"><b id="meSubmits">0</b><span>交卷次数</span></div>
-          <div class="me-stat"><b id="meBand">—</b><span>最新 Band</span></div>
-          <div class="me-stat"><b id="meWords">0</b><span>词库词数</span></div>
-          <div class="me-stat"><b id="meMaster">0%</b><span>掌握进度</span></div>
-          <div class="me-stat"><b id="meDue">0</b><span>今日待复习</span></div>
+        <div class="me-stat-grid me-stat-d4">
+          <div class="me-stat me-stat-lg"><b id="meBand">—</b><span>最新 Band</span></div>
+          <div class="me-stat me-stat-lg"><b id="meMaster">0%</b><span>掌握进度</span></div>
+          <div class="me-stat me-stat-sm"><span>交卷次数</span><b id="meSubmits">0</b></div>
+          <div class="me-stat me-stat-sm"><span>词库词数</span><b id="meWords">0</b></div>
+          <div class="me-stat me-stat-sm"><span>今日待复习</span><b id="meDue">0</b></div>
         </div>
       </section>
 
@@ -525,8 +518,10 @@
             <em id="meDashBandMeta">暂无记录，交卷后自动记录</em>
           </div>
           <div class="me-dash-target" id="meTargetBox">
-            <label for="meTargetSel">目标 Band</label>
-            <select id="meTargetSel" aria-label="目标 Band">
+            <!-- D4/手册 05：label 与选择器基线对齐的行容器，flex + 高 40px -->
+            <div class="me-target-row">
+              <label for="meTargetSel">目标 Band</label>
+              <select id="meTargetSel" aria-label="目标 Band">
               <option value="">未设</option>
               <option value="4.0">4.0</option>
               <option value="4.5">4.5</option>
@@ -540,6 +535,7 @@
               <option value="8.5">8.5</option>
               <option value="9.0">9.0</option>
             </select>
+            </div>
             <p class="me-target-prog" id="meTargetProg">先定一个目标，交卷后开始算进度</p>
             <div class="me-target-bar" id="meTargetBar" hidden><i id="meTargetFill"></i></div>
           </div>
@@ -552,15 +548,14 @@
         </div>
       </section>
 
-      <!-- ③ 成绩趋势（Band 趋势图 + 近期交卷记录 + 按题型正确率；复用阅读模块同一渲染） -->
-      <section class="me-sec">
+      <!-- ③ 成绩趋势（D4/手册 05：无数据时整块不渲染，由 me.js 按 hist 显隐；空态只留仪表盘 meta 一处） -->
+      <section class="me-sec" id="meSecTrend">
         <h4 class="me-sec-t">成绩趋势</h4>
         <div class="me-trend" id="meTrendBody"></div>
       </section>
 
-      <!-- v29：分模块记录（原仪表盘内 meDashSkills 移出归位；成绩趋势之后、
-           词库之前，符合三层结构：总览 → 趋势/分模块 → 词库 → 设置 → 数据/关于） -->
-      <section class="me-sec">
+      <!-- v29：分模块记录（D4/手册 05：无数据时整块不渲染，由 me.js 显隐） -->
+      <section class="me-sec" id="meSecSkills">
         <h4 class="me-sec-t">分模块记录</h4>
         <div class="me-dash-skills" id="meDashSkills"></div>
       </section>
